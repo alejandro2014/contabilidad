@@ -1,0 +1,10 @@
+[
+    {
+        "field": "category",
+        "field_text": "Tipo de gasto"
+    },
+    {
+        "field": "comment",
+        "field_text": "Comentarios"
+    }
+]

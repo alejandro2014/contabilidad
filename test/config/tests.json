@@ -1,0 +1,222 @@
+[
+    {
+        "method_name": "insert_pending_expense",
+        "expected_sql": "INSERT INTO expenses_not_classified (date_record, concept, quantity) VALUES ('20201201', 'Renting house', 12.34)",
+        "data": {
+            "date": "20201201",
+            "concept": "Renting house",
+            "value": "12.34"
+        }
+    },
+    {
+        "method_name": "insert_classified_expense",
+        "expected_sql": "INSERT INTO expenses_classified (date_record, concept, quantity, type) VALUES ('20201201', 'Alquiler mensual', 12.34, 'Renting house')",
+        "data": {
+            "expense_data": {
+                "date": "20201201",
+                "concept": "Alquiler mensual",
+                "quantity": "12.34"
+            },
+            "category": "Renting house"
+        }
+    },
+    {
+        "method_name": "select_pending_expenses",
+        "expected_sql": "SELECT date_record, concept, quantity FROM expenses_not_classified WHERE (1 = 1)"
+    },
+    {
+        "method_name": "select_pending_expenses",
+        "expected_sql": "SELECT date_record, concept, quantity FROM expenses_not_classified WHERE (1 = 1) AND (date_record BETWEEN '20201201' AND '20201210') AND (concept LIKE '%Search value%')",
+        "data": {
+            "date": {
+                "from": "20201201",
+                "to": "20201210"
+            },
+            "search_value": "Search value"
+        }
+    },
+    {
+        "method_name": "select_pending_expenses",
+        "expected_sql": "SELECT date_record, concept, quantity FROM expenses_not_classified WHERE (1 = 1) AND (date_record BETWEEN '20201201' AND '20201210')",
+        "data": {
+            "date": {
+                "from": "20201201",
+                "to": "20201210"
+            }
+        }
+    },
+    {
+        "method_name": "select_pending_expenses",
+        "expected_sql": "SELECT date_record, concept, quantity FROM expenses_not_classified WHERE (1 = 1) AND (date_record BETWEEN '20201201' AND '20201210')",
+        "data": {
+            "date": {
+                "from": "20201201",
+                "to": "20201210"
+            },
+            "search_value": null
+        }
+    },
+    {
+        "method_name": "select_pending_expenses",
+        "expected_sql": "SELECT date_record, concept, quantity FROM expenses_not_classified WHERE (1 = 1) AND (concept LIKE '%Search value%')",
+        "data": {
+            "date": {
+                "from": "20201201"
+            },
+            "search_value": "Search value"
+        }
+    },
+    {
+        "method_name": "select_pending_expenses",
+        "expected_sql": "SELECT date_record, concept, quantity FROM expenses_not_classified WHERE (1 = 1) AND (concept LIKE '%Search value%')",
+        "data": {
+            "date": {
+                "from": "20201201",
+                "to": null
+            },
+            "search_value": "Search value"
+        }
+    },
+    {
+        "method_name": "select_pending_expenses",
+        "expected_sql": "SELECT date_record, concept, quantity FROM expenses_not_classified WHERE (1 = 1) AND (concept LIKE '%Search value%')",
+        "data": {
+            "date": {
+                "to": "20201210"
+            },
+            "search_value": "Search value"
+        }
+    },
+    {
+        "method_name": "select_pending_expenses",
+        "expected_sql": "SELECT date_record, concept, quantity FROM expenses_not_classified WHERE (1 = 1) AND (concept LIKE '%Search value%')",
+        "data": {
+            "date": {
+                "from": null,
+                "to": "20201210"
+            },
+            "search_value": "Search value"
+        }
+    },
+    {
+        "method_name": "select_pending_expenses",
+        "expected_sql": "SELECT date_record, concept, quantity FROM expenses_not_classified WHERE (1 = 1) AND (concept LIKE '%Search value%')",
+        "data": {
+            "search_value": "Search value"
+        }
+    },
+    {
+        "method_name": "select_classified_expenses",
+        "expected_sql": "SELECT date_record, concept, type, quantity FROM expenses_classified WHERE (1 = 1)"
+    },
+    {
+        "method_name": "select_classified_expenses",
+        "expected_sql": "SELECT date_record, concept, type, quantity FROM expenses_classified WHERE (1 = 1) AND (date_record BETWEEN '20201201' AND '20201210') AND (concept LIKE '%Search value%')",
+        "data": {
+            "date": {
+                "from": "20201201",
+                "to": "20201210"
+            },
+            "search_value": "Search value"
+        }
+    },
+    {
+        "method_name": "select_classified_expenses",
+        "expected_sql": "SELECT date_record, concept, type, quantity FROM expenses_classified WHERE (1 = 1) AND (date_record BETWEEN '20201201' AND '20201210')",
+        "data": {
+            "date": {
+                "from": "20201201",
+                "to": "20201210"
+            }
+        }
+    },
+    {
+        "method_name": "select_classified_expenses",
+        "expected_sql": "SELECT date_record, concept, type, quantity FROM expenses_classified WHERE (1 = 1) AND (date_record BETWEEN '20201201' AND '20201210')",
+        "data": {
+            "date": {
+                "from": "20201201",
+                "to": "20201210"
+            },
+            "search_value": null
+        }
+    },
+    {
+        "method_name": "select_classified_expenses",
+        "expected_sql": "SELECT date_record, concept, type, quantity FROM expenses_classified WHERE (1 = 1) AND (concept LIKE '%Search value%')",
+        "data": {
+            "date": {
+                "from": "20201201"
+            },
+            "search_value": "Search value"
+        }
+    },
+    {
+        "method_name": "select_classified_expenses",
+        "expected_sql": "SELECT date_record, concept, type, quantity FROM expenses_classified WHERE (1 = 1) AND (concept LIKE '%Search value%')",
+        "data": {
+            "date": {
+                "from": "20201201",
+                "to": null
+            },
+            "search_value": "Search value"
+        }
+    },
+    {
+        "method_name": "select_classified_expenses",
+        "expected_sql": "SELECT date_record, concept, type, quantity FROM expenses_classified WHERE (1 = 1) AND (concept LIKE '%Search value%')",
+        "data": {
+            "date": {
+                "to": "20201210"
+            },
+            "search_value": "Search value"
+        }
+    },
+    {
+        "method_name": "select_classified_expenses",
+        "expected_sql": "SELECT date_record, concept, type, quantity FROM expenses_classified WHERE (1 = 1) AND (concept LIKE '%Search value%')",
+        "data": {
+            "date": {
+                "from": null,
+                "to": "20201210"
+            },
+            "search_value": "Search value"
+        }
+    },
+    {
+        "method_name": "select_classified_expenses",
+        "expected_sql": "SELECT date_record, concept, type, quantity FROM expenses_classified WHERE (1 = 1) AND (concept LIKE '%Search value%')",
+        "data": {
+            "search_value": "Search value"
+        }
+    },
+    {
+        "method_name": "delete_pending_expense",
+        "expected_sql": "DELETE FROM expenses_not_classified WHERE date_record = '20201201' AND concept = 'Alquiler' AND quantity = 12.34",
+        "data": {
+            "date": "20201201",
+            "concept": "Alquiler",
+            "quantity": "12.34"
+        }
+    },
+    {
+        "method_name": "select_classified_expenses_count",
+        "expected_sql": "SELECT count(*) FROM expenses_classified"
+    },
+    {
+        "method_name": "select_classified_expenses_by_type",
+        "expected_sql": "select type, sum(quantity) as sum from expenses_classified group by type"
+    },
+    {
+        "method_name": "select_classified_expenses_by_month",
+        "expected_sql": "select substr(date_record, 0, 7) as month, sum(quantity) as sum from expenses_classified group by month"
+    },
+    {
+        "method_name": "select_classified_expenses_by_type_and_month",
+        "expected_sql": "select type, substr(date_record, 0, 7) as month, sum(quantity) as sum from expenses_classified group by type, month"
+    },
+    {
+        "method_name": "select_pending_expenses_count",
+        "expected_sql": "SELECT count(*) FROM expenses_not_classified"
+    }
+]
