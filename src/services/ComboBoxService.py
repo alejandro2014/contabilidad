@@ -8,7 +8,7 @@ class ComboBoxService:
         return [ "Enero",  "Febrero",  "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre" ]
 
     def get_years(self):
-        return [ "2019", "2020" ]
+        return [ "2019", "2020", "2021", "2022", "2023" ]
 
     def get_categories(self):
         #TODO Get categories from the database service

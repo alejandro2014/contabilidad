@@ -2,18 +2,17 @@ class SqlGenerator:
     def insert_pending_expense(self, concept_line):
         date_record = concept_line['date']
         concept = concept_line['concept']
+        category = concept_line['category']
+        subcategory = concept_line['subcategory']
         quantity = concept_line['value']
 
-        return "INSERT INTO expenses_not_classified (date_record, concept, quantity) VALUES ('" + date_record + "', '" + concept + "', " + quantity + ")"
+        return f"INSERT INTO expenses_not_classified (date_record, concept, category, subcategory, quantity) \
+            VALUES ('{date_record}', '{concept}', '{category}', '{subcategory}', {quantity})"
 
-    def insert_classified_expense(self, expense):
-        expense_data = expense['expense_data']
-
-        date_record = expense_data['date']
-        concept = expense_data['concept']
-        quantity = expense_data['quantity']
-
-        category = expense['category']
+    def insert_classified_expense(self, expense, category):
+        date_record = expense['date']
+        concept = expense['concept']
+        quantity = expense['quantity']
 
         return "INSERT INTO expenses_classified (date_record, concept, quantity, type) VALUES ('" + date_record + "', '" + concept + "', " + quantity + ", '" + category + "')"
 

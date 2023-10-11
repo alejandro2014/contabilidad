@@ -2,6 +2,8 @@ DROP TABLE IF EXISTS expenses_not_classified;
 CREATE TABLE expenses_not_classified (
     date_record CHAR(8) NOT NULL,
     concept STRING NOT NULL,
+    category STRING NOT NULL,
+    subcategory STRING NOT NULL,
     quantity FLOAT NOT NULL,
     PRIMARY KEY (date_record, concept, quantity)
 );

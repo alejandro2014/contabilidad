@@ -6,7 +6,6 @@ from src.dialogs.WidgetCreator import WidgetCreator
 
 from src.services.UseCasesService import UseCasesService
 
-
 class LoadFileDialog(QDialog):
     def __init__(self, parent, listeners_pool):
         super(LoadFileDialog, self).__init__(parent)
@@ -55,7 +54,7 @@ class LoadFileDialog(QDialog):
 
         self.listeners_pool.send_event('pending-expenses-table', 'refresh_rows')
 
-        message = "Registros cargados: " + str(values['inserted']) + "\nRegistros ignorados: " + str(values['ignored'])
+        message = f"Registros cargados: {str(values['inserted'])}\nRegistros ignorados: {str(values['ignored'])}"
         info_dialog = InfoDialog(self, title="Cargado fichero", message=message)
 
         #TODO Check whether file exists

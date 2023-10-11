@@ -51,4 +51,6 @@ class PendingExpensesTable(QtWidgets.QTableWidget, ListenerNode):
         return expense
 
     def get_current_expenses(self, value = None):
+        print('((()))')
+        print(self.expenses)
         return self.expenses

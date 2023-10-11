@@ -3,8 +3,10 @@ class ListenersPool:
         self.nodes = []
 
     def add_node(self, node):
-        print('[INFO] Added node with node_id = ' + node.node_id + ' to the listeners pool')
         self.nodes.append(node)
+        print('[INFO] Added node with node_id = ' + node.node_id + ' to the listeners pool')
+        for node in self.nodes:
+            print(node)
 
     def delete_node(self, node_id):
         #TODO Can it be replaced?
@@ -35,4 +37,4 @@ class ListenersPool:
         if info:
             return getattr(node, event_id)(info)
 
-        getattr(node, event_id)()
+        return getattr(node, event_id)()

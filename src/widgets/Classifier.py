@@ -40,6 +40,8 @@ class Classifier(QWidget, ListenerNode):
         category = self.categories.currentText()
         expenses = self.send_event('pending-expenses-table', 'get_current_expenses')
 
+        print('================')
+        print(expenses)
         self.expenses_service.classify_expenses(expenses, category)
 
         self.send_event('pending-expenses-table', 'refresh_rows')
