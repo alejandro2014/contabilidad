@@ -1,5 +1,6 @@
 import copy
 from PySide2 import QtWidgets
+from PySide2.QtWidgets import QAbstractItemView
 
 from src.events.ListenerNode import ListenerNode
 
@@ -21,6 +22,7 @@ class PendingExpensesTable(QtWidgets.QTableWidget, ListenerNode):
         super().__init__(1, len(self.table_info))
 
         self.setHorizontalHeaderLabels(column_labels)
+        self.setSelectionBehavior(QAbstractItemView.SelectRows)
 
     def refresh_rows(self, filter = None):
         self.expenses = self.expenses_service.get_expenses(filter)
@@ -51,6 +53,27 @@ class PendingExpensesTable(QtWidgets.QTableWidget, ListenerNode):
         return expense
 
     def get_current_expenses(self, value = None):
-        print('((()))')
-        print(self.expenses)
         return self.expenses
+    
+    def classify_selected(self, category):
+        indexes = self.get_selected_indexes()
+        expenses = self.get_expenses_from_indexes(indexes)
+
+        self.expenses_service.classify_expenses(expenses, category)
+        self.refresh_rows()
+    
+    def get_selected_indexes(self):
+        selected_indexes = self.selectedIndexes()
+
+        return sorted(list(set([ si.row() for si in selected_indexes ])), reverse=True)
+    
+    def get_expenses_from_indexes(self, indexes):
+        expenses = []
+
+        for index in indexes:
+            expense = self.expenses[index]
+            expense['quantity'] = float(expense['quantity'])
+
+            expenses.append(expense)
+        
+        return expenses

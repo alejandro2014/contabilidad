@@ -4,7 +4,7 @@ from PySide2.QtWidgets import QDialog, QFileDialog, QGridLayout, QHBoxLayout, QL
 from src.dialogs.InfoDialog import InfoDialog
 from src.dialogs.WidgetCreator import WidgetCreator
 
-from src.services.UseCasesService import UseCasesService
+from src.services.LoadFileService import LoadFileService
 
 class LoadFileDialog(QDialog):
     def __init__(self, parent, listeners_pool):
@@ -14,7 +14,7 @@ class LoadFileDialog(QDialog):
 
         widget_creator = WidgetCreator()
 
-        self.use_cases_service = UseCasesService()
+        self.expenses_service = LoadFileService()
 
         self.setWindowTitle("Cargar fichero...")
         self.resize(400, 100)
@@ -50,7 +50,7 @@ class LoadFileDialog(QDialog):
 
     def load_file(self):
         file_name = self.load_file_textbox.text()
-        values = self.use_cases_service.load_file(file_name)
+        values = self.expenses_service.load_file(file_name)
 
         self.listeners_pool.send_event('pending-expenses-table', 'refresh_rows')
 

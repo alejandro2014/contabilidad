@@ -1,4 +1,20 @@
 class SqlGenerator:
+    def insert_expense(self, expense):
+        expense_values = expense.__dict__
+        filtered_values = {}
+
+        for k in expense_values.keys():
+            if expense_values[k] is not None:
+                filtered_values[k] = expense_values[k]
+
+        fields = ', '.join([k for k in filtered_values.keys()])
+        values = ', '.join([self.field_value(k) for k in filtered_values.values()])
+
+        return f"INSERT INTO expenses ({fields}) VALUES ({values})"
+
+    def field_value(self, field):
+        return f"'{field}'" if type(field) == str else str(field)
+    
     def insert_pending_expense(self, concept_line):
         date_record = concept_line['date']
         concept = concept_line['concept']

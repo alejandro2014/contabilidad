@@ -7,14 +7,14 @@ from src.dialogs.AddCategoryDialog import AddCategoryDialog
 from src.dialogs.WidgetCreator import WidgetCreator
 
 from src.services.ExpenseTypesService import ExpenseTypesService
-from src.services.UseCasesService import UseCasesService
+from src.services.LoadFileService import LoadFileService
 
 class ConfigureExpensesDialog(QDialog):
     def __init__(self, parent):
         super(ConfigureExpensesDialog, self).__init__(parent)
 
         self.widget_creator = WidgetCreator()
-        self.usecases_service = UseCasesService()
+        self.usecases_service = LoadFileService()
         self.expense_types_service = ExpenseTypesService()
 
         self.setWindowTitle("Configuración de categorías")

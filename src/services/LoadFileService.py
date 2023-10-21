@@ -2,13 +2,15 @@ import json
 import pandas as pd
 
 from FileReader import FileReader
-from src.services.PendingExpensesService import PendingExpensesService
+from src.services.expenses_service import ExpensesService
 
 from src.config.ConfigLoader import ConfigLoader
 
-class UseCasesService:
+from src.model.expense import Expense
+
+class LoadFileService:
     def __init__(self):
-        self.expenses_service = PendingExpensesService()
+        self.expenses_service = ExpensesService()
         self.config_loader = ConfigLoader()
 
     def load_file(self, file_name):
@@ -20,19 +22,12 @@ class UseCasesService:
         
         return self.insert_expense_lines(expenses)
 
-    def insert_expense_lines(self, expense_lines, formatter=None):
-        inserted = 0
-        ignored = 0
-
-        for expense_line in expense_lines:
-            if self.expenses_service.add_expense(expense_line, formatter):
-                inserted += 1
-            else:
-                ignored += 1
+    def insert_expense_lines(self, expenses):
+        successes, errors = self.expenses_service.load_expenses(expenses)
 
         return {
-            'inserted': inserted,
-            'ignored': ignored
+            'inserted': successes,
+            'ignored': errors
         }
     
     def extract_expenses_from_xls(self, xls_name):
@@ -44,13 +39,15 @@ class UseCasesService:
         df.columns = ['date', 'category', 'subcategory', 'concept', 'comment', 'value']
         df = df.drop(['comment'], axis=1)
 
-        return [ {
-            'date': str(r['date'].date()).replace('-', ''),
-            'category': r['category'],
-            'subcategory': r['subcategory'],
-            'concept': r['concept'],
-            'value': float(r['value'])
-        } for _, r in df.iterrows() ]
+        return [
+            Expense(
+                date = str(r['date'].date()).replace('-', ''),
+                category_src = r['category'],
+                subcategory_src = r['subcategory'],
+                title = r['concept'],
+                amount = float(r['value'])
+            ) for _, r in df.iterrows()
+        ]
 
     def extract_expenses_from_csv(self, csv_name):
         reader_info = ConfigLoader().load_config_file('csv/csv-loader')
