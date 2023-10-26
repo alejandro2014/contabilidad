@@ -27,6 +27,8 @@ class ExpensesDao:
         sql = self.sql_generator.select_pending_expenses()
         expenses = self.db.select(sql)
 
+        print('>>>>>>>>>>>>>>')
+        print(expenses)
         return self.formatter.format_expenses(expenses)
             
 

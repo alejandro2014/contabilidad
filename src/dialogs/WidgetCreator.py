@@ -2,6 +2,9 @@ from PySide2 import QtWidgets, QtGui
 from PySide2.QtWidgets import QComboBox, QPushButton, QTableWidget, QTableWidgetItem
 
 class WidgetCreator:
+    def __init__(self, combobox_service = None):
+        self.__combobox_service = combobox_service
+
     def create_button(self, button_text, button_image, button_action):
         button = QPushButton(button_text)
         button.setIcon(QtGui.QIcon("src/config/images/" + button_image + ".png"))
@@ -26,9 +29,13 @@ class WidgetCreator:
 
         return table
 
-    def create_combobox(self, service, method_name):
+    def create_combobox(self, method_name):
+        if self.__combobox_service is None:
+            return None
+        
+        method_name = f'get_{method_name}s'
+        values = getattr(self.__combobox_service, method_name)()
         combo = QComboBox()
-        values = getattr(service, method_name)()
 
         for value in values:
             combo.addItem(value)

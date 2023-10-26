@@ -1,14 +1,17 @@
+import datetime
+
 class ComboBoxService:
     def get_days(self):
-        return [ '1', '2', '3', '4', '5', '6', '7', '8', '9', '10',
-            '11', '12', '13', '14', '15', '16', '17', '18', '19', '20',
-            '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31' ]
+        return [ str(i + 1) for i in range(31) ]
 
     def get_months(self):
         return [ "Enero",  "Febrero",  "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre" ]
 
     def get_years(self):
-        return [ "2019", "2020", "2021", "2022", "2023" ]
+        year_to = datetime.datetime.today().year
+        year_from = year_to - 5
+
+        return [ str(i) for i in range(year_from, year_to + 1) ]
 
     def get_categories(self):
         #TODO Get categories from the database service

@@ -16,7 +16,7 @@ class PendingExpensesService(BaseService):
 
         return self.insert(sql)
 
-    def get_expenses(self, filter = None):
+    def get_expenses(self, filter = None, pending = None):
         sql = self.sql_generator.select_pending_expenses(filter)
         expenses = self.db.select(sql)
 

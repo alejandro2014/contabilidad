@@ -8,28 +8,34 @@ from src.events.ListenerNode import ListenerNode
 from src.services.ComboBoxService import ComboBoxService
 from src.services.PendingExpensesService import PendingExpensesService
 
+from src.model.date_filter import DateFilter
+
 from DateConverter import DateConverter
 
-class DateFilter(QWidget, ListenerNode):
+class DateFilterWidget(QWidget, ListenerNode):
     def __init__(self, listeners_pool, *args, **kwargs):
-        super(DateFilter, self).__init__(*args, **kwargs)
+        super(DateFilterWidget, self).__init__(*args, **kwargs)
         ListenerNode.__init__(self, 'date-filter', listeners_pool)
 
-        widget_creator = WidgetCreator()
-
         self.__combobox_service = ComboBoxService()
+
+        widget_creator = WidgetCreator(self.__combobox_service)
+
+        
         self.expenses_service = PendingExpensesService()
+
+        self.date_filter = DateFilter()
 
         self.cbx = {
             'from': {
-                'day': widget_creator.create_combobox(self.__combobox_service, 'get_days'),
-                'month': widget_creator.create_combobox(self.__combobox_service, 'get_months'),
-                'year': widget_creator.create_combobox(self.__combobox_service, 'get_years')
+                'day': widget_creator.create_combobox('day'),
+                'month': widget_creator.create_combobox('month'),
+                'year': widget_creator.create_combobox('year')
             },
             'to': {
-                'day': widget_creator.create_combobox(self.__combobox_service, 'get_days'),
-                'month': widget_creator.create_combobox(self.__combobox_service, 'get_months'),
-                'year': widget_creator.create_combobox(self.__combobox_service, 'get_years')
+                'day': widget_creator.create_combobox('day'),
+                'month': widget_creator.create_combobox('month'),
+                'year': widget_creator.create_combobox('year')
             }
         }
 
@@ -85,7 +91,7 @@ class DateFilter(QWidget, ListenerNode):
 
     def update_top_dates(self):
         expenses = self.expenses_service.get_expenses()
-        dates = list(map(lambda x: x['date'], expenses))
+        dates = [ x['date'] for x in expenses ]
 
         top_dates = self.get_top_dates(dates)
 

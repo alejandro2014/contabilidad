@@ -4,7 +4,7 @@ from PySide2.QtWidgets import QAbstractItemView
 
 from src.events.ListenerNode import ListenerNode
 
-from src.services.PendingExpensesService import PendingExpensesService
+from src.services.expenses_service import ExpensesService
 
 from DateConverter import DateConverter
 from src.config.ConfigLoader import ConfigLoader
@@ -13,11 +13,11 @@ class PendingExpensesTable(QtWidgets.QTableWidget, ListenerNode):
     def __init__(self, listeners_pool):
         ListenerNode.__init__(self, 'pending-expenses-table', listeners_pool)
 
-        self.expenses_service = PendingExpensesService()
+        self.expenses_service = ExpensesService()
         self.expenses = []
 
         self.table_info = ConfigLoader().load_table('pending-expenses')
-        column_labels = list(map(lambda x: x['field_text'], self.table_info))
+        column_labels = [ ti['field_text'] for ti in self.table_info ]
 
         super().__init__(1, len(self.table_info))
 
@@ -25,10 +25,11 @@ class PendingExpensesTable(QtWidgets.QTableWidget, ListenerNode):
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
 
     def refresh_rows(self, filter = None):
-        self.expenses = self.expenses_service.get_expenses(filter)
+        self.expenses = self.expenses_service.get_pending_expenses(filter)
+        return
 
         expenses = copy.deepcopy(self.expenses)
-        expenses = list(map(lambda ex: self.format_expense(ex), expenses))
+        expenses = [ self.format_expense(e) for e in expenses ]
 
         self.populate(expenses)
         self.send_event('sum-text', 'update_expenses_sum_from_table', expenses)
@@ -37,7 +38,7 @@ class PendingExpensesTable(QtWidgets.QTableWidget, ListenerNode):
     def populate(self, table_rows):
         self.clearContents()
 
-        categories = list(map(lambda x: x['field'], self.table_info))
+        categories = [ x['field'] for x in self.table_info ]
 
         for index_row, table_row in enumerate(table_rows):
             self.insertRow(index_row)
@@ -57,7 +58,12 @@ class PendingExpensesTable(QtWidgets.QTableWidget, ListenerNode):
     
     def classify_selected(self, category):
         indexes = self.get_selected_indexes()
+
         expenses = self.get_expenses_from_indexes(indexes)
+
+        print(expenses)
+
+        return
 
         self.expenses_service.classify_expenses(expenses, category)
         self.refresh_rows()

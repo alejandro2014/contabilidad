@@ -3,7 +3,7 @@ from PySide2.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget
 from src.events.ListenerNode import ListenerNode
 
 from src.widgets.Classifier import Classifier
-from src.widgets.DateFilter import DateFilter
+from src.widgets.DateFilterWidget import DateFilterWidget
 from src.widgets.TextFilter import TextFilter
 from src.widgets.Summatory import Summatory
 from src.widgets.SecondaryFilters import SecondaryFilters
@@ -23,7 +23,7 @@ class FilterWidget(QWidget, ListenerNode):
             'search_value': None
         }
 
-        self.date_filter = DateFilter(listeners_pool)
+        self.date_filter = DateFilterWidget(listeners_pool)
         self.text_filter = TextFilter(listeners_pool)
         self.summatory = Summatory(listeners_pool)
         self.secondary_filters = SecondaryFilters(listeners_pool)

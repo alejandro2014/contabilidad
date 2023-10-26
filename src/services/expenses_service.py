@@ -7,5 +7,5 @@ class ExpensesService:
     def load_expenses(self, expenses):
         return self.dao.load_expenses(expenses)
     
-    def get_pending_expenses(self):
+    def get_pending_expenses(self, filter = None):
         return self.dao.get_pending_expenses()
