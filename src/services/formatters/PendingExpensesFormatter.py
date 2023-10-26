@@ -11,8 +11,8 @@ class PendingExpensesFormatter:
         }
 
     def format_expenses(self, expenses):
-        return list(map(lambda expense: {
+        return [ {
             'date': expense[0],
             'concept': expense[1],
             'quantity': str(expense[2])
-        }, expenses))
+        } for expense in expenses ]

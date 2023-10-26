@@ -22,5 +22,11 @@ class ExpensesDao:
                 errors_number += 1
 
         return (successes_number, errors_number)
+    
+    def get_pending_expenses(self):
+        sql = self.sql_generator.select_pending_expenses()
+        expenses = self.db.select(sql)
+
+        return self.formatter.format_expenses(expenses)
             
 
