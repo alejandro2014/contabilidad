@@ -33,7 +33,7 @@ class SqlGenerator:
         return "INSERT INTO expenses_classified (date_record, concept, quantity, type) VALUES ('" + date_record + "', '" + concept + "', " + quantity + ", '" + category + "')"
 
     def select_pending_expenses(self, filter = None):
-        sql = "SELECT date, title, amount FROM expenses WHERE (category IS NULL)"
+        sql = "SELECT id, date, title, amount FROM expenses WHERE (category IS NULL)"
 
         if filter == None:
             return sql

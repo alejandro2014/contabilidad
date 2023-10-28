@@ -26,8 +26,7 @@ class PendingExpensesTable(QtWidgets.QTableWidget, ListenerNode):
 
     def refresh_rows(self, filter = None):
         self.expenses = self.expenses_service.get_pending_expenses(filter)
-        return
-
+        
         expenses = copy.deepcopy(self.expenses)
         expenses = [ self.format_expense(e) for e in expenses ]
 
@@ -49,6 +48,8 @@ class PendingExpensesTable(QtWidgets.QTableWidget, ListenerNode):
         self.resizeColumnsToContents()
 
     def format_expense(self, expense):
+        print('====================')
+        print(expense)
         expense['date'] = DateConverter().format_pretty(expense['date'])
 
         return expense

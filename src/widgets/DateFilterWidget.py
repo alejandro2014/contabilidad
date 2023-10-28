@@ -117,6 +117,7 @@ class DateFilterWidget(QWidget, ListenerNode):
         self.change_filter_date('to', date_to)
 
     def change_filter_date(self, combo_group, date_value):
+        return
         day = date_value[6:8]
         month = date_value[4:6]
         year = date_value[0:4]

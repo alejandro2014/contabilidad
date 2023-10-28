@@ -1,5 +1,6 @@
 from sqlite3 import IntegrityError
 
+from src.model.expense import Expense
 from src.dao.SqlGenerator import SqlGenerator
 from src.dao.SqliteConnector import SqliteConnector
 
@@ -25,8 +26,15 @@ class ExpensesDao:
     
     def get_pending_expenses(self):
         sql = self.sql_generator.select_pending_expenses()
-        expenses = self.db.select(sql)
+        expenses_db = self.db.select(sql)
 
-        return expenses
+        return [
+            Expense(
+                id = e[0],
+                date = e[1],
+                title = e[2],
+                amount = e[3]
+            ) for e in expenses_db
+        ]
             
 

@@ -1,4 +1,6 @@
-class Expense:
+from src.model.base_class import ModelBaseClass
+
+class Expense(ModelBaseClass):
     def __init__(self,
                  id = None,
                  date = None,
@@ -10,6 +12,8 @@ class Expense:
                  subcategory = None,
                  category_suggested = None,
                  subcategory_suggested = None):
+        super().__init__(self.__class__.__name__)
+
         self.id = id
         self.date = date
         self.category_src = category_src
