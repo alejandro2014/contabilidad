@@ -6,7 +6,7 @@ from src.dao.SqliteConnector import SqliteConnector
 class ExpensesDao:
     def __init__(self):
         self.sql_generator = SqlGenerator()
-        self.connector = SqliteConnector()
+        self.db = SqliteConnector()
 
     def load_expenses(self, expenses):
         successes_number = 0
@@ -16,7 +16,7 @@ class ExpensesDao:
             sql = self.sql_generator.insert_expense(expense)
 
             try:
-                self.connector.insert(sql)
+                self.db.insert(sql)
                 successes_number += 1
             except IntegrityError:
                 errors_number += 1
@@ -27,8 +27,6 @@ class ExpensesDao:
         sql = self.sql_generator.select_pending_expenses()
         expenses = self.db.select(sql)
 
-        print('>>>>>>>>>>>>>>')
-        print(expenses)
-        return self.formatter.format_expenses(expenses)
+        return expenses
             
 

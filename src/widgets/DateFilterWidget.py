@@ -1,26 +1,18 @@
-from PySide2 import QtCore, QtWidgets
 from PySide2.QtWidgets import QGroupBox, QHBoxLayout, QLabel, QVBoxLayout, QWidget
 
-from src.dialogs.WidgetCreator import WidgetCreator
-
-from src.events.ListenerNode import ListenerNode
-
-from src.services.ComboBoxService import ComboBoxService
-from src.services.PendingExpensesService import PendingExpensesService
-
-from src.model.date_filter import DateFilter
-
 from DateConverter import DateConverter
+
+from src.dialogs.WidgetCreator import WidgetCreator
+from src.events.ListenerNode import ListenerNode
+from src.model.date_filter import DateFilter
+from src.services.PendingExpensesService import PendingExpensesService
 
 class DateFilterWidget(QWidget, ListenerNode):
     def __init__(self, listeners_pool, *args, **kwargs):
         super(DateFilterWidget, self).__init__(*args, **kwargs)
         ListenerNode.__init__(self, 'date-filter', listeners_pool)
 
-        self.__combobox_service = ComboBoxService()
-
-        widget_creator = WidgetCreator(self.__combobox_service)
-
+        widget_creator = WidgetCreator()
         
         self.expenses_service = PendingExpensesService()
 

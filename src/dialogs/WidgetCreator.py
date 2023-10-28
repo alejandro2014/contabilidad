@@ -1,9 +1,10 @@
+from src.services.ComboBoxService import ComboBoxService
 from PySide2 import QtWidgets, QtGui
 from PySide2.QtWidgets import QComboBox, QPushButton, QTableWidget, QTableWidgetItem
 
 class WidgetCreator:
-    def __init__(self, combobox_service = None):
-        self.__combobox_service = combobox_service
+    def __init__(self):
+        self.__combobox_service = ComboBoxService()
 
     def create_button(self, button_text, button_image, button_action):
         button = QPushButton(button_text)
@@ -41,3 +42,7 @@ class WidgetCreator:
             combo.addItem(value)
 
         return combo
+    
+    def create_categories_combobox(self):
+        return self.create_combobox('categorie')
+

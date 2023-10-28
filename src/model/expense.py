@@ -1,6 +1,7 @@
 class Expense:
     def __init__(self,
-                 date=None,
+                 id = None,
+                 date = None,
                  category_src = None,
                  subcategory_src = None,
                  title = None,
@@ -9,6 +10,7 @@ class Expense:
                  subcategory = None,
                  category_suggested = None,
                  subcategory_suggested = None):
+        self.id = id
         self.date = date
         self.category_src = category_src
         self.subcategory_src = subcategory_src

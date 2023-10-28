@@ -1,5 +1,6 @@
 import json
 import pandas as pd
+import uuid
 
 from FileReader import FileReader
 from src.services.expenses_service import ExpensesService
@@ -41,6 +42,7 @@ class LoadFileService:
 
         return [
             Expense(
+                id = str(uuid.uuid4()),
                 date = str(r['date'].date()).replace('-', ''),
                 category_src = r['category'],
                 subcategory_src = r['subcategory'],

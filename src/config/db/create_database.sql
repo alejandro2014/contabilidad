@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS expenses;
 CREATE TABLE expenses (
+    id CHAR(36) NOT NULL,
     date CHAR(8) NOT NULL,
     title STRING NOT NULL,
     amount FLOAT NOT NULL,
@@ -11,6 +12,9 @@ CREATE TABLE expenses (
     subcategory_suggested STRING NULL,
     PRIMARY KEY (date, title, amount)
 );
+
+DROP INDEX IF EXISTS expenses_id;
+CREATE INDEX expenses_id ON expenses (id);
 
 DROP TABLE IF EXISTS expenses_not_classified;
 CREATE TABLE expenses_not_classified (

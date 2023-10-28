@@ -12,12 +12,11 @@ class Classifier(QWidget, ListenerNode):
         super(Classifier, self).__init__(*args, **kwargs)
         ListenerNode.__init__(self, 'classificator', listeners_pool)
 
-        self.combo_service = ComboBoxService()
         self.expenses_service = PendingExpensesService()
 
         widget_creator = WidgetCreator()
 
-        self.categories = widget_creator.create_combobox(self.combo_service, 'get_categories')
+        self.categories = widget_creator.create_categories_combobox()
         self.classify_button = widget_creator.create_button('Clasificar elementos', 'ok', self.classify_elements)
 
         layout = QVBoxLayout()
