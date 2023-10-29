@@ -1,12 +1,12 @@
 import copy
 
+from DateConverter import DateConverter
+
 from PySide2.QtWidgets import QAbstractItemView, QTableWidget, QTableWidgetItem
 
 from src.config.ConfigLoader import ConfigLoader
 from src.events.ListenerNode import ListenerNode
 from src.services.expenses_service import ExpensesService
-
-from DateConverter import DateConverter
 
 class PendingExpensesTable(QTableWidget, ListenerNode):
     def __init__(self, listeners_pool):
@@ -35,22 +35,18 @@ class PendingExpensesTable(QTableWidget, ListenerNode):
     def populate(self, expenses):
         self.clearContents()
 
-        formatted_expenses = [ self.format_expense(e) for e in expenses ]
-        categories = [ x['field'] for x in self.table_info ]
-
-        for index_row, expense in enumerate(formatted_expenses):
+        for index_row, expense in enumerate(expenses):
             self.insertRow(index_row)
 
-            self.setItem(index_row, 0, QTableWidgetItem(expense.date))
+            formatted_date = DateConverter().format_pretty(expense.date)
+            self.setItem(index_row, 0, QTableWidgetItem(formatted_date))
+
             self.setItem(index_row, 1, QTableWidgetItem(expense.title))
-            self.setItem(index_row, 2, QTableWidgetItem(expense.amount))
+
+            formatted_amount = str(expense.amount)
+            self.setItem(index_row, 2, QTableWidgetItem(formatted_amount))
 
         self.resizeColumnsToContents()
-
-    def format_expense(self, expense):
-        expense.amount = str(expense.amount)
-
-        return expense
 
     def get_current_expenses(self, value = None):
         return self.expenses
@@ -59,8 +55,6 @@ class PendingExpensesTable(QTableWidget, ListenerNode):
         indexes = self.get_selected_indexes()
 
         expenses = self.get_expenses_from_indexes(indexes)
-
-        print(expenses)
 
         return
 

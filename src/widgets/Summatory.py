@@ -34,17 +34,9 @@ class Summatory(QWidget, ListenerNode):
         self.lbl2.show()
 
     def update_expenses_sum_from_table(self, expenses):
-        return
-        values = list(map(lambda ex: ex['quantity'], expenses))
+        total_value = sum([ float(ex.amount) for ex in expenses ])
 
-        sum = 0.0
-
-        for value in values:
-            sum += float(value)
-
-        sum = round(sum, 2)
-
-        self.set_sum_value(sum)
+        self.set_sum_value(round(total_value, 2))
 
     def update_expenses_sum_from_chart(self, categories):
         sum = 0.0
