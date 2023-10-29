@@ -34,6 +34,7 @@ class Summatory(QWidget, ListenerNode):
         self.lbl2.show()
 
     def update_expenses_sum_from_table(self, expenses):
+        return
         values = list(map(lambda ex: ex['quantity'], expenses))
 
         sum = 0.0

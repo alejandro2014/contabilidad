@@ -13,8 +13,8 @@ class DateConverter:
         return year + month_str + day_str
 
     def format_pretty(self, date_input):
-        day = date_input[6:8]
-        month = date_input[4:6]
         year = date_input[0:4]
-
-        return (day + '/' + month + '/' + year)
+        month = date_input[4:6]
+        day = date_input[6:8]
+        
+        return f'{day}/{month}/{year}'

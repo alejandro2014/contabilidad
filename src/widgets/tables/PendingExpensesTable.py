@@ -1,15 +1,14 @@
 import copy
-from PySide2 import QtWidgets
-from PySide2.QtWidgets import QAbstractItemView
 
+from PySide2.QtWidgets import QAbstractItemView, QTableWidget, QTableWidgetItem
+
+from src.config.ConfigLoader import ConfigLoader
 from src.events.ListenerNode import ListenerNode
-
 from src.services.expenses_service import ExpensesService
 
 from DateConverter import DateConverter
-from src.config.ConfigLoader import ConfigLoader
 
-class PendingExpensesTable(QtWidgets.QTableWidget, ListenerNode):
+class PendingExpensesTable(QTableWidget, ListenerNode):
     def __init__(self, listeners_pool):
         ListenerNode.__init__(self, 'pending-expenses-table', listeners_pool)
 
@@ -28,29 +27,28 @@ class PendingExpensesTable(QtWidgets.QTableWidget, ListenerNode):
         self.expenses = self.expenses_service.get_pending_expenses(filter)
         
         expenses = copy.deepcopy(self.expenses)
-        expenses = [ self.format_expense(e) for e in expenses ]
 
         self.populate(expenses)
         self.send_event('sum-text', 'update_expenses_sum_from_table', expenses)
         self.send_event('sum-text', 'set_records_no_value', len(expenses))
 
-    def populate(self, table_rows):
+    def populate(self, expenses):
         self.clearContents()
 
+        formatted_expenses = [ self.format_expense(e) for e in expenses ]
         categories = [ x['field'] for x in self.table_info ]
 
-        for index_row, table_row in enumerate(table_rows):
+        for index_row, expense in enumerate(formatted_expenses):
             self.insertRow(index_row)
 
-            for index_category, category in enumerate(categories):
-                self.setItem(index_row, index_category, QtWidgets.QTableWidgetItem(table_row[category]))
+            self.setItem(index_row, 0, QTableWidgetItem(expense.date))
+            self.setItem(index_row, 1, QTableWidgetItem(expense.title))
+            self.setItem(index_row, 2, QTableWidgetItem(expense.amount))
 
         self.resizeColumnsToContents()
 
     def format_expense(self, expense):
-        print('====================')
-        print(expense)
-        expense['date'] = DateConverter().format_pretty(expense['date'])
+        expense.amount = str(expense.amount)
 
         return expense
 
