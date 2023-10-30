@@ -54,11 +54,9 @@ class PendingExpensesTable(QTableWidget, ListenerNode):
     def classify_selected(self, category):
         indexes = self.get_selected_indexes()
 
-        expenses = self.get_expenses_from_indexes(indexes)
+        expense_ids = [ self.expenses[i].id for i in indexes ]
 
-        return
-
-        self.expenses_service.classify_expenses(expenses, category)
+        self.expenses_service.classify_expenses(expense_ids, category)
         self.refresh_rows()
     
     def get_selected_indexes(self):
@@ -66,13 +64,3 @@ class PendingExpensesTable(QTableWidget, ListenerNode):
 
         return sorted(list(set([ si.row() for si in selected_indexes ])), reverse=True)
     
-    def get_expenses_from_indexes(self, indexes):
-        expenses = []
-
-        for index in indexes:
-            expense = self.expenses[index]
-            expense['quantity'] = float(expense['quantity'])
-
-            expenses.append(expense)
-        
-        return expenses

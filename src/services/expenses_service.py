@@ -9,3 +9,7 @@ class ExpensesService:
     
     def get_pending_expenses(self, filter = None):
         return self.dao.get_pending_expenses(filter)
+    
+    def classify_expenses(self, expense_ids, category):
+        for expense_id in expense_ids:
+            self.dao.update_classified_expense(expense_id, category)

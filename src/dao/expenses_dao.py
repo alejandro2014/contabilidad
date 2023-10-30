@@ -36,5 +36,9 @@ class ExpensesDao:
                 amount = e[3]
             ) for e in expenses_db
         ]
+    
+    def update_classified_expense(self, expense_id, category):
+        add_expense_sql = self.sql_generator.update_classified_expense(expense_id, category)
+        self.db.execute_sql(add_expense_sql)
             
 

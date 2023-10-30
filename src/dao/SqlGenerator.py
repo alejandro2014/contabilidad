@@ -25,12 +25,8 @@ class SqlGenerator:
         return f"INSERT INTO expenses_not_classified (date_record, concept, category, subcategory, quantity) \
             VALUES ('{date_record}', '{concept}', '{category}', '{subcategory}', {quantity})"
 
-    def insert_classified_expense(self, expense, category):
-        date_record = expense['date']
-        concept = expense['concept']
-        quantity = expense['quantity']
-
-        return "INSERT INTO expenses_classified (date_record, concept, quantity, type) VALUES ('" + date_record + "', '" + concept + "', " + quantity + ", '" + category + "')"
+    def update_classified_expense(self, expense_id, category):
+        return f"UPDATE expenses set category = '{category}' WHERE id = '{expense_id}'"
 
     def select_pending_expenses(self, filter = None):
         sql = "SELECT id, date, title, amount FROM expenses WHERE (category IS NULL)"
