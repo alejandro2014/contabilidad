@@ -5,7 +5,7 @@ from DateConverter import DateConverter
 from src.dialogs.WidgetCreator import WidgetCreator
 from src.events.ListenerNode import ListenerNode
 from src.model.date_filter import DateFilter
-from src.services.PendingExpensesService import PendingExpensesService
+from src.services.expenses_service import ExpensesService
 
 class DateFilterWidget(QWidget, ListenerNode):
     def __init__(self, listeners_pool, *args, **kwargs):
@@ -14,7 +14,8 @@ class DateFilterWidget(QWidget, ListenerNode):
 
         widget_creator = WidgetCreator()
         
-        self.expenses_service = PendingExpensesService()
+        #self.expenses_service = PendingExpensesService()
+        self.expenses_service = ExpensesService()
 
         self.date_filter = DateFilter()
 
@@ -82,13 +83,12 @@ class DateFilterWidget(QWidget, ListenerNode):
         self.send_event('filter-widget', 'change_dates', dates)
 
     def update_top_dates(self):
-        expenses = self.expenses_service.get_expenses()
-        dates = [ x['date'] for x in expenses ]
+        expenses = self.expenses_service.get_pending_expenses()
+        dates = [ e.date for e in expenses ]
 
-        top_dates = self.get_top_dates(dates)
+        date_from, date_to = self.get_top_dates(dates)
 
-        if top_dates != None:
-            self.change_filter_dates(top_dates['from'], top_dates['to'])
+        self.change_filter_dates(date_from, date_to)
 
     def get_top_dates(self, dates):
         min_date = None
@@ -104,10 +104,7 @@ class DateFilterWidget(QWidget, ListenerNode):
         if min_date == None or max_date == None:
             return None
 
-        return {
-            'from': min_date,
-            'to': max_date
-        }
+        return min_date, max_date
 
     def change_filter_dates(self, date_from, date_to):
         if date_from == None or date_to == None:
@@ -117,7 +114,6 @@ class DateFilterWidget(QWidget, ListenerNode):
         self.change_filter_date('to', date_to)
 
     def change_filter_date(self, combo_group, date_value):
-        return
         day = date_value[6:8]
         month = date_value[4:6]
         year = date_value[0:4]

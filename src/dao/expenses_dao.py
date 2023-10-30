@@ -24,8 +24,8 @@ class ExpensesDao:
 
         return (successes_number, errors_number)
     
-    def get_pending_expenses(self):
-        sql = self.sql_generator.select_pending_expenses()
+    def get_pending_expenses(self, filter = None):
+        sql = self.sql_generator.select_pending_expenses(filter)
         expenses_db = self.db.select(sql)
 
         return [

@@ -8,4 +8,4 @@ class ExpensesService:
         return self.dao.load_expenses(expenses)
     
     def get_pending_expenses(self, filter = None):
-        return self.dao.get_pending_expenses()
+        return self.dao.get_pending_expenses(filter)

@@ -12,7 +12,8 @@ class PendingExpensesFormatter:
 
     def format_expenses(self, expenses):
         return [ {
-            'date': expense[0],
-            'concept': expense[1],
-            'quantity': str(expense[2])
+            'id': expense[0],
+            'date': expense[1],
+            'concept': expense[2],
+            'quantity': str(expense[3])
         } for expense in expenses ]
