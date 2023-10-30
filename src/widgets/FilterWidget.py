@@ -70,7 +70,8 @@ class FilterWidget(QWidget, ListenerNode):
         self.send_event(self.table_name, 'refresh_rows', self.filter)
         self.send_event('view-charts-screen', 'reload_charts', self.filter)
 
-    def change_search_value(self, search_value):
+    def change_search_value(self, search_value = None):
         self.filter['search_value'] = search_value
 
+        print(f'>>>> Changing search value to "{search_value}"')
         self.send_event(self.table_name, 'refresh_rows', self.filter)
