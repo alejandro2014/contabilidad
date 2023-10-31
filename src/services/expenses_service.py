@@ -13,3 +13,12 @@ class ExpensesService:
     def classify_expenses(self, expense_ids, category):
         for expense_id in expense_ids:
             self.dao.update_classified_expense(expense_id, category)
+
+    def get_classified_expenses_by_month(self):
+        return self.dao.get_classified_expenses_by_month()
+
+    def get_classified_expenses_by_type(self):
+        return self.dao.get_classified_expenses_by_type()
+
+    def get_classified_expenses_by_type_and_month(self):
+        return self.dao.get_classified_expenses_by_type_and_month()

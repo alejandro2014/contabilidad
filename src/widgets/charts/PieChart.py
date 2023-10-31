@@ -44,7 +44,7 @@ class PieChart(QtCharts.QChartView):
     def get_chart_slice_title(self, categories, category_name, amount, total):
         percentage = round(amount / total * 100.0, 2)
 
-        return category_name + ' (' + str(percentage) + '%) - ' + str(amount) + '€'
+        return f'{category_name}: {amount}€ ({percentage}%)'
 
     def get_colors(self, categories):
         color_palette = [
