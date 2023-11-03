@@ -4,7 +4,7 @@ class SqlGenerator:
         filtered_values = {}
 
         for k in expense_values.keys():
-            if expense_values[k] is not None:
+            if expense_values[k] is not None and k != 'class_name':
                 filtered_values[k] = expense_values[k]
 
         fields = ', '.join([k for k in filtered_values.keys()])
@@ -28,19 +28,21 @@ class SqlGenerator:
     def update_classified_expense(self, expense_id, category):
         return f"UPDATE expenses set category = '{category}' WHERE id = '{expense_id}'"
 
-    def select_pending_expenses(self, filter = None):
+    def select_pending_expenses(self, filter=None, sort_by=None):
         sql = "SELECT id, date, title, amount FROM expenses WHERE (category IS NULL)"
 
-        if filter == None:
-            return sql
+        if filter != None:
+            date_from, date_to, search_value = self.get_filter_values(filter)
 
-        date_from, date_to, search_value = self.get_filter_values(filter)
+            if date_from != None and date_to != None:
+                sql += f" AND (date BETWEEN '{date_from}' AND '{date_to}')"
 
-        if date_from != None and date_to != None:
-            sql += f" AND (date BETWEEN '{date_from}' AND '{date_to}')"
+            if search_value != None:
+                sql += f" AND (title LIKE '%{search_value}%')"
 
-        if search_value != None:
-            sql += f" AND (title LIKE '%{search_value}%')"
+        if sort_by != None:
+            #sql += f' ORDER BY {sort_by} ASC'
+            sql += f' ORDER BY amount ASC'
 
         return sql
 

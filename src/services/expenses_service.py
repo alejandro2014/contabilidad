@@ -7,8 +7,8 @@ class ExpensesService:
     def load_expenses(self, expenses):
         return self.dao.load_expenses(expenses)
     
-    def get_pending_expenses(self, filter = None):
-        return self.dao.get_pending_expenses(filter)
+    def get_pending_expenses(self, filter=None, sort_by=None):
+        return self.dao.get_pending_expenses(filter, sort_by)
     
     def classify_expenses(self, expense_ids, category):
         for expense_id in expense_ids:

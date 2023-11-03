@@ -15,5 +15,5 @@ class ComboBoxService:
 
     def get_categories(self):
         #TODO Get categories from the database service
-        categories = [ "Nómina", "Alquiler", "Comida", "Salir", "Ropa", "Otro", "Teléfono", "Agua", "Luz", "Netflix", "Viaje", "Gasolina", "Gimnasio", "Efectivo", "Casa", "Bizum", "Coche", "Transporte", "Cuenta ahorro", "Amazon" ]
+        categories = [ "Nómina", "Alquiler", "Comida", "Salir", "Ropa", "Otro", "Teléfono", "Agua", "Luz", "Netflix", "Viaje", "Gasolina", "Gimnasio", "Efectivo", "Casa", "Bizum", "Coche", "Transporte", "Cuenta ahorro", "Amazon", "Seguros", "Renta" ]
         return sorted(categories)

@@ -24,8 +24,8 @@ class ExpensesDao:
 
         return (successes_number, errors_number)
     
-    def get_pending_expenses(self, filter = None):
-        sql = self.sql_generator.select_pending_expenses(filter)
+    def get_pending_expenses(self, filter=None, sort_by=None):
+        sql = self.sql_generator.select_pending_expenses(filter, sort_by)
         expenses_db = self.db.select(sql)
 
         return [
@@ -38,7 +38,7 @@ class ExpensesDao:
         ]
     
     def update_classified_expense(self, expense_id, category):
-        add_expense_sql = self.sql_generator.update_classified_expense(expense_id, category)
-        self.db.execute_sql(add_expense_sql)
+        sql = self.sql_generator.update_classified_expense(expense_id, category)
+        self.db.update(sql)
             
 

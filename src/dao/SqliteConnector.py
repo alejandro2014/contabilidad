@@ -25,6 +25,10 @@ class SqliteConnector:
         print(sql)
         self.execute_sql(sql)
 
+    def update(self, sql):
+        print(sql)
+        self.execute_sql(sql)
+
     def execute_sql(self, sql):
         conn = self.create_connection()
 

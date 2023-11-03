@@ -22,13 +22,15 @@ class PendingExpensesTable(QTableWidget, ListenerNode):
 
         self.setHorizontalHeaderLabels(column_labels)
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
+        #self.setSortingEnabled(True)
 
     def refresh_rows(self, filter = None):
-        self.expenses = self.expenses_service.get_pending_expenses(filter)
+        self.expenses = self.expenses_service.get_pending_expenses(filter, sort_by='title')
         
         expenses = copy.deepcopy(self.expenses)
 
         self.populate(expenses)
+
         self.send_event('sum-text', 'update_expenses_sum_from_table', expenses)
         self.send_event('sum-text', 'set_records_no_value', len(expenses))
 

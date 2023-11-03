@@ -86,6 +86,9 @@ class DateFilterWidget(QWidget, ListenerNode):
         expenses = self.expenses_service.get_pending_expenses()
         dates = [ e.date for e in expenses ]
 
+        if len(dates) == 0:
+            return
+
         date_from, date_to = self.get_top_dates(dates)
 
         self.change_filter_dates(date_from, date_to)
