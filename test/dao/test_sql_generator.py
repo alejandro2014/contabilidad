@@ -255,3 +255,15 @@ class SqlGeneratorTestCase(unittest.TestCase):
         field_value = self.sql_generator.field_value(12.45)
 
         self.assertEqual('12.45', field_value)
+
+    def test__select_pie_chart_categories(self):
+        params = {
+            'date_from': '20220101',
+            'date_to': '20220103',
+        }
+
+        expected_sql = "SELECT category, sum(amount) AS amnt FROM expenses WHERE category IS NOT NULL AND date BETWEEN '20220101' AND '20220103' GROUP BY category ORDER BY abs(amnt) DESC"
+
+        sql = self.sql_generator.select_pie_chart_categories(params)
+
+        self.assertEqual(expected_sql, sql)
