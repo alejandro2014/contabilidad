@@ -1,10 +1,11 @@
-from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QVBoxLayout, QWidget
 
 from src.events.ListenerNode import ListenerNode
 
 from src.services.ChartService import ChartService
 from src.widgets.FilterWidget import FilterWidget
+
+from src.widgets.charts.BarChart import BarChart
 from src.widgets.charts.PieChart import PieChart
 
 class ViewChartsScreen(QWidget, ListenerNode):
@@ -25,7 +26,10 @@ class ViewChartsScreen(QWidget, ListenerNode):
         self.chart_service = ChartService()
 
         self.pie_chart = PieChart()
+        self.total_month_bar_chart = BarChart()
+        
         self.layout.addWidget(self.pie_chart)
+        self.layout.addWidget(self.total_month_bar_chart)
 
         self.reload_charts(self.filter)
 

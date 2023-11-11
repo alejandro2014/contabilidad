@@ -1,5 +1,3 @@
-import json
-import sys
 import unittest
 
 from src.dao.SqlGenerator import SqlGenerator
@@ -7,25 +5,77 @@ from src.dao.SqlGenerator import SqlGenerator
 class SqlGeneratorTestCase(unittest.TestCase):
     def setUp(self):
         self.sql_generator = SqlGenerator()
-        self.load_tests()
 
-    def test_sql_test_cases(self):
-        for test in self.tests:
-            print('Running ' + test['method_name'])
-            self.generic_sql_test(test)
-
-    def generic_sql_test(self, data):
-        method_name = data['method_name']
-        expected_sql = data['expected_sql']
-        params = data['data'] if data and 'data' in data else None
-
-        if params:
-            sql = getattr(self.sql_generator, method_name)(params)
-        else:
-            sql = getattr(self.sql_generator, method_name)()
-
+    def test_select_pending_expenses_nofilter_nosortby(self):
+        expected_sql = "SELECT id, date, title, amount FROM expenses WHERE (category IS NULL)"
+        sql = self.sql_generator.select_pending_expenses(filter=None, sort_by=None)
+        
+        self.assertEqual(expected_sql, sql)
+    
+    def test_select_pending_expenses_nofilter_sortbytitle(self):
+        expected_sql = "SELECT id, date, title, amount FROM expenses WHERE (category IS NULL) ORDER BY title ASC"
+        sql = self.sql_generator.select_pending_expenses(filter=None, sort_by='title')
+        
         self.assertEqual(expected_sql, sql)
 
-    def load_tests(self):
-        with open('test/config/tests.json') as file:
-            self.tests = json.load(file)
+    def test__get_filter_values__when_no_date__nofrom_noto_nosearchvalue(self):
+        filter = {}
+
+        date_from, date_to, search_value = self.sql_generator.get_filter_values(filter)
+
+        self.assertIsNone(date_from)
+        self.assertIsNone(date_to)
+        self.assertIsNone(search_value)
+
+    def test__get_filter_values__when_no_from_in_date__nofrom_noto_nosearchvalue(self):
+        filter = {
+            'date': {}
+        }
+
+        date_from, date_to, search_value = self.sql_generator.get_filter_values(filter)
+
+        self.assertIsNone(date_from)
+        self.assertIsNone(date_to)
+        self.assertIsNone(search_value)
+
+    def test__get_filter_values__when_from_in_date__yesfrom_noto_nosearchvalue(self):
+        filter = {
+            'date': {
+                'from': '20221006'
+            }
+        }
+
+        date_from, date_to, search_value = self.sql_generator.get_filter_values(filter)
+
+        self.assertEqual('20221006', date_from)
+        self.assertIsNone(date_to)
+        self.assertIsNone(search_value)
+
+    def test__get_filter_values__when_fromandto_in_date__yesfrom_yesto_nosearchvalue(self):
+        filter = {
+            'date': {
+                'from': '20221006',
+                'to': '20221106'
+            }
+        }
+
+        date_from, date_to, search_value = self.sql_generator.get_filter_values(filter)
+
+        self.assertEqual('20221006', date_from)
+        self.assertEqual('20221106', date_to)
+        self.assertIsNone(search_value)
+
+    def test__get_filter_values__when_fromandtoandsearchvalue_in_date__yesfrom_yesto_yessearchvalue(self):
+        filter = {
+            'date': {
+                'from': '20221006',
+                'to': '20221106'
+            },
+            'search_value': 'Search'
+        }
+
+        date_from, date_to, search_value = self.sql_generator.get_filter_values(filter)
+
+        self.assertEqual('20221006', date_from)
+        self.assertEqual('20221106', date_to)
+        self.assertEqual('Search', search_value)

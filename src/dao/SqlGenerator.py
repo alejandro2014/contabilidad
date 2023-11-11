@@ -41,8 +41,7 @@ class SqlGenerator:
                 sql += f" AND (title LIKE '%{search_value}%')"
 
         if sort_by != None:
-            #sql += f' ORDER BY {sort_by} ASC'
-            sql += f' ORDER BY amount ASC'
+            sql += f' ORDER BY {sort_by} ASC'
 
         return sql
 
