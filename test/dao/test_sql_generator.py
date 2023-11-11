@@ -11,6 +11,61 @@ class SqlGeneratorTestCase(unittest.TestCase):
         sql = self.sql_generator.select_pending_expenses(filter=None, sort_by=None)
         
         self.assertEqual(expected_sql, sql)
+
+    def test_select_pending_expenses_filterfrom_nosortby(self):
+        expected_sql = "SELECT id, date, title, amount FROM expenses WHERE (category IS NULL) AND (date BETWEEN '20221006' AND '20221106')"
+
+        filter = {
+            'date': {
+                'from': '20221006',
+                'to': '20221106'
+            }
+        }
+
+        sql = self.sql_generator.select_pending_expenses(filter=filter, sort_by=None)
+        
+        self.assertEqual(expected_sql, sql)
+
+    def test_select_pending_expenses_filterfromandto_nosortby(self):
+        expected_sql = "SELECT id, date, title, amount FROM expenses WHERE (category IS NULL) AND (date BETWEEN '20221006' AND '20221106') AND (title LIKE '%Search%')"
+
+        filter = {
+            'date': {
+                'from': '20221006',
+                'to': '20221106'
+            },
+            'search_value': 'Search'
+        }
+
+        sql = self.sql_generator.select_pending_expenses(filter=filter, sort_by=None)
+        
+        self.assertEqual(expected_sql, sql)
+
+    def test_select_pending_expenses_filtersearch_nosortby(self):
+        expected_sql = "SELECT id, date, title, amount FROM expenses WHERE (category IS NULL) AND (title LIKE '%Search%')"
+
+        filter = {
+            'search_value': 'Search'
+        }
+
+        sql = self.sql_generator.select_pending_expenses(filter=filter, sort_by=None)
+        
+        self.assertEqual(expected_sql, sql)
+
+    def test_select_pending_expenses_filterfromandtoandsearch_sortby(self):
+        expected_sql = "SELECT id, date, title, amount FROM expenses WHERE (category IS NULL) AND (date BETWEEN '20221006' AND '20221106') AND (title LIKE '%Search%') ORDER BY title ASC"
+
+        filter = {
+            'date': {
+                'from': '20221006',
+                'to': '20221106'
+            },
+            'search_value': 'Search'
+        }
+
+        sql = self.sql_generator.select_pending_expenses(filter=filter, sort_by='title')
+        
+        self.assertEqual(expected_sql, sql)
     
     def test_select_pending_expenses_nofilter_sortbytitle(self):
         expected_sql = "SELECT id, date, title, amount FROM expenses WHERE (category IS NULL) ORDER BY title ASC"
