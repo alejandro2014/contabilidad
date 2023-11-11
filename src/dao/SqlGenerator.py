@@ -28,23 +28,6 @@ class SqlGenerator:
     def update_classified_expense(self, expense_id, category):
         return f"UPDATE expenses set category = '{category}' WHERE id = '{expense_id}'"
 
-    def select_pending_expenses(self, filter=None, sort_by=None):
-        sql = "SELECT id, date, title, amount FROM expenses WHERE (category IS NULL)"
-
-        if filter != None:
-            date_from, date_to, search_value = self.get_filter_values(filter)
-
-            if date_from != None and date_to != None:
-                sql += f" AND (date BETWEEN '{date_from}' AND '{date_to}')"
-
-            if search_value != None:
-                sql += f" AND (title LIKE '%{search_value}%')"
-
-        if sort_by != None:
-            sql += f' ORDER BY {sort_by} ASC'
-
-        return sql
-
     def select_classified_expenses(self, filter = None):
         sql = "SELECT date, title, amount FROM expenses WHERE (category IS NOT NULL)"
 
@@ -60,20 +43,6 @@ class SqlGenerator:
             sql += f" AND (title LIKE '%{search_value}%')"
 
         return sql
-    
-    def get_filter_values(self, filter):
-        date_from = filter['date']['from'] if 'date' in filter and 'from' in filter['date'] else None
-        date_to = filter['date']['to'] if 'date' in filter and 'to' in filter['date'] else None
-        search_value = filter['search_value'] if 'search_value' in filter else None
-
-        return date_from, date_to, search_value
-
-    def delete_pending_expense(self, expense):
-        date_record = expense['date']
-        concept = expense['concept']
-        amount = expense['amount']
-
-        return f"DELETE FROM expenses WHERE date = '{date_record}' AND concept = '{concept}' AND amount = {amount}"
 
     def select_classified_expenses_count(self):
         return 'SELECT count(*) FROM expenses WHERE (category IS NOT NULL)'
@@ -102,3 +71,35 @@ class SqlGenerator:
 
     def insert_category(self, category_name, category_description):
         return f"INSERT INTO expense_types(category, comment) VALUES ('{category_name}', '{category_description}')"
+    
+    #-----------------------------------------------------------
+    def select_pending_expenses(self, filter=None, sort_by=None):
+        sql = "SELECT id, date, title, amount FROM expenses WHERE (category IS NULL)"
+
+        if filter != None:
+            date_from, date_to, search_value = self.get_filter_values(filter)
+
+            if date_from != None and date_to != None:
+                sql += f" AND (date BETWEEN '{date_from}' AND '{date_to}')"
+
+            if search_value != None:
+                sql += f" AND (title LIKE '%{search_value}%')"
+
+        if sort_by != None:
+            sql += f' ORDER BY {sort_by} ASC'
+
+        return sql
+    
+    def get_filter_values(self, filter):
+        date_from = filter['date']['from'] if 'date' in filter and 'from' in filter['date'] else None
+        date_to = filter['date']['to'] if 'date' in filter and 'to' in filter['date'] else None
+        search_value = filter['search_value'] if 'search_value' in filter else None
+
+        return date_from, date_to, search_value
+    
+    def delete_pending_expense(self, expense):
+        date_record = expense['date']
+        title = expense['title']
+        amount = expense['amount']
+
+        return f"DELETE FROM expenses WHERE date = '{date_record}' AND title = '{title}' AND amount = {amount}"

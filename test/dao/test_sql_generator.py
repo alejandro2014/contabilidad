@@ -134,3 +134,16 @@ class SqlGeneratorTestCase(unittest.TestCase):
         self.assertEqual('20221006', date_from)
         self.assertEqual('20221106', date_to)
         self.assertEqual('Search', search_value)
+
+    def test__delete_pending_expense(self):
+        expected_sql = "DELETE FROM expenses WHERE date = '20221006' AND title = 'Alquiler' AND amount = 100.87"
+
+        expense = {
+            'date': '20221006',
+            'title': 'Alquiler',
+            'amount': 100.87
+        }
+
+        sql = self.sql_generator.delete_pending_expense(expense)
+
+        self.assertEqual(expected_sql, sql)
