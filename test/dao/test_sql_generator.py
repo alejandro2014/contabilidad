@@ -147,3 +147,66 @@ class SqlGeneratorTestCase(unittest.TestCase):
         sql = self.sql_generator.delete_pending_expense(expense)
 
         self.assertEqual(expected_sql, sql)
+
+    def test__select_classified_expenses_count(self):
+        expected_sql = "SELECT count(*) FROM expenses WHERE (category IS NOT NULL)"
+
+        sql = self.sql_generator.select_classified_expenses_count()
+
+        self.assertEqual(expected_sql, sql)
+
+    def test__select_classified_expenses_by_type(self):
+        expected_sql = "SELECT type, sum(amount) AS sum FROM expenses WHERE (category IS NOT NULL) GROUP BY type"
+
+        sql = self.sql_generator.select_classified_expenses_by_type()
+
+        self.assertEqual(expected_sql, sql)
+
+    def test__select_classified_expenses_by_month(self):
+        expected_sql = "SELECT substr(date, 0, 7) AS month, sum(amount) AS sum FROM expenses (category IS NOT NULL) GROUP BY month"
+
+        sql = self.sql_generator.select_classified_expenses_by_month()
+
+        self.assertEqual(expected_sql, sql)
+
+    def test__select_classified_expenses_by_type_and_month(self):
+        expected_sql = "SELECT type, substr(date, 0, 7) AS month, sum(quantity) AS sum FROM expenses (category IS NOT NULL) group by type, month"
+
+        sql = self.sql_generator.select_classified_expenses_by_type_and_month()
+
+        self.assertEqual(expected_sql, sql)
+
+    def test__select_pending_expenses_count(self):
+        expected_sql = "SELECT count(*) FROM expenses WHERE (category IS NULL)"
+
+        sql = self.sql_generator.select_pending_expenses_count()
+
+        self.assertEqual(expected_sql, sql)
+
+    def test__select_expense_types_full(self):
+        expected_sql = "SELECT category, comment FROM expense_types ORDER BY category"
+
+        sql = self.sql_generator.select_expense_types_full()
+
+        self.assertEqual(expected_sql, sql)
+
+    def test__delete_expense_type(self):
+        expected_sql = "DELETE FROM expense_types WHERE category = 'Alquiler'"
+
+        sql = self.sql_generator.delete_expense_type('Alquiler')
+
+        self.assertEqual(expected_sql, sql)
+
+    def test__select_category_name(self):
+        expected_sql = "SELECT count(*) FROM expense_types WHERE category = 'Alquiler'"
+
+        sql = self.sql_generator.select_category_name('Alquiler')
+
+        self.assertEqual(expected_sql, sql)
+
+    def test__insert_category(self):
+        expected_sql = "INSERT INTO expense_types(category, comment) VALUES ('Alquiler', 'Alquiler del mes')"
+
+        sql = self.sql_generator.insert_category('Alquiler', 'Alquiler del mes')
+
+        self.assertEqual(expected_sql, sql)

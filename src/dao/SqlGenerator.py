@@ -43,34 +43,6 @@ class SqlGenerator:
             sql += f" AND (title LIKE '%{search_value}%')"
 
         return sql
-
-    def select_classified_expenses_count(self):
-        return 'SELECT count(*) FROM expenses WHERE (category IS NOT NULL)'
-
-    def select_classified_expenses_by_type(self):
-        return 'select type, sum(quantity) as sum from expenses WHERE (category IS NOT NULL) group by type'
-
-    def select_classified_expenses_by_month(self):
-        # TODO Consider the savings account as well
-        return "select substr(date_record, 0, 7) as month, sum(quantity) as sum from expenses (category IS NOT NULL) group by month"
-
-    def select_classified_expenses_by_type_and_month(self):
-        return 'select type, substr(date_record, 0, 7) as month, sum(quantity) as sum from expenses (category IS NOT NULL) group by type, month'
-
-    def select_pending_expenses_count(self):
-        return 'SELECT count(*) FROM expenses WHERE (category IS NULL)'
-
-    def select_expense_types_full(self):
-        return 'select category, comment from expense_types ORDER BY category'
-
-    def delete_expense_type(self, category):
-        return f"delete from expense_types where category = '{category}'"
-
-    def select_category_name(self, category_name):
-        return f"select count(*) from expense_types where category = '{category_name}'"
-
-    def insert_category(self, category_name, category_description):
-        return f"INSERT INTO expense_types(category, comment) VALUES ('{category_name}', '{category_description}')"
     
     #-----------------------------------------------------------
     def select_pending_expenses(self, filter=None, sort_by=None):
@@ -103,3 +75,31 @@ class SqlGenerator:
         amount = expense['amount']
 
         return f"DELETE FROM expenses WHERE date = '{date_record}' AND title = '{title}' AND amount = {amount}"
+    
+    def select_classified_expenses_count(self):
+        return 'SELECT count(*) FROM expenses WHERE (category IS NOT NULL)'
+
+    def select_classified_expenses_by_type(self):
+        return "SELECT type, sum(amount) AS sum FROM expenses WHERE (category IS NOT NULL) GROUP BY type"
+
+    def select_classified_expenses_by_month(self):
+        # TODO Consider the savings account as well
+        return "SELECT substr(date, 0, 7) AS month, sum(amount) AS sum FROM expenses (category IS NOT NULL) GROUP BY month"
+    
+    def select_classified_expenses_by_type_and_month(self):
+        return "SELECT type, substr(date, 0, 7) AS month, sum(quantity) AS sum FROM expenses (category IS NOT NULL) group by type, month"
+    
+    def select_pending_expenses_count(self):
+        return "SELECT count(*) FROM expenses WHERE (category IS NULL)"
+
+    def select_expense_types_full(self):
+        return "SELECT category, comment FROM expense_types ORDER BY category"
+
+    def delete_expense_type(self, category):
+        return f"DELETE FROM expense_types WHERE category = '{category}'"
+
+    def select_category_name(self, category):
+        return f"SELECT count(*) FROM expense_types WHERE category = '{category}'"
+
+    def insert_category(self, category_name, category_description):
+        return f"INSERT INTO expense_types(category, comment) VALUES ('{category_name}', '{category_description}')"
