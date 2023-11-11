@@ -216,3 +216,10 @@ class SqlGeneratorTestCase(unittest.TestCase):
         sql = self.sql_generator.insert_category('Alquiler', 'Alquiler del mes')
 
         self.assertEqual(expected_sql, sql)
+
+    def test__update_classified_expense(self):
+        expected_sql = "UPDATE expenses set category = 'Alquiler' WHERE id = '73efcadc-32f7-4fb6-9ac9-5afd6a572f49'"
+
+        sql = self.sql_generator.update_classified_expense('73efcadc-32f7-4fb6-9ac9-5afd6a572f49', 'Alquiler')
+
+        self.assertEqual(expected_sql, sql)

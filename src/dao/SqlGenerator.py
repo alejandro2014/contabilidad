@@ -24,9 +24,6 @@ class SqlGenerator:
 
         return f"INSERT INTO expenses_not_classified (date_record, concept, category, subcategory, quantity) \
             VALUES ('{date_record}', '{concept}', '{category}', '{subcategory}', {quantity})"
-
-    def update_classified_expense(self, expense_id, category):
-        return f"UPDATE expenses set category = '{category}' WHERE id = '{expense_id}'"
     
     #-----------------------------------------------------------
     def select_pending_expenses(self, filter=None, sort_by=None):
@@ -95,3 +92,6 @@ class SqlGenerator:
 
     def insert_category(self, category_name, category_description):
         return f"INSERT INTO expense_types(category, comment) VALUES ('{category_name}', '{category_description}')"
+    
+    def update_classified_expense(self, expense_id, category):
+        return f"UPDATE expenses set category = '{category}' WHERE id = '{expense_id}'"
