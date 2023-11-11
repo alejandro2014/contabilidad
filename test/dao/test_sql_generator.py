@@ -12,6 +12,12 @@ class SqlGeneratorTestCase(unittest.TestCase):
         
         self.assertEqual(expected_sql, sql)
 
+    def test_select_classified_expenses_nofilter_nosortby(self):
+        expected_sql = "SELECT id, date, title, amount FROM expenses WHERE (category IS NOT NULL)"
+        sql = self.sql_generator.select_classified_expenses(filter=None, sort_by=None)
+        
+        self.assertEqual(expected_sql, sql)
+
     def test_select_pending_expenses_filterfrom_nosortby(self):
         expected_sql = "SELECT id, date, title, amount FROM expenses WHERE (category IS NULL) AND (date BETWEEN '20221006' AND '20221106')"
 

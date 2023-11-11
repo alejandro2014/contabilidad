@@ -27,27 +27,19 @@ class SqlGenerator:
 
     def update_classified_expense(self, expense_id, category):
         return f"UPDATE expenses set category = '{category}' WHERE id = '{expense_id}'"
-
-    def select_classified_expenses(self, filter = None):
-        sql = "SELECT date, title, amount FROM expenses WHERE (category IS NOT NULL)"
-
-        if filter == None:
-            return sql
-
-        date_from, date_to, search_value = self.get_filter_values(filter)
-
-        if date_from != None and date_to != None:
-            sql += f" AND (date BETWEEN '{date_from}' AND '{date_to}')"
-
-        if search_value != None:
-            sql += f" AND (title LIKE '%{search_value}%')"
-
-        return sql
     
     #-----------------------------------------------------------
     def select_pending_expenses(self, filter=None, sort_by=None):
         sql = "SELECT id, date, title, amount FROM expenses WHERE (category IS NULL)"
 
+        return self.select_expenses(sql, filter, sort_by)
+    
+    def select_classified_expenses(self, filter=None, sort_by=None):
+        sql = "SELECT id, date, title, amount FROM expenses WHERE (category IS NOT NULL)"
+
+        return self.select_expenses(sql, filter, sort_by)
+    
+    def select_expenses(self, sql, filter=None, sort_by=None):
         if filter != None:
             date_from, date_to, search_value = self.get_filter_values(filter)
 
