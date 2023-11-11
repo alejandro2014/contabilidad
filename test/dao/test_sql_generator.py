@@ -2,9 +2,31 @@ import unittest
 
 from src.dao.SqlGenerator import SqlGenerator
 
+from src.model.expense import Expense
+
 class SqlGeneratorTestCase(unittest.TestCase):
     def setUp(self):
         self.sql_generator = SqlGenerator()
+
+    def test__insert_expense(self):
+        expense = Expense(
+            id = 'id',
+            date = 'date',
+            category_src = 'category_src',
+            subcategory_src = 'subcategory_src',
+            title = 'title',
+            amount = 10.11,
+            category = 'category',
+            subcategory = 'subcategory',
+            category_suggested = 'category_suggested',
+            subcategory_suggested = 'subcategory_suggested'
+        )
+
+        expected_sql = "INSERT INTO expenses (id, date, category_src, subcategory_src, title, amount, category, subcategory, category_suggested, subcategory_suggested) VALUES ('id', 'date', 'category_src', 'subcategory_src', 'title', 10.11, 'category', 'subcategory', 'category_suggested', 'subcategory_suggested')"
+
+        sql = self.sql_generator.insert_expense(expense)
+
+        self.assertEqual(expected_sql, sql)
 
     def test_select_pending_expenses_nofilter_nosortby(self):
         expected_sql = "SELECT id, date, title, amount FROM expenses WHERE (category IS NULL)"
@@ -223,3 +245,13 @@ class SqlGeneratorTestCase(unittest.TestCase):
         sql = self.sql_generator.update_classified_expense('73efcadc-32f7-4fb6-9ac9-5afd6a572f49', 'Alquiler')
 
         self.assertEqual(expected_sql, sql)
+
+    def test__field_value__returns_quoted_string_when_field_type_str(self):
+        field_value = self.sql_generator.field_value('Alquiler')
+
+        self.assertEqual("'Alquiler'", field_value)
+
+    def test__field_value__returns_unquoted_string_when_field_type_notstr(self):
+        field_value = self.sql_generator.field_value(12.45)
+
+        self.assertEqual('12.45', field_value)

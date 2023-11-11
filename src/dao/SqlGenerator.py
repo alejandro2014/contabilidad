@@ -11,21 +11,7 @@ class SqlGenerator:
         values = ', '.join([self.field_value(k) for k in filtered_values.values()])
 
         return f"INSERT INTO expenses ({fields}) VALUES ({values})"
-
-    def field_value(self, field):
-        return f"'{field}'" if type(field) == str else str(field)
     
-    def insert_pending_expense(self, concept_line):
-        date_record = concept_line['date']
-        concept = concept_line['concept']
-        category = concept_line['category']
-        subcategory = concept_line['subcategory']
-        quantity = concept_line['value']
-
-        return f"INSERT INTO expenses_not_classified (date_record, concept, category, subcategory, quantity) \
-            VALUES ('{date_record}', '{concept}', '{category}', '{subcategory}', {quantity})"
-    
-    #-----------------------------------------------------------
     def select_pending_expenses(self, filter=None, sort_by=None):
         sql = "SELECT id, date, title, amount FROM expenses WHERE (category IS NULL)"
 
@@ -95,3 +81,6 @@ class SqlGenerator:
     
     def update_classified_expense(self, expense_id, category):
         return f"UPDATE expenses set category = '{category}' WHERE id = '{expense_id}'"
+    
+    def field_value(self, field):
+        return f"'{field}'" if type(field) == str else str(field)
