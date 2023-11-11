@@ -17,19 +17,8 @@ class SqliteConnector:
 
         return rows
 
-    def insert(self, sql):
-        print(sql)
-        self.execute_sql(sql)
-
-    def delete(self, sql):
-        print(sql)
-        self.execute_sql(sql)
-
-    def update(self, sql):
-        print(sql)
-        self.execute_sql(sql)
-
     def execute_sql(self, sql):
+        print(sql)
         conn = self.create_connection()
 
         with conn:
