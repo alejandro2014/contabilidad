@@ -5,9 +5,11 @@ from src.dao.SqlGenerator import SqlGenerator
 from src.dao.SqliteConnector import SqliteConnector
 
 class ExpensesDao:
-    def __init__(self):
-        self.sql_generator = SqlGenerator()
-        self.db = SqliteConnector()
+    def __init__(self, 
+                 sql_generator=SqlGenerator(), 
+                 db=SqliteConnector()):
+        self.sql_generator = sql_generator
+        self.db = db
 
     def load_expenses(self, expenses):
         successes_number = 0
@@ -17,7 +19,7 @@ class ExpensesDao:
             sql = self.sql_generator.insert_expense(expense)
 
             try:
-                self.db.insert(sql)
+                self.db.execute_sql(sql)
                 successes_number += 1
             except IntegrityError:
                 errors_number += 1
@@ -39,6 +41,6 @@ class ExpensesDao:
     
     def update_classified_expense(self, expense_id, category):
         sql = self.sql_generator.update_classified_expense(expense_id, category)
-        self.db.update(sql)
+        self.db.execute_sql(sql)
             
 

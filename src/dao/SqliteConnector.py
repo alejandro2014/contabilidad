@@ -6,7 +6,7 @@ class SqliteConnector:
         self.db = "src/config/db/accountancy.db"
 
     def select(self, sql):
-        print(sql)
+        print(f'[SQL] {sql}')
         conn = self.create_connection()
         rows = []
 

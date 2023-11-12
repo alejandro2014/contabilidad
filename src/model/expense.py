@@ -24,3 +24,11 @@ class Expense(ModelBaseClass):
         self.subcategory = subcategory
         self.category_suggested = category_suggested
         self.subcategory_suggested = subcategory_suggested
+
+    def __eq__(self, other):
+        if type(self) != type(other):
+            raise TypeError
+        
+        return self.date == other.date and \
+                self.title == other.title and \
+                self.amount == other.amount
