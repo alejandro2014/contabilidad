@@ -24,7 +24,7 @@ class ExpensesDao:
             except IntegrityError:
                 errors_number += 1
 
-        return (successes_number, errors_number)
+        return successes_number, errors_number
     
     def get_pending_expenses(self, filter=None, sort_by=None):
         sql = self.sql_generator.select_pending_expenses(filter, sort_by)
