@@ -4,15 +4,20 @@ from PySide2.QtCharts import QtCharts
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QPainter, QPen, QColor
 
+from src.services.ChartService import ChartService
+
 class PieChart(QtCharts.QChartView):
     def __init__(self):
         super().__init__()
+
+        self.chart_service = ChartService()
 
         self.series = None
 
         self.setRenderHint(QPainter.Antialiasing)
 
-    def reload(self, chart_info):
+    def reload(self, filter):
+        chart_info = self.chart_service.get_chart_info('pie', filter)
         chart = self.chart()
 
         if self.series:
@@ -26,9 +31,12 @@ class PieChart(QtCharts.QChartView):
 
         chart.legend().setAlignment(Qt.AlignRight)
 
+        return chart_info
+
     def compose_series(self, categories):
         series = QtCharts.QPieSeries()
         colors = self.get_colors(categories)
+        print(categories)
         total = sum(categories.values())
 
         for i, category_name in enumerate(categories):

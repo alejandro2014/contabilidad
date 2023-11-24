@@ -90,3 +90,6 @@ class SqlGenerator:
         date_to = params['date_to']
 
         return f"SELECT category, sum(amount) AS amnt FROM expenses WHERE category IS NOT NULL AND date BETWEEN '{date_from}' AND '{date_to}' GROUP BY category ORDER BY abs(amnt) DESC"
+    
+    def select_bar_chart_values(self):
+        return "SELECT SUBSTR(date, 1, 6) AS d, SUM(amount) FROM expenses WHERE category IS NOT NULL GROUP BY d"

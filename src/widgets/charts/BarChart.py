@@ -1,16 +1,16 @@
 from PySide2.QtCharts import QtCharts
-from PySide2.QtGui import QFont, QPainter
+from PySide2.QtGui import QFont, QPainter, QColor
 from PySide2.QtCore import QPoint, Qt
 
 from src.services.ChartService import ChartService
 
 class BarChart(QtCharts.QChartView):
-    def __init__(self, title, chart_type_id, color):
+    def __init__(self):
         super(BarChart, self).__init__()
 
-        self.title = title
-        self.chart_type_id = chart_type_id
-        self.color = color
+        self.title = 'Gastos por mes'
+        self.color = QColor(100, 0, 0)
+
         self.chart_service = ChartService()
 
     def get_widgets_from_pool(self):
@@ -22,12 +22,13 @@ class BarChart(QtCharts.QChartView):
     def init_widgets(self):
         pass
 
-    def reload(self, filter):
-        get_chart_info = getattr(self.chart_service, f'get_{self.chart_type_id}_chart_info')
-        chart_info = get_chart_info(filter)
+    def reload(self, chart_info):
+        chart_info = self.chart_service.get_chart_info('bar')
 
         bar_set = QtCharts.QBarSet("")
         bar_set.setColor(self.color)
+
+        print(chart_info)
         bar_set.append(chart_info['values'])
 
         bar_series = QtCharts.QBarSeries()

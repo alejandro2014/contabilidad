@@ -2,7 +2,7 @@ from sqlite3 import IntegrityError
 
 import unittest
 from unittest import TestCase
-from unittest.mock import Mock
+from unittest.mock import call, Mock
 
 from src.dao.expenses_dao import ExpensesDao
 from src.model.expense import Expense
@@ -64,6 +64,19 @@ class ExpensesDaoTestCase(TestCase):
         
         for index, pending_expense in enumerate(pending_expenses):
             self.assertEqual(expected_expenses[index], pending_expense)
+
+    def test__update_classified_expense(self):
+        uuid = '3f6d08d1-ca0c-48da-bc35-148fc037d901'
+        category = 'Alquiler'
+
+        mock_sql_generator = Mock()
+        mock_db = Mock()
+
+        dao = ExpensesDao(sql_generator=mock_sql_generator, db=mock_db)
+        dao.update_classified_expense(uuid, category)
+
+        mock_sql_generator.update_classified_expense.assert_has_calls([call(uuid, category)])
+        mock_db.execute_sql.assert_has_calls([call("UPDATE expenses set category = 'Alquiler' WHERE id = '3f6d08d1-ca0c-48da-bc35-148fc037d901'")])
 
     def get_two_expenses(self):
         return [

@@ -2,7 +2,6 @@ from PySide2.QtWidgets import QVBoxLayout, QWidget
 
 from src.events.ListenerNode import ListenerNode
 
-from src.services.ChartService import ChartService
 from src.widgets.FilterWidget import FilterWidget
 
 from src.widgets.charts.BarChart import BarChart
@@ -23,23 +22,34 @@ class ViewChartsScreen(QWidget, ListenerNode):
 
         self.filter = self.filter_widget.filter
 
-        self.chart_service = ChartService()
-
         self.pie_chart = PieChart()
-        self.total_month_bar_chart = BarChart()
+        self.bar_chart = BarChart()
         
         self.layout.addWidget(self.pie_chart)
-        self.layout.addWidget(self.total_month_bar_chart)
+        self.layout.addWidget(self.bar_chart)
 
         self.reload_charts(self.filter)
 
     def reload_charts(self, filter):
-        pie_chart_info = self.chart_service.get_pie_chart_info(filter)
+        chart_info = self.pie_chart.reload(filter)
+        self.bar_chart.reload(filter)
 
-        if pie_chart_info == {}:
-            return
-            
-        self.pie_chart.reload(pie_chart_info)
-
-        self.send_event('sum-text', 'update_expenses_sum_from_chart', pie_chart_info)
+        self.send_event('sum-text', 'update_expenses_sum_from_chart', chart_info)
         self.send_event('sum-text', 'hide_records_no')
+        return
+        chart_types = ['pie', 'bar']
+
+        for chart_type in chart_types:
+            self.reload_chart(chart_type, filter)
+
+    def reload_chart(self, chart_type, filter):
+        chart_info = self.chart_service.get_chart_info(chart_type, filter)
+
+        if chart_info is None:
+            return
+        
+        self.pie_chart.reload(chart_info)
+
+        if chart_type == 'pie':
+            self.send_event('sum-text', 'update_expenses_sum_from_chart', chart_info)
+            self.send_event('sum-text', 'hide_records_no')
