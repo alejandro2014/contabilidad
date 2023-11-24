@@ -36,20 +36,3 @@ class ViewChartsScreen(QWidget, ListenerNode):
 
         self.send_event('sum-text', 'update_expenses_sum_from_chart', chart_info)
         self.send_event('sum-text', 'hide_records_no')
-        return
-        chart_types = ['pie', 'bar']
-
-        for chart_type in chart_types:
-            self.reload_chart(chart_type, filter)
-
-    def reload_chart(self, chart_type, filter):
-        chart_info = self.chart_service.get_chart_info(chart_type, filter)
-
-        if chart_info is None:
-            return
-        
-        self.pie_chart.reload(chart_info)
-
-        if chart_type == 'pie':
-            self.send_event('sum-text', 'update_expenses_sum_from_chart', chart_info)
-            self.send_event('sum-text', 'hide_records_no')
