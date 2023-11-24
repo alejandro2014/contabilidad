@@ -29,7 +29,7 @@ class BarChart(QtCharts.QChartView):
         bar_set.setColor(self.color)
 
         print(chart_info)
-        bar_set.append(chart_info['values'])
+        bar_set.append(chart_info['amounts'])
 
         bar_series = QtCharts.QBarSeries()
         bar_series.append(bar_set)
@@ -41,7 +41,7 @@ class BarChart(QtCharts.QChartView):
         axis_x = QtCharts.QBarCategoryAxis()
         axis_x.append(chart_info['months'])
 
-        font_angle, font_size = self.get_font_features(chart_info['values'])
+        font_angle, font_size = self.get_font_features(chart_info['amounts'])
         axis_x.setLabelsAngle(font_angle)
         axis_x.setLabelsFont(QFont('Monospace', font_size))
         chart.setAxisX(axis_x, bar_series)
@@ -53,7 +53,7 @@ class BarChart(QtCharts.QChartView):
         self.setChart(chart)
 
     def get_title(self, chart_info):
-        amount = round(sum(chart_info['values']), 2)
+        amount = round(sum(chart_info['amounts']), 2)
 
         return f"{self.title} ({amount}€)"
 

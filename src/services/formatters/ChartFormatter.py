@@ -14,15 +14,15 @@ class ChartFormatter:
     
     def format_bar_values(self, values):
         months = []
-        values = []
+        amounts = []
 
         for value in values:
             months.append(value[0])
-            values.append(round(abs(value[1]), 2))
+            amounts.append(round(abs(value[1]), 2))
 
         return {
             'months': months,
-            'values': values
+            'amounts': amounts
         }
 
         return [{
