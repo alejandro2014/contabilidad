@@ -69,6 +69,9 @@ class SqlGenerator:
 
     def select_expense_types_full(self):
         return "SELECT category, comment FROM expense_types ORDER BY category"
+    
+    def select_expense_types_simple(self):
+        return "SELECT category FROM expense_types ORDER BY category"
 
     def delete_expense_type(self, category):
         return f"DELETE FROM expense_types WHERE category = '{category}'"

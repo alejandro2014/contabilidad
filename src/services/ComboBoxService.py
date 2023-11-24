@@ -1,6 +1,11 @@
 import datetime
 
+from src.services.ExpenseTypesService import ExpenseTypesService
+
 class ComboBoxService:
+    def __init__(self):
+        self.expense_types_service = ExpenseTypesService()
+
     def get_days(self):
         return [ str(i + 1) for i in range(31) ]
 
@@ -14,6 +19,4 @@ class ComboBoxService:
         return [ str(i) for i in range(year_from, year_to + 1) ]
 
     def get_categories(self):
-        #TODO Get categories from the database service
-        categories = [ "Nómina", "Alquiler", "Comida", "Salir", "Ropa", "Otro", "Teléfono", "Agua", "Luz", "Netflix", "Viaje", "Gasolina", "Gimnasio", "Efectivo", "Casa", "Bizum", "Coche", "Transporte", "Cuenta ahorro", "Amazon", "Seguros", "Renta" ]
-        return sorted(categories)
+        return self.expense_types_service.get_categories_simple()

@@ -38,5 +38,6 @@ CREATE TABLE expenses_classified (
 DROP TABLE IF EXISTS expense_types;
 CREATE TABLE expense_types (
     category VARCHAR NOT NULL PRIMARY KEY,
-    comment VARCHAR NULL
+    comment VARCHAR NULL,
+    positive BOOLEAN DEFAULT FALSE
 );

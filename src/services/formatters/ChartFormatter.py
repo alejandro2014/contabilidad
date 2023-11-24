@@ -24,8 +24,3 @@ class ChartFormatter:
             'months': months,
             'amounts': amounts
         }
-
-        return [{
-            'month': value[0],
-            'value': round(abs(value[1]), 2)
-        } for value in values ]
