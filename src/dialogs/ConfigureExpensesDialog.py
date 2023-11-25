@@ -26,6 +26,9 @@ class ConfigureExpensesDialog(QDialog):
         expense_types = self.expense_types_service.select_expense_types_full()
 
         self.table = self.widget_creator.create_table(table_info, expense_types)
+        self.table.cellChanged.connect(self.cellChanged)
+        self.table.cellClicked.connect(self.cellClicked)
+        self.table.cellEntered.connect(self.cellEntered)
 
         button_add = self.widget_creator.create_button("Añadir categoría", "upload", self.add_category)
         button_remove = self.widget_creator.create_button("Eliminar seleccionadas", "bin", self.remove_selected_rows)
@@ -42,6 +45,21 @@ class ConfigureExpensesDialog(QDialog):
 
         self.setLayout(self.layout)
         self.show()
+
+    def cellChanged(self, row, column):
+        print('Cell changed')
+        print(row)
+        print(column)
+
+    def cellClicked(self, row, column):
+        print('Cell clicked')
+        print(row)
+        print(column)
+
+    def cellEntered(self, row, column):
+        print('Cell entered')
+        print(row)
+        print(column)
 
     def add_category(self):
         add_category_dialog = AddCategoryDialog(self)
