@@ -17,6 +17,8 @@ class ConfigureExpensesDialog(QDialog):
         self.usecases_service = LoadFileService()
         self.expense_types_service = ExpenseTypesService()
 
+        self.previous_value = None
+
         self.setWindowTitle("Configuración de categorías")
         self.resize(600, 400)
         self.setModal(True)
@@ -28,7 +30,6 @@ class ConfigureExpensesDialog(QDialog):
         self.table = self.widget_creator.create_table(table_info, expense_types)
         self.table.cellChanged.connect(self.cellChanged)
         self.table.cellClicked.connect(self.cellClicked)
-        self.table.cellEntered.connect(self.cellEntered)
 
         button_add = self.widget_creator.create_button("Añadir categoría", "upload", self.add_category)
         button_remove = self.widget_creator.create_button("Eliminar seleccionadas", "bin", self.remove_selected_rows)
@@ -47,19 +48,26 @@ class ConfigureExpensesDialog(QDialog):
         self.show()
 
     def cellChanged(self, row, column):
-        print('Cell changed')
-        print(row)
-        print(column)
+        CATEGORY_COLUMN = 0
+        COMMENT_COLUMN = 1
+
+        if column == CATEGORY_COLUMN:
+            old_category = self.previous_value
+            old_comment = self.table.item(row, COMMENT_COLUMN).text()
+
+            field = 'category'
+            new_value = self.table.item(row, CATEGORY_COLUMN).text()
+        elif column == COMMENT_COLUMN:
+            old_category = self.table.item(row, CATEGORY_COLUMN).text()
+            old_comment = self.previous_value
+
+            field = 'comment'
+            new_value = self.table.item(row, COMMENT_COLUMN).text()
+
+        self.expense_types_service.update_expense_type(old_category, old_comment, field, new_value)
 
     def cellClicked(self, row, column):
-        print('Cell clicked')
-        print(row)
-        print(column)
-
-    def cellEntered(self, row, column):
-        print('Cell entered')
-        print(row)
-        print(column)
+        self.previous_value = self.table.item(row, column).text()
 
     def add_category(self):
         add_category_dialog = AddCategoryDialog(self)

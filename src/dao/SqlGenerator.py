@@ -75,6 +75,12 @@ class SqlGenerator:
 
     def delete_expense_type(self, category):
         return f"DELETE FROM expense_types WHERE category = '{category}'"
+    
+    def update_expense_type(self, old_category, old_comment, field, new_value):
+        category_condition = 'category is NULL' if old_category == '' else f"category = '{old_category}'"
+        comment_condition = 'comment is NULL' if old_comment == '' else f"comment = '{old_comment}'"
+
+        return f"UPDATE expense_types SET {field} = '{new_value}' WHERE {category_condition} AND {comment_condition}"
 
     def select_category_name(self, category):
         return f"SELECT count(*) FROM expense_types WHERE category = '{category}'"

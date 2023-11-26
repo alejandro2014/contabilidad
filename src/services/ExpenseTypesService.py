@@ -37,3 +37,8 @@ class ExpenseTypesService(BaseService):
         sql = self.sql_generator.insert_category(category_name, category_description)
 
         self.db.execute_sql(sql)
+
+    def update_expense_type(self, old_category, old_comment, field, new_value):
+        sql = self.sql_generator.update_expense_type(old_category, old_comment, field, new_value)
+
+        self.db.execute_sql(sql)
