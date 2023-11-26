@@ -13,6 +13,8 @@ from src.screens.ViewExpensesScreen import ViewExpensesScreen
 from src.services.ClassifiedExpensesService import ClassifiedExpensesService
 from src.services.PendingExpensesService import PendingExpensesService
 
+from src.widgets.StatusBar import StatusBar
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -62,14 +64,7 @@ class MainWindow(QMainWindow):
         configure_expense_types_action.triggered.connect(self.configure_expense_types)
 
     def init_status_bar(self):
-        classified_expenses_service = ClassifiedExpensesService()
-        pending_expenses_service = PendingExpensesService()
-
-        pending = pending_expenses_service.get_expenses_count()
-        classified = classified_expenses_service.get_expenses_count()
-
-        self.status_bar = QStatusBar()
-        self.status_bar.showMessage('Pendientes: ' + str(pending) + ', Clasificados: ' + str(classified), 0)
+        self.status_bar = StatusBar(self.listeners_pool)
         self.setStatusBar(self.status_bar)
 
     def load_expenses_file(self):

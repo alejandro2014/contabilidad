@@ -22,3 +22,9 @@ class ExpensesService:
 
     def get_classified_expenses_by_type_and_month(self):
         return self.dao.get_classified_expenses_by_type_and_month()
+    
+    def get_classified_expenses_count(self):
+        return self.dao.get_classified_expenses_count()
+
+    def get_pending_expenses_count(self):
+        return self.dao.get_pending_expenses_count()

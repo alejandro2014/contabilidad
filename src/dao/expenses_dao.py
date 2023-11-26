@@ -44,5 +44,13 @@ class ExpensesDao:
         sql = self.sql_generator.update_classified_expense(expense_id, category)
         
         self.db.execute_sql(sql)
-            
 
+    def get_pending_expenses_count(self):
+        sql = self.sql_generator.select_pending_expenses_count()
+
+        return self.db.select(sql)[0][0]
+
+    def get_classified_expenses_count(self):
+        sql = self.sql_generator.select_classified_expenses_count()
+
+        return self.db.select(sql)[0][0]

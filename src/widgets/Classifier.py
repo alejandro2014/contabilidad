@@ -39,3 +39,4 @@ class Classifier(QWidget, ListenerNode):
         category = self.categories.currentText()
 
         self.send_event('pending-expenses-table', 'classify_selected', data = category)
+        self.send_event('status-bar', 'refresh')

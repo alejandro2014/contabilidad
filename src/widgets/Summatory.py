@@ -1,4 +1,4 @@
-from PySide2 import QtCore, QtGui
+from PySide2 import QtCore
 from PySide2.QtGui import QFont
 from PySide2.QtWidgets import QGroupBox, QLabel, QVBoxLayout, QWidget
 
