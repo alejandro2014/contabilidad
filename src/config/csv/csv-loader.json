@@ -1,0 +1,11 @@
+{
+    "readerType": "csv",
+    "hasHeader": "false",
+    "fieldNamePrefix": "field_",
+    "separator": "\t",
+    "fields": {
+        "date": 0,
+        "concept": 3,
+        "value": 5
+    }
+}

@@ -1,0 +1,18 @@
+[
+    {
+        "field": "date",
+        "field_text": "Fecha"
+    },
+    {
+        "field": "concept",
+        "field_text": "Concepto"
+    },
+    {
+        "field": "type",
+        "field_text": "Tipo"
+    },
+    {
+        "field": "quantity",
+        "field_text": "Cantidad"
+    }
+]

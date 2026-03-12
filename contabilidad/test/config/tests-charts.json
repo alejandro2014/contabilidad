@@ -1,0 +1,10 @@
+[
+    {
+        "method_name": "select_pie_chart_categories",
+        "expected_sql": "SELECT type, sum(quantity) as qty FROM expenses_classified WHERE date_record between '20201201' and '20210101' AND type NOT IN ('Nómina','Cuenta ahorro') group by type order by abs(qty) desc",
+        "data": {
+            "date_from": "20201201",
+            "date_to": "20210101"
+        }
+    }
+]

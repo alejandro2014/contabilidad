@@ -1,0 +1,17 @@
+[
+    {
+        "text": "Añadir categoría",
+        "image": "upload",
+        "action": "add_category"
+    },
+    {
+        "text": "Eliminar seleccionadas",
+        "image": "bin",
+        "action": "remove_selected_rows"
+    },
+    {
+        "text": "Aceptar",
+        "image": "ok",
+        "action": "accept"
+    }
+]

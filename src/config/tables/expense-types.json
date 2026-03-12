@@ -1,0 +1,10 @@
+[
+    {
+        "field": "name",
+        "text": "Nombre"
+    },
+    {
+        "field": "description",
+        "text": "Descripción"
+    }
+]

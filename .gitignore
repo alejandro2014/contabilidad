@@ -1,0 +1,10 @@
+__pycache__/
+*.db
+*.csv
+*.xls
+.DS_Store
+db/backup/
+data/
+src/contabilidad2/rules.json
+src/contabilidad2/rules2.json
+config/db/*.db

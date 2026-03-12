@@ -1,0 +1,14 @@
+[
+    {
+        "field": "type",
+        "field_text": "Tipo de gasto"
+    },
+    {
+        "field": "month",
+        "field_text": "Mes"
+    },
+    {
+        "field": "quantity",
+        "field_text": "Total"
+    }
+]
