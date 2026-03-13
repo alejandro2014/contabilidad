@@ -2,16 +2,11 @@ from PySide6.QtWidgets import QMainWindow, QStatusBar
 
 from src.events.ListenersPool import ListenersPool
 
-#from src.screens.ViewChartsScreen import ViewChartsScreen
-#from src.screens.ViewExpensesScreen import ViewExpensesScreen
-
-#from src.services.ClassifiedExpensesService import ClassifiedExpensesService
-#from src.services.PendingExpensesService import PendingExpensesService
-
 #from src.widgets.StatusBar import StatusBar
 
 from src.menu_configure import MenuConfigure
 from src.menu_expenses import MenuExpenses
+from src.menu_view import MenuView
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -22,6 +17,7 @@ class MainWindow(QMainWindow):
         self.resize(1000, 900)
 
         self.menu_expenses = MenuExpenses(self)
+        self.menu_view = MenuView(self)
         self.menu_configure = MenuConfigure(self)
 
         self.menubar = self.menuBar()
@@ -29,11 +25,7 @@ class MainWindow(QMainWindow):
         self.load_options_menu()
 
         #self.init_status_bar()
-        """
-        self.view_expenses_table()
-        self.view_expenses_charts()
-        """
-
+        
     def load_options_menu(self):
         self.load_expenses_submenu()
         self.load_view_submenu()
@@ -60,16 +52,13 @@ class MainWindow(QMainWindow):
         menu_gastos = self.menubar.addMenu('Ver')
 
         view_expenses_table_action = menu_gastos.addAction('Ver tabla')
-        view_expenses_table_action.triggered.connect(self.view_expenses_table)
+        view_expenses_table_action.triggered.connect(self.menu_view.view_expenses_table)
 
         view_expenses_charts_action = menu_gastos.addAction('Ver graficos')
-        view_expenses_charts_action.triggered.connect(self.view_expenses_charts)
+        view_expenses_charts_action.triggered.connect(self.menu_view.view_expenses_charts)
 
     def load_configuration_submenu(self):
         menu_configuracion = self.menubar.addMenu('Configuracion')
-
-        #configure_columns_action = menu_configuracion.addAction('Columnas de entrada')
-        #configure_columns_action.triggered.connect(self.configure_columns)
 
         configure_expense_types_action = menu_configuracion.addAction('Tipos de gastos')
         configure_expense_types_action.triggered.connect(self.menu_configure.configure_expense_types)
@@ -81,14 +70,3 @@ class MainWindow(QMainWindow):
     def init_status_bar(self):
         self.status_bar = StatusBar(self.listeners_pool)
         self.setStatusBar(self.status_bar)
-
-    def view_expenses_table(self):
-        view_expenses_screen = ViewExpensesScreen(self.listeners_pool)
-        self.setCentralWidget(view_expenses_screen)
-
-    def view_expenses_charts(self):
-        view_charts_screen = ViewChartsScreen(self.listeners_pool)
-        self.setCentralWidget(view_charts_screen)
-
-    def configure_columns(self):
-        return
