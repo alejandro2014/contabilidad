@@ -6,3 +6,6 @@ class MenuConfigure:
 
     def configure_expense_types(self):
         ConfigureExpensesDialog(self.main_window)
+
+    def configure_classification_rules(self):
+        pass
