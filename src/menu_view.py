@@ -11,6 +11,15 @@ self.view_expenses_charts()
 class MenuView:
     def __init__(self, main_window):
         self.main_window = main_window
+        self.menubar = self.main_window.menuBar()
+
+        menu_gastos = self.menubar.addMenu('Ver')
+
+        view_expenses_table_action = menu_gastos.addAction('Ver tabla')
+        view_expenses_table_action.triggered.connect(self.view_expenses_table)
+
+        view_expenses_charts_action = menu_gastos.addAction('Ver graficos')
+        view_expenses_charts_action.triggered.connect(self.view_expenses_charts)
 
     def view_expenses_table(self):
         view_expenses_screen = ViewExpensesScreen(self.listeners_pool)
