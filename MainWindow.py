@@ -16,18 +16,18 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('Contabilidad')
         self.resize(1000, 900)
 
+        self.menubar = self.menuBar()
+
         self.menu_expenses = MenuExpenses(self)
         self.menu_view = MenuView(self)
         self.menu_configure = MenuConfigure(self)
-
-        self.menubar = self.menuBar()
 
         self.load_options_menu()
 
         #self.init_status_bar()
         
     def load_options_menu(self):
-        self.load_expenses_submenu()
+        #self.load_expenses_submenu()
         self.load_view_submenu()
         self.load_configuration_submenu()
 
