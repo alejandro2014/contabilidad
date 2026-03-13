@@ -1,48 +1,18 @@
-from PySide6.QtCore import QCoreApplication
-from PySide6.QtWidgets import QMainWindow, QStatusBar
+from src.dialogs.ConfigureExpensesDialog import ConfigureExpensesDialog
 
-#from src.dialogs.LoadFileDialog import LoadFileDialog
+class MenuLoader:
+    def __init__(self, main_window):
+        self.menu_bar = main_window.menuBar()
 
-from src.events.ListenersPool import ListenersPool
-
-#from src.screens.ClassifyExpensesScreen import ClassifyExpensesScreen
-#from src.screens.ViewChartsScreen import ViewChartsScreen
-#from src.screens.ViewExpensesScreen import ViewExpensesScreen
-
-#from src.services.ClassifiedExpensesService import ClassifiedExpensesService
-#from src.services.PendingExpensesService import PendingExpensesService
-
-#from src.widgets.StatusBar import StatusBar
-
-from src.menu_configure import MenuConfigure
-
-class MainWindow(QMainWindow):
-    def __init__(self):
-        super(MainWindow, self).__init__()
-
-        self.listeners_pool = ListenersPool()
-        self.setWindowTitle('Contabilidad')
-        self.resize(1000, 900)
-
-        self.menu_configure = MenuConfigure(self)
-
-        self.menubar = self.menuBar()
-
-        self.load_options_menu()
-
-        #self.init_status_bar()
-        """
-        self.view_expenses_table()
-        self.view_expenses_charts()
-        """
-
-    def load_options_menu(self):
+    def load(self):
         self.load_expenses_submenu()
         self.load_view_submenu()
         self.load_configuration_submenu()
 
+        return self
+
     def load_expenses_submenu(self):
-        menu_gastos = self.menubar.addMenu('Gastos')
+        menu_gastos = self.menu_bar.addMenu('Gastos')
 
         load_expenses_file_action = menu_gastos.addAction('Cargar fichero')
         load_expenses_file_action.triggered.connect(self.load_expenses_file)
@@ -59,7 +29,7 @@ class MainWindow(QMainWindow):
         exit_app_action.triggered.connect(self.exit_app)
 
     def load_view_submenu(self):
-        menu_gastos = self.menubar.addMenu('Ver')
+        menu_gastos = self.menu_bar.addMenu('Ver')
 
         view_expenses_table_action = menu_gastos.addAction('Ver tabla')
         view_expenses_table_action.triggered.connect(self.view_expenses_table)
@@ -68,13 +38,13 @@ class MainWindow(QMainWindow):
         view_expenses_charts_action.triggered.connect(self.view_expenses_charts)
 
     def load_configuration_submenu(self):
-        menu_configuracion = self.menubar.addMenu('Configuracion')
+        menu_configuracion = self.menu_bar.addMenu('Configuracion')
 
         #configure_columns_action = menu_configuracion.addAction('Columnas de entrada')
         #configure_columns_action.triggered.connect(self.configure_columns)
 
         configure_expense_types_action = menu_configuracion.addAction('Tipos de gastos')
-        configure_expense_types_action.triggered.connect(self.menu_configure.configure_expense_types)
+        configure_expense_types_action.triggered.connect(self.configure_expense_types)
 
         configure_expense_types_action = menu_configuracion.addAction('Reglas de clasificación')
         configure_expense_types_action.triggered.connect(self.configure_classification_rules)
@@ -98,6 +68,9 @@ class MainWindow(QMainWindow):
     def view_expenses_charts(self):
         view_charts_screen = ViewChartsScreen(self.listeners_pool)
         self.setCentralWidget(view_charts_screen)
+
+    def configure_expense_types(self):
+        configure_expenses_dialog = ConfigureExpensesDialog(self)
 
     def configure_classification_rules(self):
         pass
