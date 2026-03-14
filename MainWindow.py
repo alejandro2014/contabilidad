@@ -4,9 +4,7 @@ from src.events.ListenersPool import ListenersPool
 
 #from src.widgets.StatusBar import StatusBar
 
-from src.menu_configure import MenuConfigure
-from src.menu_expenses import MenuExpenses
-from src.menu_view import MenuView
+from src.main_menu import MainMenu
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -16,9 +14,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('Contabilidad')
         self.resize(1000, 900)
 
-        self.menu_expenses = MenuExpenses(self)
-        self.menu_view = MenuView(self)
-        self.menu_configure = MenuConfigure(self)
+        self.main_menu = MainMenu(self)
 
         #self.init_status_bar()
 
