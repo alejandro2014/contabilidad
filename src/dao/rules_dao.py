@@ -1,4 +1,4 @@
-from src.screens.Rule import Rule
+from src.model.Rule import Rule
 
 class RulesDao:
     def __init__(self, db_connector):

@@ -1,5 +1,5 @@
 from src.cli.BaseArgsParse import BaseArgsParse
-from src.services.RulesService import RulesService
+from src.services.rules_service import RulesService
 
 class RulesArgsParser(BaseArgsParse):
     def rules_list(self, args):

@@ -1,6 +1,6 @@
 from CsvReader import CsvReader
 
-from backup.contabilidad2.dao.rules_dao import RulesDao
+from src.dao.rules_dao import RulesDao
 
 class RulesService:
     def __init__(self):
