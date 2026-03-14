@@ -1,0 +1,24 @@
+{
+    "title": "Gastos",
+    "options": [
+        {
+            "title": "Cargar fichero",
+            "method": "load_expenses_file"
+        },
+        {
+            "title": "Clasificar pendientes",
+            "method": "classify_expenses"
+        },
+        {
+            "title": "Imprimir informe",
+            "method": "print_report"
+        },
+        {
+            "separator": true
+        },
+        {
+            "title": "Salir",
+            "method": "exit_app"
+        }
+    ]
+}

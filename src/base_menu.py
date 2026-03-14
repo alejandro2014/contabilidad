@@ -9,8 +9,11 @@ class BaseMenu:
         menu = self.menubar.addMenu(menu_info['title'])
 
         for option in menu_info['options']:
-            action = menu.addAction(option['title'])
-            action.triggered.connect(getattr(self, option['method']))
+            if 'separator' in option:
+                menu.addSeparator()
+            else:
+                action = menu.addAction(option['title'])
+                action.triggered.connect(getattr(self, option['method']))
 
     def _load_menu_info(self, menu_name):
         return ConfigLoader().load_menu(menu_name)

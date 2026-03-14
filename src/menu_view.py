@@ -11,6 +11,7 @@ self.view_expenses_charts()
 
 from src.base_menu import BaseMenu
 
+
 class MenuView(BaseMenu):
     def __init__(self, main_window):
         self.init_menu('view', main_window)
