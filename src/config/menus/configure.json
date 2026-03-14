@@ -1,0 +1,13 @@
+{
+    "title": "Configuracion",
+    "options": [
+        {
+            "title": "Tipos de gastos",
+            "method": "configure_expense_types"
+        },
+        {
+            "title": "Reglas de clasificación",
+            "method": "configure_classification_rules"
+        }
+    ]
+}

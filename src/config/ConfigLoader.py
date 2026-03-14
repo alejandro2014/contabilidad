@@ -1,5 +1,6 @@
 import json
 
+
 class ConfigLoader:
     def load_table(self, table_name):
         return self.load_config_file('tables/' + table_name)
