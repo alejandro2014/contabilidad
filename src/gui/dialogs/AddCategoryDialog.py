@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QLabel, QLineEdit
 
-from src.dialogs.WidgetCreator import WidgetCreator
-from src.dialogs.ErrorDialog import ErrorDialog
+from src.gui.dialogs.WidgetCreator import WidgetCreator
+from src.gui.dialogs.ErrorDialog import ErrorDialog
 
 from src.services.categories_service import CategoriesService
 

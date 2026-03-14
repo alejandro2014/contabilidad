@@ -1,5 +1,6 @@
 from src.config.ConfigLoader import ConfigLoader
 
+
 class BaseMenu:
     def init_menu(self, menu_name, main_window):
         menu_info = self._load_menu_info(menu_name)

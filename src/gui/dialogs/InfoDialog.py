@@ -1,9 +1,10 @@
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel
-from src.dialogs.WidgetCreator import WidgetCreator
+from src.gui.dialogs.WidgetCreator import WidgetCreator
 
-class ErrorDialog(QDialog):
-    def __init__(self, parent, title="Error", message=""):
-        super(ErrorDialog, self).__init__(parent)
+
+class InfoDialog(QDialog):
+    def __init__(self, parent, title="Info", message=""):
+        super(InfoDialog, self).__init__(parent)
 
         self.setWindowTitle(title)
         self.resize(200, 200)

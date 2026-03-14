@@ -1,4 +1,6 @@
-class Category:
+from src.model.base_class import ModelBaseClass
+
+class Category(ModelBaseClass):
     def __init__(self, name, description):
         self.name = name
         self.description = description

@@ -1,6 +1,7 @@
-from src.dialogs.ConfigureExpensesDialog import ConfigureExpensesDialog
+from src.gui.dialogs.ConfigureExpensesDialog import ConfigureExpensesDialog
 
-from src.base_menu import BaseMenu
+from src.gui.menus.base_menu import BaseMenu
+
 
 class MenuConfigure(BaseMenu):
     def __init__(self, main_window):

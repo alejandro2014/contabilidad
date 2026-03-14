@@ -9,7 +9,7 @@ self.view_expenses_table()
 self.view_expenses_charts()
 """
 
-from src.base_menu import BaseMenu
+from src.gui.menus.base_menu import BaseMenu
 
 
 class MenuView(BaseMenu):

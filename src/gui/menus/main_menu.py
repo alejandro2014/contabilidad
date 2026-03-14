@@ -1,6 +1,6 @@
-from src.menu_configure import MenuConfigure
-from src.menu_expenses import MenuExpenses
-from src.menu_view import MenuView
+from src.gui.menus.menu_configure import MenuConfigure
+from src.gui.menus.menu_expenses import MenuExpenses
+from src.gui.menus.menu_view import MenuView
 
 
 class MainMenu:

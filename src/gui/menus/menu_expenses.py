@@ -1,6 +1,6 @@
 from PySide6.QtCore import QCoreApplication
 
-from src.base_menu import BaseMenu
+from src.gui.menus.base_menu import BaseMenu
 #from src.dialogs.LoadFileDialog import LoadFileDialog
 #from src.screens.ClassifyExpensesScreen import ClassifyExpensesScreen
 

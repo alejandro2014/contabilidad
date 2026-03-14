@@ -2,9 +2,9 @@ from PySide6.QtWidgets import QVBoxLayout, QWidget
 
 from src.events.ListenersPool import ListenersPool
 
-from src.widgets.FilterWidget import FilterWidget
+from src.gui.widgets.FilterWidget import FilterWidget
 
-from src.widgets.tables.PendingExpensesTable import PendingExpensesTable
+from src.gui.widgets.tables.PendingExpensesTable import PendingExpensesTable
 
 class ClassifyExpensesScreen(QWidget):
     def __init__(self, listeners_pool):

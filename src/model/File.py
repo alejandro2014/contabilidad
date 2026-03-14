@@ -1,4 +1,7 @@
-class File:
+from src.model.base_class import ModelBaseClass
+
+
+class File(ModelBaseClass):
     def __init__(self, hash=None, name=None, date_loaded=None):
         self.hash = hash
         self.name = name

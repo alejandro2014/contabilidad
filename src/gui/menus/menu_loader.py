@@ -1,4 +1,5 @@
-from src.dialogs.ConfigureExpensesDialog import ConfigureExpensesDialog
+from src.gui.dialogs.ConfigureExpensesDialog import ConfigureExpensesDialog
+
 
 class MenuLoader:
     def __init__(self, main_window):

@@ -4,7 +4,7 @@ from src.events.ListenersPool import ListenersPool
 
 #from src.widgets.StatusBar import StatusBar
 
-from src.main_menu import MainMenu
+from src.gui.menus.main_menu import MainMenu
 
 class MainWindow(QMainWindow):
     def __init__(self):

@@ -4,8 +4,8 @@ from PySide6.QtCore import QTimer
 
 from src.config.ConfigLoader import ConfigLoader
 
-from src.dialogs.AddCategoryDialog import AddCategoryDialog
-from src.dialogs.WidgetCreator import WidgetCreator
+from src.gui.dialogs.AddCategoryDialog import AddCategoryDialog
+from src.gui.dialogs.WidgetCreator import WidgetCreator
 
 from src.services.categories_service import CategoriesService
 

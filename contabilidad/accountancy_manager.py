@@ -1,7 +1,7 @@
 import sys
 from PySide6.QtWidgets import QApplication
 
-from MainWindow import MainWindow
+from src.gui.main_window import MainWindow
 
 if __name__ == "__main__":
     print("[INFO] -------- Program started --------")
