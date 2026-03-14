@@ -1,0 +1,13 @@
+{
+    "title": "Ver",
+    "options": [
+        {
+            "title": "Ver tabla",
+            "method": "view_expenses_table"
+        },
+        {
+            "title": "Ver graficos",
+            "method": "view_expenses_charts"
+        }
+    ]
+}
