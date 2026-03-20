@@ -24,9 +24,12 @@ class AddRuleDialog(BaseDialog):
             widgets = [
                 ComboBox('Categoría', self.categories_service),
                 InputText('Expresión'),
-                ButtonBox(self, id='cancel-accept-add-rule-dialog')
+                ButtonBox(self, id='cancel-accept')
             ]
         )
+
+    def accept(self):
+        self.add_rule()
 
     def add_rule(self):
         pass

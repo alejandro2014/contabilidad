@@ -1,24 +1,19 @@
-from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel
-from src.gui.dialogs.WidgetCreator import WidgetCreator
+from PySide6.QtWidgets import QLabel
+
+from src.gui.dialogs.base_dialog import BaseDialog
+from src.gui.widgets.button_box import ButtonBox
 
 
-class ErrorDialog(QDialog):
-    def __init__(self, parent, title="Error", message=""):
-        super(ErrorDialog, self).__init__(parent)
-
-        self.setWindowTitle(title)
-        self.resize(200, 200)
-        self.setModal(True)
-
-        widget_creator = WidgetCreator()
-
-        label = QLabel(message)
-        button_accept = widget_creator.create_button("Aceptar", "ok", self.accept)
-
-        layout = QVBoxLayout()
-        self.setLayout(layout)
-
-        layout.addWidget(label)
-        layout.addWidget(button_accept)
-
-        self.show()
+class ErrorDialog(BaseDialog):
+    def __init__(self, parent, message=""):
+        self.parent = parent
+        super().__init__(self.parent)
+    
+        self.init_dialog(
+            title = "Error",
+            layout = "vertical", 
+            widgets = [
+                QLabel(message),
+                ButtonBox(self, id='accept')
+            ]
+        )

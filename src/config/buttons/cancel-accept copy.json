@@ -7,6 +7,6 @@
     {
         "text": "Aceptar",
         "image": "ok",
-        "action": "check_category"
+        "action": "accept"
     }
 ]

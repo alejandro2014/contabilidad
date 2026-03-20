@@ -20,10 +20,13 @@ class AddCategoryDialog(BaseDialog):
             widgets = [
                 InputText('Nombre'),
                 InputText('Descripción'),
-                ButtonBox(self, id='cancel-accept-add-category-dialog')
+                ButtonBox(self, id='cancel-accept')
             ]
         )
 
+    def accept(self):
+        self.check_category()
+        
     def check_category(self):
         category_name = self.name_textbox.text()
         category_description = self.description_textbox.text()
