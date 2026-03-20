@@ -1,12 +1,12 @@
 from PySide6.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QLabel, QLineEdit
 
 from src.gui.dialogs.ErrorDialog import ErrorDialog
+
 from src.gui.widgets.combobox import ComboBox
 from src.gui.widgets.input_text import InputText
+from src.gui.widgets.button_box import ButtonBox
 
 from src.gui.widgets.combobox_services.categories_combobox_service import CategoriesComboboxService
-
-from src.gui.widgets.button_box import ButtonBox
 
 from src.gui.dialogs.base_dialog import BaseDialog
 
@@ -24,7 +24,7 @@ class AddRuleDialog(BaseDialog):
             widgets = [
                 ComboBox('Categoría', self.categories_service),
                 InputText('Expresión'),
-                ButtonBox(self, id='cancel-accept')
+                ButtonBox(self, id='cancel-accept-add-rule-dialog')
             ]
         )
 
