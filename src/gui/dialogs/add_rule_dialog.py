@@ -8,22 +8,27 @@ from src.gui.widgets.combobox_services.categories_combobox_service import Catego
 
 from src.gui.widgets.button_box import ButtonBox
 
+from src.gui.dialogs.base_dialog import BaseDialog
 
-class AddRuleDialog(QDialog):
+
+class AddRuleDialog(BaseDialog):
     def __init__(self, parent):
         self.parent = parent
-        super(AddRuleDialog, self).__init__(self.parent)
+        super().__init__(self.parent)
 
         self.categories_service = CategoriesComboboxService()
 
         self.setWindowTitle("Añadir regla")
         self.setModal(True)
 
-        self.layout = QVBoxLayout(self)
-        self.layout.addWidget(ComboBox('Categoría', self.categories_service))
-        self.layout.addWidget(InputText('Expresión'))
-        self.layout.addWidget(ButtonBox(self, id='cancel-accept'))
+        widgets = [
+            ComboBox('Categoría', self.categories_service),
+            InputText('Expresión'),
+            ButtonBox(self, id='cancel-accept')
+        ]
 
+        self.init_widgets(widgets, layout="vertical")
+        
         self.show()
 
     def add_rule(self):
