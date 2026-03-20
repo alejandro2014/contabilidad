@@ -2,11 +2,14 @@ import json
 
 
 class ConfigLoader:
-    def load_table(self, table_name):
-        return self.load_config_file('tables/' + table_name)
+    def load_table(self, name):
+        return self.load_config_file(f'tables/{name}')
     
-    def load_menu(self, table_name):
-        return self.load_config_file('menus/' + table_name)
+    def load_menu(self, name):
+        return self.load_config_file(f'menus/{name}')
+    
+    def load_buttons(self, name):
+        return self.load_config_file(f'buttons/{name}')
 
     def load_config_file(self, file_name):
         with open('src/config/' + file_name + '.json') as file:

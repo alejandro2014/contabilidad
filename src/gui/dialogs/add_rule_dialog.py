@@ -7,6 +7,8 @@ from src.gui.widgets.combobox import ComboBox
 from src.gui.widgets.combobox_services.categories_combobox_service import CategoriesComboboxService
 from src.gui.widgets.pictured_button import PicturedButton
 
+from src.config.ConfigLoader import ConfigLoader
+
 
 class AddRuleDialog(QDialog):
     def __init__(self, parent):
@@ -31,22 +33,11 @@ class AddRuleDialog(QDialog):
         description_layout.addWidget(description_label)
         description_layout.addWidget(self.description_textbox)
 
-        buttons_info = [
-            {
-                'text': 'Cancelar',
-                'image': 'cancel',
-                'action': 'reject'
-            },
-            {
-                'text': 'Aceptar',
-                'image': 'ok',
-                'action': 'add_rule'
-            },
-        ]
+        buttons_info = ConfigLoader().load_buttons('cancel-accept')
 
         button_box = QHBoxLayout()
-        button_box.addWidget(PicturedButton(text=buttons_info[0]['text'], image=buttons_info[0]['image'], action=getattr(self, buttons_info[0]['action'])))
-        button_box.addWidget(PicturedButton(text=buttons_info[1]['text'], image=buttons_info[1]['image'], action=getattr(self, buttons_info[1]['action'])))
+        for button_info in buttons_info:
+            button_box.addWidget(PicturedButton(text=button_info['text'], image=button_info['image'], action=getattr(self, button_info['action'])))
 
         self.layout = QVBoxLayout(self)
         self.layout.addWidget(combo_categories)
