@@ -2,6 +2,7 @@ from PySide6.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QLabel, QLineEd
 
 from src.gui.dialogs.ErrorDialog import ErrorDialog
 from src.gui.widgets.combobox import ComboBox
+from src.gui.widgets.input_text import InputText
 
 from src.gui.widgets.combobox_services.categories_combobox_service import CategoriesComboboxService
 
@@ -17,18 +18,10 @@ class AddRuleDialog(QDialog):
 
         self.setWindowTitle("Añadir regla")
         self.setModal(True)
-        
-        description_label = QLabel("Expresión:")
-        self.description_textbox = QLineEdit()
-        description_label.setBuddy(self.description_textbox)
-
-        description_layout = QHBoxLayout()
-        description_layout.addWidget(description_label)
-        description_layout.addWidget(self.description_textbox)
 
         self.layout = QVBoxLayout(self)
         self.layout.addWidget(ComboBox('Categoría', self.categories_service))
-        self.layout.addLayout(description_layout)
+        self.layout.addWidget(InputText('Expresión'))
         self.layout.addWidget(ButtonBox(self, id='cancel-accept'))
 
         self.show()
