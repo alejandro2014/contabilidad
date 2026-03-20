@@ -1,7 +1,7 @@
 from PySide6 import QtWidgets, QtGui
 from PySide6.QtWidgets import QDialog, QFileDialog, QGridLayout, QHBoxLayout, QLabel, QLineEdit
 
-from src.gui.dialogs.InfoDialog import InfoDialog
+from src.gui.dialogs.info_dialog import InfoDialog
 from src.gui.dialogs.WidgetCreator import WidgetCreator
 
 from src.services.LoadFileService import LoadFileService
