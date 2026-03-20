@@ -19,6 +19,9 @@ class CategoriesService:
 
     def get_categories(self):
         return self.categories_dao.get_categories()
+    
+    def get_category_names(self):
+        return self.categories_dao.get_category_names()
 
     def edit_category(self, name, new_name, description):
         self.categories_dao.update_category(name, new_name, description)

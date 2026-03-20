@@ -40,6 +40,13 @@ class CategoriesDao:
                 description=r[1]
             ) for r in result
         ]
+    
+    def get_category_names(self):
+        sql = "SELECT name FROM categories ORDER BY name"
+
+        result = self._db.run_sql(sql)
+
+        return [ r[0] for r in result ]
 
     def update_category(self, name, new_name=None, description=None):
         if new_name is not None and description is None:

@@ -1,5 +1,6 @@
 from src.gui.dialogs.ConfigureExpensesDialog import ConfigureExpensesDialog
 from src.gui.dialogs.configure_rules_dialog import ConfigureRulesDialog
+from src.gui.dialogs.add_rule_dialog import AddRuleDialog
 
 from src.gui.menus.base_menu import BaseMenu
 
@@ -12,4 +13,5 @@ class MenuConfigure(BaseMenu):
         ConfigureExpensesDialog(self.main_window)
 
     def configure_classification_rules(self):
-        ConfigureRulesDialog(self.main_window)
+        #ConfigureRulesDialog(self.main_window)
+        AddRuleDialog(self.main_window)
