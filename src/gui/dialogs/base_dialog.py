@@ -6,7 +6,12 @@ class BaseDialog(QDialog):
         self.parent = parent
         super().__init__(self.parent)
 
-    def init_widgets(self, widgets, layout="vertical"):
+    def init_dialog(self, title=None, layout=None, widgets=None):
+        self.setWindowTitle(title)
+        self.setModal(True)
+        self.init_widgets(widgets, layout)
+
+    def init_widgets(self, widgets, layout=None):
         self.layout = QVBoxLayout(self) if layout == "vertical" else QHBoxLayout(self)
 
         for widget in widgets:

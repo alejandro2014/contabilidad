@@ -16,10 +16,10 @@ class AddRuleDialog(BaseDialog):
         self.parent = parent
         super().__init__(self.parent)
 
-        self.categories_service = CategoriesComboboxService()
+        self.title = "Añadir regla"
+        self.layout = "vertical"
 
-        self.setWindowTitle("Añadir regla")
-        self.setModal(True)
+        self.categories_service = CategoriesComboboxService()
 
         widgets = [
             ComboBox('Categoría', self.categories_service),
@@ -27,7 +27,7 @@ class AddRuleDialog(BaseDialog):
             ButtonBox(self, id='cancel-accept')
         ]
 
-        self.init_widgets(widgets, layout="vertical")
+        self.init_dialog(self.title, self.layout, widgets)
         
         self.show()
 
