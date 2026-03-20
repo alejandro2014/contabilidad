@@ -10,6 +10,7 @@ class BaseDialog(QDialog):
         self.setWindowTitle(title)
         self.setModal(True)
         self.init_widgets(widgets, layout)
+        self.show()
 
     def init_widgets(self, widgets, layout=None):
         self.layout = QVBoxLayout(self) if layout == "vertical" else QHBoxLayout(self)
