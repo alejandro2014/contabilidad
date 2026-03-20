@@ -5,6 +5,7 @@ from src.gui.dialogs.ErrorDialog import ErrorDialog
 from src.gui.widgets.combobox import ComboBox
 
 from src.gui.widgets.combobox_services.categories_combobox_service import CategoriesComboboxService
+from src.gui.widgets.pictured_button import PicturedButton
 
 
 class AddRuleDialog(QDialog):
@@ -30,12 +31,22 @@ class AddRuleDialog(QDialog):
         description_layout.addWidget(description_label)
         description_layout.addWidget(self.description_textbox)
 
-        button_cancel = self.widget_creator.create_button("Cancelar", "cancel", self.reject)
-        button_ok = self.widget_creator.create_button("Aceptar", "ok", self.check_category)
+        buttons_info = [
+            {
+                'text': 'Cancelar',
+                'image': 'cancel',
+                'action': 'reject'
+            },
+            {
+                'text': 'Aceptar',
+                'image': 'ok',
+                'action': 'add_rule'
+            },
+        ]
 
         button_box = QHBoxLayout()
-        button_box.addWidget(button_cancel)
-        button_box.addWidget(button_ok)
+        button_box.addWidget(PicturedButton(text=buttons_info[0]['text'], image=buttons_info[0]['image'], action=getattr(self, buttons_info[0]['action'])))
+        button_box.addWidget(PicturedButton(text=buttons_info[1]['text'], image=buttons_info[1]['image'], action=getattr(self, buttons_info[1]['action'])))
 
         self.layout = QVBoxLayout(self)
         self.layout.addWidget(combo_categories)
@@ -44,26 +55,6 @@ class AddRuleDialog(QDialog):
 
         self.show()
 
-    def check_category(self):
-        category_name = self.name_textbox.text()
-        category_description = self.description_textbox.text()
-
-        if category_name == '':
-            ErrorDialog(self, title = "Error: Nombre vacío", message = "El nombre de la categoría no puede estar vacío")
-            return
-
-        category_exists = self.categories_service.category_exists(category_name)
-
-        if category_exists:
-            ErrorDialog(self, title = "Error: La categoría ya existe", message = f'Ya se ha introducido una categoría "{category_name}"')
-            return
-
-        self.accept()
-
-        return category_name, category_description
+    def add_rule(self):
+        pass
     
-    def get_data(self):
-        return [
-            self.name_textbox.text(),
-            self.description_textbox.text()
-        ]
