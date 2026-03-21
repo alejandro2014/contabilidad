@@ -1,12 +1,14 @@
 import re
 
-from dao.ExpensesDao import ExpensesDao
-from backup.contabilidad2.dao.rules_dao import RulesDao
+from src.dao.expenses_dao import ExpensesDao
+from src.dao.rules_dao import RulesDao
+from src.dao.sqlite_connector import SqliteConnector
+
 
 class ExpensesService:
     def __init__(self):
-        self._expenses_dao = ExpensesDao()
-        self._rules_dao = RulesDao()
+        self._expenses_dao = ExpensesDao(SqliteConnector())
+        self._rules_dao = RulesDao(SqliteConnector())
 
     def get_expenses(self, args):
         return self._expenses_dao.get_expenses(
@@ -101,3 +103,9 @@ class ExpensesService:
         year = date_input[6:10]
 
         return f'{year}{month}{day}'
+    
+    def get_pending_expenses_count(self):
+        return self._expenses_dao.get_pending_expenses_count()
+
+    def get_classified_expenses_count(self):
+        return self._expenses_dao.get_classified_expenses_count()

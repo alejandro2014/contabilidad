@@ -1,5 +1,5 @@
 from cli.BaseArgsParse import BaseArgsParse
-from src.services.ExpensesService import ExpensesService
+from src.services.expenses_service import ExpensesService
 
 class ExpensesArgsParser(BaseArgsParse):
     def expenses_classify(self, args):

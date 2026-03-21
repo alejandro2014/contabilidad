@@ -1,4 +1,4 @@
-from model import Expense
+from src.model import Expense
 
 class ExpensesDao:
     def __init__(self, db_connector):
@@ -144,3 +144,17 @@ class ExpensesDao:
             'concept': r[3],
             'amount': r[4]
         } for r in raw_result]
+    
+    def get_pending_expenses_count(self):
+        sql = "SELECT count(*) FROM expenses WHERE (tag1 IS NULL)"
+    
+        result = self._db.run_sql(sql)
+
+        return result[0][0]
+
+    def get_classified_expenses_count(self):
+        sql = "SELECT count(*) FROM expenses WHERE (tag1 IS NOT NULL)"
+    
+        result = self._db.run_sql(sql)
+
+        return result[0][0]

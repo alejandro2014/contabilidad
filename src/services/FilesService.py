@@ -3,7 +3,7 @@ from ExpensesProcessor import ExpensesProcessor
 
 from backup.contabilidad2.dao.files_dao import FilesDao
 
-from services.ExpensesService import ExpensesService
+from src.services.expenses_service import ExpensesService
 
 class FilesService:
     def __init__(self):

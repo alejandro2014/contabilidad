@@ -1,8 +1,8 @@
-from PySide6.QtWidgets import QMainWindow, QStatusBar
+from PySide6.QtWidgets import QMainWindow
 
 from src.events.ListenersPool import ListenersPool
 
-#from src.widgets.StatusBar import StatusBar
+from src.gui.widgets.StatusBar import StatusBar
 
 from src.gui.menus.main_menu import MainMenu
 
@@ -16,7 +16,7 @@ class MainWindow(QMainWindow):
 
         self.main_menu = MainMenu(self)
 
-        #self.init_status_bar()
+        self.init_status_bar()
 
     def init_status_bar(self):
         self.status_bar = StatusBar(self.listeners_pool)
