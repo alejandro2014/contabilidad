@@ -30,7 +30,6 @@ class ExpensesService:
             print(f'[DEBUG] Loading expense {expense}')
             expense.hash = hash
             expense.id = f'{hash}-{str(i).zfill(4)}'
-            expense.date = self.convert_date(expense.date)
 
             if self._expenses_dao.add_expense(expense) == True:
                 successes += 1
@@ -107,10 +106,12 @@ class ExpensesService:
         return None
 
     def convert_date(self, date_input):
-        day = date_input[0:2]
+        print('------------')
+        print(date_input)
+        day = date_input[0:4]
         month = date_input[3:5]
-        year = date_input[6:10]
-
+        year = date_input[0:4]
+        print(f'{year}{month}{day}')
         return f'{year}{month}{day}'
     
     def get_pending_expenses_count(self):

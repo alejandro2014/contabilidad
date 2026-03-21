@@ -3,6 +3,7 @@ CREATE TABLE expenses (
     date_record CHAR(8) NOT NULL,
     concept VARCHAR NOT NULL,
     amount FLOAT NOT NULL,
+    total_amount FLOAT NOT NULL,
     tag1 VARCHAR NULL,
     tag2 VARCHAR NULL,
     category1 VARCHAR NULL,

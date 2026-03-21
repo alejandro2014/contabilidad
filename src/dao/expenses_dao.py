@@ -6,10 +6,11 @@ class ExpensesDao:
         self._db = db_connector
 
     def add_expense(self, expense):
-        sql = "INSERT INTO expenses (date_record, concept, amount, category1, category2, file_hash) VALUES (?,?,?,?,?,?)"
+        sql = "INSERT INTO expenses (date_record, concept, amount, total_amount, category1, category2, file_hash) VALUES (?,?,?,?,?,?,?)"
         params = (expense.date,
                 expense.concept,
                 expense.amount,
+                expense.total_amount,
                 expense.category1,
                 expense.category2,
                 expense.hash)

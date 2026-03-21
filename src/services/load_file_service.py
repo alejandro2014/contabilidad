@@ -39,7 +39,7 @@ class LoadFileService:
         rows_number = df.shape[0]
 
         df = df[4 : rows_number-1]
-        df.columns = ['date', 'category', 'subcategory', 'concept', 'comment', 'value']
+        df.columns = ['date', 'category', 'subcategory', 'concept', 'comment', 'value', 'total_value']
         df = df.drop(['comment'], axis=1)
 
         return [
@@ -55,7 +55,8 @@ class LoadFileService:
             category1 = self.format_nan(r['category']),
             category2 = self.format_nan(r['subcategory']),
             concept = r['concept'],
-            amount = float(r['value'])
+            amount = float(r['value']),
+            total_amount = float(r['total_value'])
         )
 
         print(expense)
