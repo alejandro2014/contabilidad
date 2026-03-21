@@ -2,7 +2,6 @@ from PySide6.QtWidgets import QGroupBox, QHBoxLayout, QLabel, QVBoxLayout, QWidg
 
 from DateConverter import DateConverter
 
-from src.gui.dialogs.WidgetCreator import WidgetCreator
 from src.events.ListenerNode import ListenerNode
 from src.model.date_filter import DateFilter
 from src.services.expenses_service import ExpensesService
@@ -11,13 +10,13 @@ from src.services.combobox_services.months_service import MonthsService
 from src.services.combobox_services.years_service import YearsService
 from src.gui.widgets.combobox import ComboBox
 
+from src.gui.widgets.date_selector import DateSelector
+
 
 class DateFilterWidget(QWidget, ListenerNode):
     def __init__(self, listeners_pool, *args, **kwargs):
         super(DateFilterWidget, self).__init__(*args, **kwargs)
         ListenerNode.__init__(self, 'date-filter', listeners_pool)
-
-        widget_creator = WidgetCreator()
         
         #self.expenses_service = PendingExpensesService()
         self.expenses_service = ExpensesService()
@@ -40,12 +39,9 @@ class DateFilterWidget(QWidget, ListenerNode):
         layout = QVBoxLayout()
         self.setLayout(layout)
 
-        from_layout = self.create_date_layout('Desde', self.cbx['from'])
-        to_layout = self.create_date_layout('Hasta', self.cbx['to'])
-
         inner_layout = QVBoxLayout()
-        inner_layout.addLayout(from_layout)
-        inner_layout.addLayout(to_layout)
+        inner_layout.addWidget(DateSelector('Desde'))
+        inner_layout.addWidget(DateSelector('Hasta'))
 
         group_box = QGroupBox("Fechas")
         group_box.setLayout(inner_layout)

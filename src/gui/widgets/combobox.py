@@ -2,18 +2,21 @@ from PySide6.QtWidgets import QComboBox, QLabel, QHBoxLayout, QWidget
 
 
 class ComboBox(QWidget):
-    def __init__(self, title, combobox_service=None):
+    def __init__(self, title=None, combobox_service=None):
         super().__init__()
 
         self.title = title
         self.service = combobox_service
 
-        label = QLabel(self.title + ':')
         self.combo = QComboBox()
-        label.setBuddy(self.combo)
 
         layout = QHBoxLayout(self)
-        layout.addWidget(label)
+
+        if title is not None:
+            label = QLabel(self.title + ':')
+            label.setBuddy(self.combo)
+            layout.addWidget(label)
+            
         layout.addWidget(self.combo)
 
         self.refresh_values()
