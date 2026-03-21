@@ -3,12 +3,7 @@ from PySide6.QtWidgets import QGroupBox, QHBoxLayout, QLabel, QVBoxLayout, QWidg
 from DateConverter import DateConverter
 
 from src.events.ListenerNode import ListenerNode
-from src.model.date_filter import DateFilter
 from src.services.expenses_service import ExpensesService
-from src.services.combobox_services.days_service import DaysService
-from src.services.combobox_services.months_service import MonthsService
-from src.services.combobox_services.years_service import YearsService
-from src.gui.widgets.combobox import ComboBox
 
 from src.gui.widgets.date_selector import DateSelector
 
@@ -20,21 +15,6 @@ class DateFilterWidget(QWidget, ListenerNode):
         
         #self.expenses_service = PendingExpensesService()
         self.expenses_service = ExpensesService()
-
-        self.date_filter = DateFilter()
-
-        self.cbx = {
-            'from': {
-                'day': ComboBox('Día', DaysService()),
-                'month': ComboBox('Mes', MonthsService()),
-                'year': ComboBox('Año', YearsService())
-            },
-            'to': {
-                'day': ComboBox('Día', DaysService()),
-                'month': ComboBox('Mes', MonthsService()),
-                'year': ComboBox('Año', YearsService())
-            }
-        }
 
         layout = QVBoxLayout()
         self.setLayout(layout)
@@ -58,16 +38,6 @@ class DateFilterWidget(QWidget, ListenerNode):
         """
 
         #self.update_top_dates()
-
-    def create_date_layout(self, title, cbx):
-        layout = QHBoxLayout()
-
-        layout.addWidget(QLabel(title + ':'))
-        layout.addWidget(cbx['day'])
-        layout.addWidget(cbx['month'])
-        layout.addWidget(cbx['year'])
-
-        return layout
 
     def date_changed(self, index):
         day_from = self.cbx['from']['day'].currentIndex() + 1

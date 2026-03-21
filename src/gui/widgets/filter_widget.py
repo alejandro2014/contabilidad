@@ -5,7 +5,7 @@ from src.events.ListenerNode import ListenerNode
 from src.gui.widgets.classifier import Classifier
 from src.gui.widgets.date_filter import DateFilterWidget
 from src.gui.widgets.TextFilter import TextFilter
-from src.gui.widgets.Summatory import Summatory
+from src.gui.widgets.summatory import Summatory
 from src.gui.widgets.SecondaryFilters import SecondaryFilters
 
 class FilterWidget(QWidget, ListenerNode):

@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QMainWindow
 
 from src.events.ListenersPool import ListenersPool
 
-from src.gui.widgets.StatusBar import StatusBar
+from src.gui.widgets.status_bar import StatusBar
 
 from src.gui.menus.main_menu import MainMenu
 from src.gui.screens.view_expenses_screen import ViewExpensesScreen
