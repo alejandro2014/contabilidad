@@ -4,7 +4,7 @@ from PySide2.QtCharts import QtCharts
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QPainter, QPen, QColor
 
-from src.services.ChartService import ChartService
+from src.services.chart_service import ChartService
 
 from globals import widgets_pool as wpool
 

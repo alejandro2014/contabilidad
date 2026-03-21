@@ -1,16 +1,16 @@
 DROP TABLE IF EXISTS expenses;
 CREATE TABLE expenses (
-    id CHAR(36) NOT NULL,
-    date CHAR(8) NOT NULL,
-    title STRING NOT NULL,
+    date_record CHAR(8) NOT NULL,
+    concept VARCHAR NOT NULL,
     amount FLOAT NOT NULL,
-    category STRING NULL,
-    subcategory STRING NULL,
-    category_src STRING NULL,
-    subcategory_src STRING NULL,
-    category_suggested STRING NULL,
-    subcategory_suggested STRING NULL,
-    PRIMARY KEY (date, title, amount)
+    tag1 VARCHAR NULL,
+    tag2 VARCHAR NULL,
+    category1 VARCHAR NULL,
+    category2 VARCHAR NULL,
+    category_suggested VARCHAR NULL,
+    subcategory_suggested VARCHAR NULL,
+    file_hash VARCHAR NOT NULL,
+    PRIMARY KEY (date_record, concept, amount)
 );
 
 DROP INDEX IF EXISTS expenses_id;
@@ -19,9 +19,9 @@ CREATE INDEX expenses_id ON expenses (id);
 DROP TABLE IF EXISTS expenses_not_classified;
 CREATE TABLE expenses_not_classified (
     date_record CHAR(8) NOT NULL,
-    concept STRING NOT NULL,
-    category STRING NOT NULL,
-    subcategory STRING NOT NULL,
+    concept VARCHAR NOT NULL,
+    category VARCHAR NOT NULL,
+    subcategory VARCHAR NOT NULL,
     quantity FLOAT NOT NULL,
     PRIMARY KEY (date_record, concept, quantity)
 );
@@ -29,7 +29,7 @@ CREATE TABLE expenses_not_classified (
 DROP TABLE IF EXISTS expenses_classified;
 CREATE TABLE expenses_classified (
     date_record CHAR(8) NOT NULL,
-    concept STRING NOT NULL,
+    concept VARCHAR NOT NULL,
     quantity FLOAT NOT NULL,
     type VARCHAR NULL,
     PRIMARY KEY (date_record, concept, quantity)

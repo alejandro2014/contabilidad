@@ -1,18 +1,20 @@
-from PySide6 import QtWidgets, QtGui
 from PySide6.QtWidgets import QDialog, QFileDialog, QGridLayout, QHBoxLayout, QLabel, QLineEdit
 
 from src.gui.dialogs.info_dialog import InfoDialog
-from src.gui.dialogs.WidgetCreator import WidgetCreator
 
-from src.services.LoadFileService import LoadFileService
+from src.services.load_file_service import LoadFileService
+
+from src.gui.widgets.pictured_button import PicturedButton
+
 
 class LoadFileDialog(QDialog):
     def __init__(self, parent, listeners_pool):
+        #self.parent = parent
+        #super().__init__(self.parent)
+
         super(LoadFileDialog, self).__init__(parent)
 
         self.listeners_pool = listeners_pool
-
-        widget_creator = WidgetCreator()
 
         self.expenses_service = LoadFileService()
 
@@ -27,9 +29,10 @@ class LoadFileDialog(QDialog):
         self.load_file_textbox = QLineEdit()
         load_file_label.setBuddy(self.load_file_textbox)
 
-        button_load = widget_creator.create_button("Cargar fichero", "upload", self.load_file)
-        button_cancel = widget_creator.create_button("Cancelar", "cancel", self.reject)
-        button_search = widget_creator.create_button("", "search", self.choose_file)
+        
+        button_load = PicturedButton("Cargar fichero", "upload", self.load_file)
+        button_cancel = PicturedButton("Cancelar", "cancel", self.reject)
+        button_search = PicturedButton("", "search", self.choose_file)
 
         button_box = QHBoxLayout()
         button_box.addWidget(button_load)
@@ -55,7 +58,7 @@ class LoadFileDialog(QDialog):
         self.listeners_pool.send_event('pending-expenses-table', 'refresh_rows')
 
         message = f"Registros cargados: {str(values['inserted'])}\nRegistros ignorados: {str(values['ignored'])}"
-        info_dialog = InfoDialog(self, title="Cargado fichero", message=message)
+        info_dialog = InfoDialog(self, message=message)
 
         #TODO Check whether file exists
         #TODO Check extension is correct

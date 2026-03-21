@@ -2,7 +2,7 @@ import json
 import sys
 import unittest
 
-from src.dao.ChartSqlGenerator import ChartSqlGenerator
+from src.dao.chart_sql_generator import ChartSqlGenerator
 
 class ChartSqlGeneratorTestCase(unittest.TestCase):
     def setUp(self):

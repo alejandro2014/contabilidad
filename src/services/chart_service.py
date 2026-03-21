@@ -1,8 +1,8 @@
 import time
 
-from src.dao.ChartSqlGenerator import ChartSqlGenerator
+from src.dao.chart_sql_generator import ChartSqlGenerator
 
-from src.misc.DatesGetter import DatesGetter
+from src.services.DatesGetter import DatesGetter
 
 from src.services.BaseService import BaseService
 from src.services.formatters.ChartFormatter import ChartFormatter

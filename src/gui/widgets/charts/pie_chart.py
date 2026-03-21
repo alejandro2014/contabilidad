@@ -4,7 +4,7 @@ from PySide6 import QtCharts
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPainter, QPen, QColor
 
-from src.services.ChartService import ChartService
+from src.services.chart_service import ChartService
 
 class PieChart(QtCharts.QChartView):
     def __init__(self):

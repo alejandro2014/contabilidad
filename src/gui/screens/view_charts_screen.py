@@ -2,10 +2,10 @@ from PySide6.QtWidgets import QVBoxLayout, QWidget
 
 from src.events.ListenerNode import ListenerNode
 
-from src.widgets.FilterWidget import FilterWidget
+from src.gui.widgets.filter_widget import FilterWidget
 
-from src.widgets.charts.BarChart import BarChart
-from src.widgets.charts.PieChart import PieChart
+from src.gui.widgets.charts.bar_chart import BarChart
+from src.gui.widgets.charts.pie_chart import PieChart
 
 class ViewChartsScreen(QWidget, ListenerNode):
     def __init__(self, listeners_pool, *args, **kwargs):

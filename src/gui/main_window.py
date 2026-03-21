@@ -15,7 +15,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('Contabilidad')
         self.resize(1000, 900)
 
-        self.main_menu = MainMenu(self)
+        self.main_menu = MainMenu(self, self.listeners_pool)
 
         self.init_status_bar()
 

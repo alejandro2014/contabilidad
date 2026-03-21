@@ -23,15 +23,24 @@ class ExpensesService:
         )
 
     def load_expenses(self, expenses, hash):
-        for i, expense in enumerate(expenses):
-            expense['hash'] = hash
-            expense['id'] = f'{hash}-{str(i).zfill(4)}'
-            expense['date'] = self.convert_date(expense['date'])
+        successes = 0
+        errors = 0
 
-            self._expenses_dao.load_expense(expense)
+        for i, expense in enumerate(expenses):
+            print(f'[DEBUG] Loading expense {expense}')
+            expense.hash = hash
+            expense.id = f'{hash}-{str(i).zfill(4)}'
+            expense.date = self.convert_date(expense.date)
+
+            if self._expenses_dao.add_expense(expense) == True:
+                successes += 1
+            else:
+                errors += 1
+        
+        return successes, errors
 
     def load_expense(self, expense):
-        self._expenses_dao.load_expense(expense)
+        self._expenses_dao.add_expense(expense)
 
     def delete_expenses(self, hash_file):
         self._expenses_dao.delete_expenses(hash_file)

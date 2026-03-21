@@ -1,5 +1,5 @@
 from src.config.ConfigLoader import ConfigLoader
-from src.dao.BaseSqlGenerator import BaseSqlGenerator
+from src.dao.base_sql_generator import BaseSqlGenerator
 
 class SqlGenerator(BaseSqlGenerator):
     def __init__(self, excl_categories):

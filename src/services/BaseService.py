@@ -1,5 +1,5 @@
-from src.zz_old_dao.SqliteConnector import SqliteConnector
-from src.zz_old_dao.SqlGenerator import SqlGenerator
+from src.dao.sqlite_connector import SqliteConnector
+from src.dao.SqlGenerator import SqlGenerator
 
 class BaseService:
     def __init__(self):

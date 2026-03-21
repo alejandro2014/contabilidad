@@ -33,7 +33,7 @@ cli = Cli()
 cli.parse_input()
 
 exit()
-from src.services.LoadFileService import LoadFileService
+from src.services.load_file_service import LoadFileService
 
 file_path = '2301.xls'
 

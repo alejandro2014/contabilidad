@@ -1,8 +1,7 @@
 from PySide6 import QtCharts
-from PySide6.QtGui import QFont, QPainter, QColor
-from PySide6.QtCore import QPoint, Qt
+from PySide6.QtGui import QFont, QColor
 
-from src.services.ChartService import ChartService
+from src.services.chart_service import ChartService
 
 class BarChart(QtCharts.QChartView):
     def __init__(self):

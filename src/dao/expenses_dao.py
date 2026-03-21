@@ -1,21 +1,25 @@
 from src.model import Expense
+import sqlite3
 
 class ExpensesDao:
     def __init__(self, db_connector):
         self._db = db_connector
 
     def add_expense(self, expense):
-        sql = "INSERT INTO expenses (date_record, concept, amount, category1, category2, tag1, tag2, hash) VALUES (?,?,?,?,?,?,?)"
+        sql = "INSERT INTO expenses (date_record, concept, amount, category1, category2, file_hash) VALUES (?,?,?,?,?,?)"
         params = (expense.date,
                 expense.concept,
                 expense.amount,
                 expense.category1,
                 expense.category2,
-                expense.tag1,
-                expense.tag2,
                 expense.hash)
 
-        self._db.run_sql(sql, params)
+        try:
+            self._db.run_sql(sql, params)
+            return True
+        except sqlite3.IntegrityError as e:
+            print(f"[DEBUG] Skipped duplicate: {e}")
+            return False
 
     def add_expenses(self, expenses):
         for expense in expenses:

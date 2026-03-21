@@ -1,3 +1,4 @@
+import hashlib
 import numpy as np
 import pandas as pd
 import uuid
@@ -7,7 +8,7 @@ from src.services.expenses_service import ExpensesService
 
 from src.config.ConfigLoader import ConfigLoader
 
-from src.model.expense import Expense
+from src.model.Expense import Expense
 
 class LoadFileService:
     def __init__(self):
@@ -17,14 +18,15 @@ class LoadFileService:
     def load_file(self, file_name):
         if file_name.endswith('.xls'):
             expenses = self.extract_expenses_from_xls(file_name)
+            file_hash = self.get_file_hash(file_name)
 
         if file_name.endswith('.csv'):
             expenses = self.extract_expenses_from_csv(file_name)
         
-        return self.insert_expense_lines(expenses)
+        return self.insert_expense_lines(expenses, file_hash)
 
-    def insert_expense_lines(self, expenses):
-        successes, errors = self.expenses_service.load_expenses(expenses)
+    def insert_expense_lines(self, expenses, file_hash):
+        successes, errors = self.expenses_service.load_expenses(expenses, file_hash)
 
         return {
             'inserted': successes,
@@ -46,12 +48,13 @@ class LoadFileService:
         ]
     
     def debug_expense(self, r):
+        print(r)
+        print(type(r['value']), r['value'])
         expense = Expense(
-            id = str(uuid.uuid4()),
             date = str(r['date'].date()).replace('-', ''),
-            category_src = self.format_nan(r['category']),
-            subcategory_src = self.format_nan(r['subcategory']),
-            title = r['concept'],
+            category1 = self.format_nan(r['category']),
+            category2 = self.format_nan(r['subcategory']),
+            concept = r['concept'],
             amount = float(r['value'])
         )
 
@@ -64,7 +67,17 @@ class LoadFileService:
         file_reader = FileReader(reader_info)
         expense_lines = file_reader.read_file(csv_name)
 
-        return self.insert_expense_lines(expense_lines, reader_info)
+        print(f'[DEBUG] Reading file {csv_name}')
+        file_hash = self.get_file_hash(csv_name)
+
+        return self.insert_expense_lines(expense_lines, reader_info, file_hash)
     
     def format_nan(self, value):
         return None if value == np.nan else value
+    
+    def get_file_hash(self, file_path):
+        with open(file_path, 'rb') as f:
+            file_content = f.read()
+            hash_file = hashlib.sha256(file_content).hexdigest()
+
+        return hash_file[:10]

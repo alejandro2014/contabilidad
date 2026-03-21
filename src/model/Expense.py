@@ -2,8 +2,9 @@ from src.model.base_class import ModelBaseClass
 
 
 class Expense(ModelBaseClass):
-    def __init__(self, id=None, file=None, date=None, category1=None, category2=None, tag1=None, tag2=None, concept=None, amount=None, hash=None):
-        self.id = id
+    def __init__(self, file=None, date=None, category1=None, category2=None, tag1=None, tag2=None, concept=None, amount=None, file_hash=None):
+        super().__init__('Expense')
+
         self.file = file
         self.date = date
         self.category1 = category1
@@ -12,4 +13,4 @@ class Expense(ModelBaseClass):
         self.tag2 = tag2
         self.concept = concept
         self.amount = amount
-        self.hash = hash
+        self.file_hash = file_hash
