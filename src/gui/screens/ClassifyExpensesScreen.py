@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QVBoxLayout, QWidget
 
 from src.events.ListenersPool import ListenersPool
 
-from src.gui.widgets.FilterWidget import FilterWidget
+from src.gui.widgets.filter_widget import FilterWidget
 
 from src.gui.widgets.tables.PendingExpensesTable import PendingExpensesTable
 

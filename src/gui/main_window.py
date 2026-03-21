@@ -5,6 +5,7 @@ from src.events.ListenersPool import ListenersPool
 from src.gui.widgets.StatusBar import StatusBar
 
 from src.gui.menus.main_menu import MainMenu
+from src.gui.screens.view_expenses_screen import ViewExpensesScreen
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -17,6 +18,8 @@ class MainWindow(QMainWindow):
         self.main_menu = MainMenu(self)
 
         self.init_status_bar()
+
+        self.setCentralWidget(ViewExpensesScreen(self.listeners_pool))
 
     def init_status_bar(self):
         self.status_bar = StatusBar(self.listeners_pool)

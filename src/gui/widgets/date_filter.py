@@ -2,10 +2,15 @@ from PySide6.QtWidgets import QGroupBox, QHBoxLayout, QLabel, QVBoxLayout, QWidg
 
 from DateConverter import DateConverter
 
-from src.dialogs.WidgetCreator import WidgetCreator
+from src.gui.dialogs.WidgetCreator import WidgetCreator
 from src.events.ListenerNode import ListenerNode
 from src.model.date_filter import DateFilter
 from src.services.expenses_service import ExpensesService
+from src.services.combobox_services.days_service import DaysService
+from src.services.combobox_services.months_service import MonthsService
+from src.services.combobox_services.years_service import YearsService
+from src.gui.widgets.combobox import ComboBox
+
 
 class DateFilterWidget(QWidget, ListenerNode):
     def __init__(self, listeners_pool, *args, **kwargs):
@@ -21,14 +26,14 @@ class DateFilterWidget(QWidget, ListenerNode):
 
         self.cbx = {
             'from': {
-                'day': widget_creator.create_combobox('day'),
-                'month': widget_creator.create_combobox('month'),
-                'year': widget_creator.create_combobox('year')
+                'day': ComboBox('Día', DaysService()),
+                'month': ComboBox('Mes', MonthsService()),
+                'year': ComboBox('Año', YearsService())
             },
             'to': {
-                'day': widget_creator.create_combobox('day'),
-                'month': widget_creator.create_combobox('month'),
-                'year': widget_creator.create_combobox('year')
+                'day': ComboBox('Día', DaysService()),
+                'month': ComboBox('Mes', MonthsService()),
+                'year': ComboBox('Año', YearsService())
             }
         }
 
@@ -47,14 +52,16 @@ class DateFilterWidget(QWidget, ListenerNode):
 
         layout.addWidget(group_box)
 
+        """
         self.cbx['from']['day'].currentIndexChanged.connect(self.date_changed)
         self.cbx['from']['month'].currentIndexChanged.connect(self.date_changed)
         self.cbx['from']['year'].currentIndexChanged.connect(self.date_changed)
         self.cbx['to']['day'].currentIndexChanged.connect(self.date_changed)
         self.cbx['to']['month'].currentIndexChanged.connect(self.date_changed)
         self.cbx['to']['year'].currentIndexChanged.connect(self.date_changed)
+        """
 
-        self.update_top_dates()
+        #self.update_top_dates()
 
     def create_date_layout(self, title, cbx):
         layout = QHBoxLayout()

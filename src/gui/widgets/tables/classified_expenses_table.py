@@ -48,13 +48,14 @@ class ClassifiedExpensesTable(QtWidgets.QTableWidget, ListenerNode):
             self.refresh_expenses_by_type_and_month()
 
     def refresh_expenses_raw(self, filter):
-        self.expenses = self.expenses_service.get_classified_expenses(filter)
+        #self.expenses = self.expenses_service.get_classified_expenses(filter)
+        self.expenses = []
 
         expenses = copy.deepcopy(self.expenses)
         expenses = [ self.format_expense(ex) for ex in expenses ]
 
         self.populate(expenses)
-        self.send_event('sum-text', 'update_expenses_sum_from_table', expenses)
+        #self.send_event('sum-text', 'update_expenses_sum_from_table', expenses)
         #self.send_event('sum-text', 'set_records_no_value', len(expenses))
 
     def refresh_expenses_by_month(self):
@@ -63,7 +64,7 @@ class ClassifiedExpensesTable(QtWidgets.QTableWidget, ListenerNode):
         expenses = copy.deepcopy(self.expenses)
 
         self.populate(expenses)
-        self.send_event('sum-text', 'update_expenses_sum_from_table', expenses)
+        #self.send_event('sum-text', 'update_expenses_sum_from_table', expenses)
         #self.send_event('sum-text', 'set_records_no_value', len(expenses))
 
     def refresh_expenses_by_type(self):
@@ -72,7 +73,7 @@ class ClassifiedExpensesTable(QtWidgets.QTableWidget, ListenerNode):
         expenses = copy.deepcopy(self.expenses)
 
         self.populate(expenses)
-        self.send_event('sum-text', 'update_expenses_sum_from_table', expenses)
+        #self.send_event('sum-text', 'update_expenses_sum_from_table', expenses)
         #self.send_event('sum-text', 'set_records_no_value', len(expenses))
 
     def refresh_expenses_by_type_and_month(self):
@@ -81,7 +82,7 @@ class ClassifiedExpensesTable(QtWidgets.QTableWidget, ListenerNode):
         expenses = copy.deepcopy(self.expenses)
 
         self.populate(expenses)
-        self.send_event('sum-text', 'update_expenses_sum_from_table', expenses)
+        #self.send_event('sum-text', 'update_expenses_sum_from_table', expenses)
         #self.send_event('sum-text', 'set_records_no_value', len(expenses))
 
     def populate(self, table_rows):

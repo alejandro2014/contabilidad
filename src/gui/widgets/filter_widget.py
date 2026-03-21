@@ -2,11 +2,11 @@ from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget
 
 from src.events.ListenerNode import ListenerNode
 
-from src.widgets.Classifier import Classifier
-from src.widgets.DateFilterWidget import DateFilterWidget
-from src.widgets.TextFilter import TextFilter
-from src.widgets.Summatory import Summatory
-from src.widgets.SecondaryFilters import SecondaryFilters
+from src.gui.widgets.classifier import Classifier
+from src.gui.widgets.date_filter import DateFilterWidget
+from src.gui.widgets.TextFilter import TextFilter
+from src.gui.widgets.Summatory import Summatory
+from src.gui.widgets.SecondaryFilters import SecondaryFilters
 
 class FilterWidget(QWidget, ListenerNode):
     def __init__(self, screen_type, listeners_pool, *args, **kwargs):

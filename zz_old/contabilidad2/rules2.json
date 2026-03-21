@@ -1,0 +1,125 @@
+{
+    "categories": [
+        {
+            "name": "ahorro",
+            "rules": [
+                "Traspaso recibido"
+            ]
+        },
+        {
+            "name": "amazon",
+            "rules": [
+                "AMZN MKTP",
+                "AMAZON"
+            ]
+        },
+        {
+            "name": "casa",
+            "rules": [
+                "ESPACIO CASA",
+                "IKEA"
+            ]
+        },
+        {
+            "name": "comida",
+            "rules": [
+                "ALCAMPO",
+                "MERCADONA",
+                "SUPERSOL"
+            ]
+        },
+        {
+            "name": "coche",
+            "rules": [
+                "AUCALSA",
+                "Autopistas SAN RAFAEL ES",
+                "AUTOPISTA",
+                "GALP LAS ROZAS",
+                "MAKSU",
+                "Pago en AYTO MADRID LINEAMADRID01MADRID"
+            ]
+        },
+        {
+            "name": "efectivo",
+            "rules": [
+                "Reintegro efectivo"
+            ]
+        },
+        {
+            "name": "facturas",
+            "rules": [
+                "ENDESA",
+                "Recibo BETANZOS"
+            ]
+        },
+        {
+            "name": "nomina",
+            "rules": [
+                "KAIROS",
+                "Viajes Pacifico"
+            ]
+        },
+        {
+            "name": "ropa y belleza",
+            "rules": [
+                "DERMASANA",
+                "\\*ETAM",
+                "EL CORTE INGLES",
+                "FINA GARCIA",
+                "H M PLAZA RIO",
+                "NAILSPINCELADASSPA",
+                "NAILS FACTORY",
+                "PARFOIS",
+                "PRIMARK",
+                "PRIMOR",
+                "PUNTOFASLMA",
+                "SPRINGFIELD"
+            ]
+        },
+        {
+            "name": "salir",
+            "rules": [
+                "DELIVEROO",
+                "EUREST",
+                "BURGER",
+                "FOSTER S HOLLYWOOD",
+                "GUIJAL ROZAS",
+                "LAMUCCA",
+                "MONTERREY",
+                "MUTUA MADRILE A MADRID",
+                "Pago en MONTEHOGAR MADRID ES",
+                "PROBATORIUM MADRID",
+                "TAPATERAPIA",
+                "VIPS"
+            ]
+        },
+        {
+            "name": "telefono",
+            "rules": [
+                "TELEFONICA"
+            ]
+        },
+        {
+            "name": "transporte",
+            "rules": [
+                "METRO DE MADRID"
+            ]
+        },
+        {
+            "name": "transferencias",
+            "rules": [
+                "Transferencia emitida",
+                "Transferencia recibida"
+            ]
+        },
+        {
+            "name": "tv",
+            "rules": [
+                "ADYEN",
+                "NETFLIX",
+                "Netflix",
+                "HBO ESPANA"
+            ]
+        }
+    ]
+}

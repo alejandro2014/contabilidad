@@ -6,7 +6,7 @@ from src.gui.widgets.combobox import ComboBox
 from src.gui.widgets.input_text import InputText
 from src.gui.widgets.button_box import ButtonBox
 
-from src.gui.widgets.combobox_services.categories_combobox_service import CategoriesComboboxService
+from src.services.combobox_services.categories_combobox_service import CategoriesComboboxService
 
 from src.gui.dialogs.base_dialog import BaseDialog
 

@@ -1,0 +1,290 @@
+{
+    "categories": [
+        {
+            "name": "ahorro",
+            "rules": [
+                "Traspaso emitido Cuenta Nómina",
+                "Traspaso interno recibido",
+                "Traspaso recibido"
+            ]
+        },
+        {
+            "name": "amazon",
+            "rules": [
+                "AMZN Mktp",
+                "AMZN MKTP",
+                "AMAZON"
+            ]
+        },
+        {
+            "name": "bizum",
+            "rules": [
+                "Transferencia Bizum",
+                "Traspaso Bizum",
+                "TWYP Las Rozas"
+            ]
+        },
+        {
+            "name": "casa",
+            "rules": [
+                "ALIEXPRESS.COM",
+                "ESPACIO CASA",
+                "IKEA",
+                "KIABI",
+                "SORIANO VAGUADA",
+                "SUPERCHINA",
+                "TEDI Fil",
+                "VERDECORA"
+            ]
+        },
+        {
+            "name": "coche",
+            "rules": [
+                "AUCALSA",
+                "Autopistas SAN RAFAEL ES",
+                "AUTOPISTA",
+                "CEDIPSA",
+                "CHAPINFUEL",
+                "E.S. SANTA ANA",
+                "EUROMASTER",
+                "GALP LAS ROZAS",
+                "GASOLINERA",
+                "INDIGO MANOTERAS",
+                "MAKSU",
+                "Pago en AUTOROUTE",
+                "Pago en AYTO MADRID LINEAMADRID01MADRID",
+                "Pago en BIDEGI",
+                "Pago en SHELL",
+                "SERVIAREAS",
+                "Shopping NARANJA:GALP"
+            ]
+        },
+        {
+            "name": "comida",
+            "rules": [
+                "ALCAMPO",
+                "ALIMERKA",
+                "CARNICERIA",
+                "CARREFOUR",
+                "FRUTAS VIDAL",
+                "FRUTERIA",
+                "LA PLAZA MADRID",
+                "LIDL",
+                "MARKET VALLADOL",
+                "MERCADONA",
+                "SUPERCOR",
+                "SUPERMERCADO",
+                "SUPERSOL"
+            ]
+        },
+        {
+            "name": "efectivo",
+            "rules": [
+                "Comisión cajero BANKIA",
+                "Comisión cajero B.B.V.A. SANTANDER ES",
+                "Reintegro efectivo"
+            ]
+        },
+        {
+            "name": "facturas",
+            "rules": [
+                "ENDESA",
+                "Recibo BETANZOS"
+            ]
+        },
+        {
+            "name": "farmacia",
+            "rules": [
+                "FARMACIA"
+            ]
+        },
+        {
+            "name": "filtro",
+            "rules": [
+                "NET NANNY"
+            ]
+        },
+        {
+            "name": "gimnasio",
+            "rules": [
+                "GIMNASIO NORU",
+                "GO FIT PE"
+            ]
+        },
+        {
+            "name": "kiosko",
+            "rules": [
+                "KIOSKO"
+            ]
+        },
+        {
+            "name": "nomina",
+            "rules": [
+                "Abono prestación INEM",
+                "GEO DATA BLOCK",
+                "KAIROS",
+                "Viajes Pacifico"
+            ]
+        },
+        {
+            "name": "nube",
+            "rules": [
+                "AWS EMEA"
+            ]
+        },
+        {
+            "name": "psicologo",
+            "rules": [
+                "CAIF"
+            ]
+        },
+        {
+            "name": "ropa y belleza",
+            "rules": [
+                "ALE HOP",
+                "BIMBALOLASL",
+                "BIMBA AND LOLA",
+                "CALZEDONIA MADRID",
+                "CA MODAS",
+                "CORTEFIEL",
+                "DECATHLON",
+                "Deichmann",
+                "DEICHMANNCA",
+                "DERMASANA",
+                "Devolución Tarjeta HM.COM",
+                "DISMODACOME",
+                "\\*ETAM",
+                "EL CORTE INGLES",
+                "ETAM LINGERIE",
+                "FINA GARCIA",
+                "Freshly Cosmetics",
+                "H M CASTELLANA",
+                "H M PLAZA RIO",
+                "HENNESMAURI",
+                "LEFTIES",
+                "LUCIA BE",
+                "MARCO ALDANY",
+                "NAILSPINCELADASSPA",
+                "NAILS FACTORY",
+                "Pago en ETAM",
+                "Pago en HM.COM",
+                "PARFOIS",
+                "PAYPAL \\*ZARA",
+                "PIMKIE",
+                "PRIMARK",
+                "PRIMOR",
+                "PUNTOFASLMA",
+                "RIZOINGREDI",
+                "SFERA VAGUADA",
+                "SPRINGFIELD",
+                "STRADIVARIUS",
+                "WOMENS SECRET",
+                "WOMEN SECRET",
+                "WWW.LUCIABE.COM",
+                "ZALANDOSE",
+                "ZARA INTERNET"
+            ]
+        },
+        {
+            "name": "salir y pedir",
+            "rules": [
+                "80 GRADOS",
+                "ANDELE ALCOBENDAS",
+                "AROY THAI MADRID",
+                "BARRA DE PINTXOS",
+                "BK FERMIN CABALLERO",
+                "BK LAGUNA DEL DUERO",
+                "BLAMARAL FERIA",
+                "BURGER",
+                "BURGUER KING",
+                "CAFE Y TAPAS MADRID",
+                "CINESA",
+                "CITIREST",
+                "COFEE REPUBLIC",
+                "DELIVEROO",
+                "EL CORCHO FRANQUICIAS",
+                "EL SIETE RESTAURANTE",
+                "EUREST",
+                "FERRETTI ARROYO",
+                "FOSTER S HOLLYWOOD",
+                "GARVO LAS ROZAS",
+                "GINOS",
+                "GOOD SUSHI",
+                "GUIJAL ROZAS",
+                "HONEST GREEN",
+                "IMANOL",
+                "KEBAB",
+                "LA CUCINA DELLA MAMMA",
+                "LA ESCALERA DEL 34",
+                "LA MESA PUESTA",
+                "LA PANZA DE SANCHO",
+                "LA PARRILLA DE USERA",
+                "LA SEPIA ARROYO",
+                "LAMUCCA",
+                "LLAO LLAO",
+                "MC DONALDS",
+                "MESON LAS VEGAS",
+                "MONTEPRINCIPE BOADILLA",
+                "MONTERREY",
+                "MUTUA MADRILE A MADRID",
+                "NAT S LUNCHBOX",
+                "NORDIS COFFEE",
+                "Pago en MCDONALD",
+                "Pago en MONTEHOGAR MADRID ES",
+                "PIZZA",
+                "PIZZERIA",
+                "PROBATORIUM MADRID",
+                "RESTAURANT",
+                "RESTAURACION NAT",
+                "RUA OCIO VALLADOLID",
+                "SAONA LAS TABLAS",
+                "TANTEO MADRID",
+                "TAPATERAPIA",
+                "TR LAS ROZAS LAS ROZAS",
+                "VELARDE RESTAURACION",
+                "VECTOR CORNER",
+                "VIPS",
+                "VOLAPIE",
+                "YELLOW CAB BREWERY"
+            ]
+        },
+        {
+            "name": "telefono",
+            "rules": [
+                "TELEFONICA"
+            ]
+        },
+        {
+            "name": "transporte",
+            "rules": [
+                "CABIFY",
+                "METRO DE MADRID",
+                "RENFE CERCANIAS",
+                "RENFE MADRID"
+            ]
+        },
+        {
+            "name": "transferencias",
+            "rules": [
+                "Transferencia emitida",
+                "Transferencia recibida"
+            ]
+        },
+        {
+            "name": "tv",
+            "rules": [
+                "ADYEN",
+                "Amazon Prime",
+                "NETFLIX",
+                "Netflix",
+                "HBO ESPANA"
+            ]
+        },
+        {
+            "name": "viajes",
+            "rules": [
+                "AIRBNB"
+            ]
+        }
+    ]
+}

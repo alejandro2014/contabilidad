@@ -3,9 +3,9 @@ from PySide6.QtWidgets import QVBoxLayout, QWidget
 from src.events.ListenerNode import ListenerNode
 from src.events.ListenersPool import ListenersPool
 
-from src.widgets.FilterWidget import FilterWidget
+from src.gui.widgets.filter_widget import FilterWidget
 
-from src.widgets.tables.ClassifiedExpensesTable import ClassifiedExpensesTable
+from src.gui.widgets.tables.classified_expenses_table import ClassifiedExpensesTable
 
 class ViewExpensesScreen(QWidget, ListenerNode):
     def __init__(self, listeners_pool, *args, **kwargs):
