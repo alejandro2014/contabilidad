@@ -1,4 +1,4 @@
-from src.gui.dialogs.ConfigureExpensesDialog import ConfigureExpensesDialog
+from src.gui.dialogs.configure_expenses_dialog import ConfigureExpensesDialog
 from src.gui.dialogs.configure_rules_dialog import ConfigureRulesDialog
 from src.gui.dialogs.add_rule_dialog import AddRuleDialog
 

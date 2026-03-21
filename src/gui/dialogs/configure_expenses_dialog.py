@@ -5,16 +5,20 @@ from PySide6.QtCore import QTimer
 from src.config.ConfigLoader import ConfigLoader
 
 from src.gui.dialogs.add_category_dialog import AddCategoryDialog
-from src.gui.dialogs.WidgetCreator import WidgetCreator
 
 from src.services.categories_service import CategoriesService
+
+from src.gui.widgets.pictured_button import PicturedButton
 
 
 class ConfigureExpensesDialog(QDialog):
     def __init__(self, parent):
         super(ConfigureExpensesDialog, self).__init__(parent)
 
-        self.titles, self.fields = self.get_table_info('expense-types')
+        self.service = CategoriesService()
+        self.table_id = 'expense-types'
+
+        self.titles, self.fields = self.get_table_info(self.table_id)
 
         self.table = QTableWidget()
         self.table.setHorizontalHeaderLabels(self.titles)
@@ -24,21 +28,14 @@ class ConfigureExpensesDialog(QDialog):
         self.table.setSortingEnabled(True)
         QTimer.singleShot(0, lambda: self.table.sortItems(0))
 
-        self.widget_creator = WidgetCreator()
-        self.categories_service = CategoriesService()
-
         self.setWindowTitle("Configuración de categorías")
         self.resize(600, 400)
         self.setModal(True)
 
-        button_add = self.widget_creator.create_button("Añadir categoría", "upload", self.add_category)
-        button_remove = self.widget_creator.create_button("Eliminar seleccionadas", "bin", self.remove_selected_rows)
-        button_ok = self.widget_creator.create_button("Aceptar", "ok", self.accept)
-
         button_box = QtWidgets.QHBoxLayout()
-        button_box.addWidget(button_add)
-        button_box.addWidget(button_remove)
-        button_box.addWidget(button_ok)
+        button_box.addWidget(PicturedButton("Añadir categoría", "upload", self.add_category))
+        button_box.addWidget(PicturedButton("Eliminar seleccionadas", "bin", self.remove_selected_rows))
+        button_box.addWidget(PicturedButton("Aceptar", "ok", self.accept))
 
         self.layout = QtWidgets.QVBoxLayout()
         self.layout.addWidget(self.table)
@@ -50,7 +47,7 @@ class ConfigureExpensesDialog(QDialog):
         self.refresh()
     
     def refresh(self):
-        categories = self.categories_service.get_categories()
+        categories = self.service.get_categories()
         self.refresh_table(self.table, titles=self.titles, fields=self.fields, row_objects=categories)
 
     def refresh_table(self, table, titles, fields, row_objects):
@@ -58,6 +55,7 @@ class ConfigureExpensesDialog(QDialog):
         table.clearContents()
         table.setColumnCount(len(titles))
         table.setRowCount(len(row_objects))
+        table.setHorizontalHeaderLabels(titles)
 
         for i, row in enumerate(row_objects):
             for j in range(len(fields)):
@@ -74,7 +72,7 @@ class ConfigureExpensesDialog(QDialog):
 
         if dialog.exec() == QDialog.Accepted:
             name, description = dialog.get_data()
-            self.categories_service.add_category(name, description)
+            self.service.add_category(name, description)
             self.refresh()
 
     def remove_selected_rows(self):
@@ -82,7 +80,7 @@ class ConfigureExpensesDialog(QDialog):
 
         categories = [ self.table.model().index(r.row(), 0).data() for r in selected_rows ]
 
-        self.categories_service.delete_categories(categories)
+        self.service.delete_categories(categories)
         self.refresh()
 
     def get_table_info(self, table_id):
