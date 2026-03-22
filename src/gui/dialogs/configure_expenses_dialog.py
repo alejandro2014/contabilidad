@@ -22,7 +22,10 @@ class ConfigureExpensesDialog(QDialog):
         self.service = CategoriesService()
         self.table_id = 'expense-types'
 
-        self.table = Table('expense-types', service=self.service, getter_name='get_categories')
+        self.table = Table('expense-types',
+                           service=self.service,
+                           getter_name='get_categories',
+                           delete_method='delete_categories')
 
         self.setWindowTitle("Configuración de categorías")
         self.resize(600, 400)

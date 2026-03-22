@@ -4,17 +4,18 @@ from src.config.ConfigLoader import ConfigLoader
 
 
 class Table(QTableWidget):
-    def __init__(self, table_id=None, service=None, getter_name=None):
+    def __init__(self, table_id=None, service=None, get_method=None, delete_method=None):
         super().__init__()
 
         self.table_id = table_id
         self.service = service
-        self.getter_name = getter_name
-
+        self.get_method = get_method
+        self.delete_method = delete_method
+    
         self.titles, self.fields = self._get_table_info(self.table_id)
 
     def refresh(self):
-        row_objects = getattr(self.service, self.getter_name)()
+        row_objects = getattr(self.service, self.get_method)()
     
         self.setSortingEnabled(False)
         self.clearContents()
@@ -34,10 +35,15 @@ class Table(QTableWidget):
     def remove_selected_rows(self):
         selected_rows = self.selectionModel().selectedRows()
 
-        categories = [ self.model().index(r.row(), 0).data() for r in selected_rows ]
-
-        self.service.delete_categories(categories)
+        self.delete_in_service(selected_rows)
+        
         self.refresh()
+
+    def delete_in_service(self, selected_rows):
+        #TODO Parameterize this line to make this valid for each table
+        selected_values = [ self.model().index(r.row(), 0).data() for r in selected_rows ]
+
+        getattr(self.service, self.delete_method)(selected_values)
 
     def _get_table_info(self, table_id):
         table_info = ConfigLoader().load_table(table_id)
