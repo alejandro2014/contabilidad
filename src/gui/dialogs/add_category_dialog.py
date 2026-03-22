@@ -14,22 +14,23 @@ class AddCategoryDialog(BaseDialog):
 
         self.categories_service = CategoriesService()
     
+        self.name_textbox = InputText('Nombre')
+        self.description_textbox = InputText('Descripción')
+        
         self.init_dialog(
             title = "Añadir categoría",
             layout = "vertical", 
             widgets = [
-                InputText('Nombre'),
-                InputText('Descripción'),
+                self.name_textbox,
+                self.description_textbox,
                 ButtonBox(self, id='cancel-accept')
             ]
         )
 
-    def accept(self):
-        self.check_category()
-        
+    """
     def check_category(self):
-        category_name = self.name_textbox.text()
-        category_description = self.description_textbox.text()
+        category_name = self.name_textbox.get_text()
+        category_description = self.description_textbox.get_text()
 
         if category_name == '':
             ErrorDialog(self, title = "Error: Nombre vacío", message = "El nombre de la categoría no puede estar vacío")
@@ -44,9 +45,16 @@ class AddCategoryDialog(BaseDialog):
         self.accept()
 
         return category_name, category_description
+    """
     
     def get_data(self):
         return [
-            self.name_textbox.text(),
-            self.description_textbox.text()
+            self.name_textbox.get_text(),
+            self.description_textbox.get_text()
         ]
+    
+    def get_name(self):
+        return self.name_textbox.get_text()
+    
+    def get_description(self):
+        return self.description_textbox.get_text()

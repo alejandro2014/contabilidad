@@ -5,12 +5,12 @@ from src.gui.widgets.button_box import ButtonBox
 
 
 class ErrorDialog(BaseDialog):
-    def __init__(self, parent, message=""):
+    def __init__(self, parent, title="Error", message="Unknown error"):
         self.parent = parent
         super().__init__(self.parent)
     
         self.init_dialog(
-            title = "Error",
+            title=title,
             layout = "vertical", 
             widgets = [
                 QLabel(message),

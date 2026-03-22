@@ -12,3 +12,6 @@ class InputText(QWidget):
         layout = QHBoxLayout(self)
         layout.addWidget(label)
         layout.addWidget(self.textbox)
+
+    def get_text(self):
+        return self.textbox.text()

@@ -9,6 +9,11 @@ from src.gui.dialogs.add_category_dialog import AddCategoryDialog
 from src.services.categories_service import CategoriesService
 
 from src.gui.widgets.pictured_button import PicturedButton
+from src.gui.widgets.button_box import ButtonBox
+
+from src.gui.widgets.table import Table
+
+from src.gui.dialogs.ErrorDialog import ErrorDialog
 
 
 class ConfigureExpensesDialog(QDialog):
@@ -18,15 +23,16 @@ class ConfigureExpensesDialog(QDialog):
         self.service = CategoriesService()
         self.table_id = 'expense-types'
 
-        self.titles, self.fields = self.get_table_info(self.table_id)
+        #self.titles, self.fields = self.get_table_info(self.table_id)
 
-        self.table = QTableWidget()
-        self.table.setHorizontalHeaderLabels(self.titles)
-        self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.table = Table('expense-types', service=self.service, getter_name='get_categories')
+        #self.table = QTableWidget()
+        #self.table.setHorizontalHeaderLabels(self.titles)
+        #self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        #self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
-        self.table.setSortingEnabled(True)
-        QTimer.singleShot(0, lambda: self.table.sortItems(0))
+        #self.table.setSortingEnabled(True)
+        #QTimer.singleShot(0, lambda: self.table.sortItems(0))
 
         self.setWindowTitle("Configuración de categorías")
         self.resize(600, 400)
@@ -34,7 +40,7 @@ class ConfigureExpensesDialog(QDialog):
 
         button_box = QtWidgets.QHBoxLayout()
         button_box.addWidget(PicturedButton("Añadir categoría", "upload", self.add_category))
-        button_box.addWidget(PicturedButton("Eliminar seleccionadas", "bin", self.remove_selected_rows))
+        button_box.addWidget(PicturedButton("Eliminar seleccionadas", "bin", self.table.remove_selected_rows))
         button_box.addWidget(PicturedButton("Aceptar", "ok", self.accept))
 
         self.layout = QtWidgets.QVBoxLayout()
@@ -44,8 +50,9 @@ class ConfigureExpensesDialog(QDialog):
         self.setLayout(self.layout)
         self.show()
 
-        self.refresh()
+        self.table.refresh()
     
+    """
     def refresh(self):
         categories = self.service.get_categories()
         self.refresh_table(self.table, titles=self.titles, fields=self.fields, row_objects=categories)
@@ -66,15 +73,32 @@ class ConfigureExpensesDialog(QDialog):
         table.setSortingEnabled(True)
 
         return table
+    """
     
     def add_category(self):
         dialog = AddCategoryDialog(self)
 
-        if dialog.exec() == QDialog.Accepted:
+        if dialog.exec() == QDialog.Accepted and self.is_category_ok(dialog):
             name, description = dialog.get_data()
             self.service.add_category(name, description)
-            self.refresh()
+            self.table.refresh()
 
+    def is_category_ok(self, dialog):
+        category_name = dialog.get_name()
+        
+        if category_name == '':
+            ErrorDialog(self, title="Error: Nombre vacío", message="El nombre de la categoría no puede estar vacío")
+            return False
+
+        category_exists = self.service.category_exists(category_name)
+
+        if category_exists:
+            ErrorDialog(self, title="Error: La categoría ya existe", message=f'Ya se ha introducido una categoría "{category_name}"')
+            return False
+
+        return True
+
+    """
     def remove_selected_rows(self):
         selected_rows = self.table.selectionModel().selectedRows()
 
@@ -90,3 +114,4 @@ class ConfigureExpensesDialog(QDialog):
         fields = [ r['field'] for r in table_info ]
 
         return titles, fields
+    """

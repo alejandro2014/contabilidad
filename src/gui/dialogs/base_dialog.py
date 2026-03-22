@@ -7,9 +7,11 @@ class BaseDialog(QDialog):
         super().__init__(self.parent)
 
     def init_dialog(self, title=None, layout=None, widgets=None):
+        self.widgets = widgets
+
         self.setWindowTitle(title)
         self.setModal(True)
-        self.init_widgets(widgets, layout)
+        self.init_widgets(self.widgets, layout)
         self.show()
 
     def init_widgets(self, widgets, layout=None):
@@ -17,3 +19,7 @@ class BaseDialog(QDialog):
 
         for widget in widgets:
             self.layout.addWidget(widget)
+
+    #TODO Resolve this by name instead
+    def get_widget(self, widget_no):
+        return self.widgets[widget_no]
