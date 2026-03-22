@@ -30,7 +30,7 @@ class CategoriesDao:
         return returned[0][0] > 0
 
     def get_categories(self):
-        sql = "SELECT name, description FROM categories"
+        sql = "SELECT name, description FROM categories ORDER BY name"
 
         result = self._db.run_sql(sql)
 

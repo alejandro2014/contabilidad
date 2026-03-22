@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QAbstractItemView, QDialog, QTableWidget, QTableWidgetItem
+from PySide6.QtWidgets import QAbstractItemView, QTableWidget, QTableWidgetItem
 
 from src.config.ConfigLoader import ConfigLoader
 
@@ -6,7 +6,7 @@ from src.config.ConfigLoader import ConfigLoader
 class Table(QTableWidget):
     def __init__(self, table_id=None, service=None, getter_name=None):
         super().__init__()
-        
+
         self.table_id = table_id
         self.service = service
         self.getter_name = getter_name
@@ -21,6 +21,7 @@ class Table(QTableWidget):
         self.setColumnCount(len(self.titles))
         self.setRowCount(len(row_objects))
         self.setHorizontalHeaderLabels(self.titles)
+        self.setSelectionBehavior(QAbstractItemView.SelectRows)
 
         for i, row in enumerate(row_objects):
             for j in range(len(self.fields)):
@@ -31,9 +32,9 @@ class Table(QTableWidget):
         self.setSortingEnabled(True)
 
     def remove_selected_rows(self):
-        selected_rows = self.table.selectionModel().selectedRows()
+        selected_rows = self.selectionModel().selectedRows()
 
-        categories = [ self.table.model().index(r.row(), 0).data() for r in selected_rows ]
+        categories = [ self.model().index(r.row(), 0).data() for r in selected_rows ]
 
         self.service.delete_categories(categories)
         self.refresh()

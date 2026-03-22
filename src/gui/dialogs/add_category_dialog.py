@@ -1,4 +1,3 @@
-from src.gui.dialogs.ErrorDialog import ErrorDialog
 from src.gui.dialogs.base_dialog import BaseDialog
 
 from src.services.categories_service import CategoriesService
@@ -26,26 +25,6 @@ class AddCategoryDialog(BaseDialog):
                 ButtonBox(self, id='cancel-accept')
             ]
         )
-
-    """
-    def check_category(self):
-        category_name = self.name_textbox.get_text()
-        category_description = self.description_textbox.get_text()
-
-        if category_name == '':
-            ErrorDialog(self, title = "Error: Nombre vacío", message = "El nombre de la categoría no puede estar vacío")
-            return
-
-        category_exists = self.categories_service.category_exists(category_name)
-
-        if category_exists:
-            ErrorDialog(self, title = "Error: La categoría ya existe", message = f'Ya se ha introducido una categoría "{category_name}"')
-            return
-
-        self.accept()
-
-        return category_name, category_description
-    """
     
     def get_data(self):
         return [
