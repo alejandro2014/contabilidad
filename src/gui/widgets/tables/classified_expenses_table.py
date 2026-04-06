@@ -30,7 +30,7 @@ class ClassifiedExpensesTable(QtWidgets.QTableWidget, ListenerNode):
 
     def init_table(self, table_info_file):
         self.table_info = ConfigLoader().load_table(table_info_file)
-        column_labels = [ x['field_text'] for x in self.table_info ]
+        column_labels = [ x['text'] for x in self.table_info ]
 
         ListenerNode.__init__(self, self.table_id, self.listeners_pool)
         super().__init__(1, len(self.table_info))
@@ -48,8 +48,8 @@ class ClassifiedExpensesTable(QtWidgets.QTableWidget, ListenerNode):
             self.refresh_expenses_by_type_and_month()
 
     def refresh_expenses_raw(self, filter):
-        #self.expenses = self.expenses_service.get_classified_expenses(filter)
-        self.expenses = []
+        self.expenses = self.expenses_service.get_expenses(filter)
+        #self.expenses = []
 
         expenses = copy.deepcopy(self.expenses)
         expenses = [ self.format_expense(ex) for ex in expenses ]

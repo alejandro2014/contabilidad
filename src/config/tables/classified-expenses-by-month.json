@@ -1,10 +1,10 @@
 [
     {
         "field": "month",
-        "field_text": "Mes"
+        "text": "Mes"
     },
     {
         "field": "quantity",
-        "field_text": "Total"
+        "text": "Total"
     }
 ]

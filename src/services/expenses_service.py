@@ -7,8 +7,8 @@ from src.dao.sqlite_connector import SqliteConnector
 
 class ExpensesService:
     def __init__(self):
-        self._expenses_dao = ExpensesDao(SqliteConnector())
-        self._rules_dao = RulesDao(SqliteConnector())
+        self._expenses_dao = ExpensesDao(SqliteConnector(parent='ExpensesDao'))
+        self._rules_dao = RulesDao(SqliteConnector(parent='RulesDao'))
 
     def get_expenses(self, args):
         return self._expenses_dao.get_expenses(

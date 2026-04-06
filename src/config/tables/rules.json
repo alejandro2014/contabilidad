@@ -1,10 +1,10 @@
 [
     {
         "field": "rule",
-        "field_text": "Regla"
+        "text": "Regla"
     },
     {
         "field": "category",
-        "field_text": "Categoría"
+        "text": "Categoría"
     }
 ]

@@ -1,10 +1,10 @@
 [
     {
         "field": "type",
-        "field_text": "Tipo de gasto"
+        "text": "Tipo de gasto"
     },
     {
         "field": "quantity",
-        "field_text": "Total"
+        "text": "Total"
     }
 ]

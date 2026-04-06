@@ -2,7 +2,7 @@ from src.dao.sqlite_connector import SqliteConnector
 from src.model.Category import Category
 
 class CategoriesDao:
-    def __init__(self, db_connector=SqliteConnector()):
+    def __init__(self, db_connector=SqliteConnector(parent='CategoriesDao')):
         self._db = db_connector
 
     def add_category(self, name, description=None):

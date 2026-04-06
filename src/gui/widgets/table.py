@@ -48,6 +48,7 @@ class Table(QTableWidget):
     def _get_table_info(self, table_id):
         table_info = ConfigLoader().load_table(table_id)
 
+        print(table_info)
         titles = [ r['text'] for r in table_info ]
         fields = [ r['field'] for r in table_info ]
 

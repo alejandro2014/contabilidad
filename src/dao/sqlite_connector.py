@@ -3,15 +3,14 @@ from sqlite3 import Error
 import os
 
 class SqliteConnector:
-    def __init__(self, db_path="db/accountancy.db", debug_mode=True):
-        print(f"Current directory: {os.getcwd()}")
-
+    def __init__(self, parent=None, db_path="db/accountancy.db", debug_mode=True):
+        self.parent = parent
         self.db = os.getcwd() + "/" + db_path
         self.debug_mode = debug_mode
     
     def run_sql(self, sql, params=None):
         if self.debug_mode:
-            print('-------------------')
+            print(f'{self.parent} -------------------')
             print(sql)
             print(params)
 
