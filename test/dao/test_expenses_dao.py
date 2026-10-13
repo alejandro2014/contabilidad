@@ -76,7 +76,7 @@ class ExpensesDaoTestCase(TestCase):
         dao.update_classified_expense(uuid, category)
 
         mock_sql_generator.update_classified_expense.assert_has_calls([call(uuid, category)])
-        mock_db.execute_sql.assert_has_calls([call("UPDATE expenses set category = 'Alquiler' WHERE id = '3f6d08d1-ca0c-48da-bc35-148fc037d901'")])
+        mock_db.execute_sql.assert_has_calls([call(mock_sql_generator.update_classified_expense.return_value)])
 
     def get_two_expenses(self):
         return [

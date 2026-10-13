@@ -1,8 +1,8 @@
-from PySide2 import QtCore
+from PySide6 import QtCore
 
-from PySide2.QtCharts import QtCharts
-from PySide2.QtCore import Qt
-from PySide2.QtGui import QPainter, QPen, QColor
+from PySide6 import QtCharts
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QPainter, QPen, QColor
 
 from src.services.ChartService import ChartService
 

@@ -1,6 +1,6 @@
 from src.services.ComboBoxService import ComboBoxService
-from PySide2 import QtWidgets, QtGui
-from PySide2.QtWidgets import QComboBox, QPushButton, QTableWidget, QTableWidgetItem
+from PySide6 import QtWidgets, QtGui
+from PySide6.QtWidgets import QComboBox, QPushButton, QTableWidget, QTableWidgetItem
 
 class WidgetCreator:
     def __init__(self):

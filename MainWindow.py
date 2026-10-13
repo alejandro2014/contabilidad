@@ -1,5 +1,5 @@
-from PySide2.QtCore import QCoreApplication
-from PySide2.QtWidgets import QMainWindow, QStatusBar
+from PySide6.QtCore import QCoreApplication
+from PySide6.QtWidgets import QMainWindow, QStatusBar
 
 from src.dialogs.ConfigureExpensesDialog import ConfigureExpensesDialog
 from src.dialogs.LoadFileDialog import LoadFileDialog

@@ -1,5 +1,5 @@
-from PySide2 import QtWidgets, QtGui
-from PySide2.QtWidgets import QDialog
+from PySide6 import QtWidgets, QtGui
+from PySide6.QtWidgets import QDialog
 
 from src.config.ConfigLoader import ConfigLoader
 

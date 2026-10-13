@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import QDialog, QVBoxLayout, QLabel
+from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel
 from src.dialogs.WidgetCreator import WidgetCreator
 
 class InfoDialog(QDialog):

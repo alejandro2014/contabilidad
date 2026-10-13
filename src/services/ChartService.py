@@ -20,7 +20,7 @@ class ChartService(BaseService):
         }
 
         if not dates['date_from'] or not dates['date_to']:
-            return None
+            return {}
 
         sql = self.sql_generator.select_pie_chart_categories(dates)
 

@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QLabel, QLineEdit
+from PySide6.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QLabel, QLineEdit
 
 from src.services.ExpenseTypesService import ExpenseTypesService
 

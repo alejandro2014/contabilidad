@@ -1,6 +1,6 @@
-from PySide2.QtCharts import QtCharts
-from PySide2.QtGui import QFont, QPainter, QColor
-from PySide2.QtCore import QPoint, Qt
+from PySide6 import QtCharts
+from PySide6.QtGui import QFont, QPainter, QColor
+from PySide6.QtCore import QPoint, Qt
 
 from src.services.ChartService import ChartService
 
@@ -44,10 +44,12 @@ class BarChart(QtCharts.QChartView):
         font_angle, font_size = self.get_font_features(chart_info['amounts'])
         axis_x.setLabelsAngle(font_angle)
         axis_x.setLabelsFont(QFont('Monospace', font_size))
-        chart.setAxisX(axis_x, bar_series)
+        chart.addAxis(axis_x, Qt.AlignmentFlag.AlignBottom)
+        bar_series.attachAxis(axis_x)
 
         axis_y = QtCharts.QValueAxis()
-        chart.setAxisY(axis_y, bar_series)
+        chart.addAxis(axis_y, Qt.AlignmentFlag.AlignLeft)
+        bar_series.attachAxis(axis_y)
         chart.legend().setVisible(False)
 
         self.setChart(chart)

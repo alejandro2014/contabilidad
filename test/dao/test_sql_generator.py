@@ -35,7 +35,7 @@ class SqlGeneratorTestCase(unittest.TestCase):
         self.assertEqual(expected_sql, sql)
 
     def test_select_classified_expenses_nofilter_nosortby(self):
-        expected_sql = "SELECT id, date, title, amount FROM expenses WHERE (category IS NOT NULL)"
+        expected_sql = "SELECT id, date, title, amount, category FROM expenses WHERE (category IS NOT NULL)"
         sql = self.sql_generator.select_classified_expenses(filter=None, sort_by=None)
         
         self.assertEqual(expected_sql, sql)
@@ -184,21 +184,21 @@ class SqlGeneratorTestCase(unittest.TestCase):
         self.assertEqual(expected_sql, sql)
 
     def test__select_classified_expenses_by_type(self):
-        expected_sql = "SELECT type, sum(amount) AS sum FROM expenses WHERE (category IS NOT NULL) GROUP BY type"
+        expected_sql = "SELECT category, sum(amount) AS sum FROM expenses WHERE (category IS NOT NULL) GROUP BY category"
 
         sql = self.sql_generator.select_classified_expenses_by_type()
 
         self.assertEqual(expected_sql, sql)
 
     def test__select_classified_expenses_by_month(self):
-        expected_sql = "SELECT substr(date, 0, 7) AS month, sum(amount) AS sum FROM expenses (category IS NOT NULL) GROUP BY month"
+        expected_sql = "SELECT substr(date, 0, 7) AS month, sum(amount) AS sum FROM expenses WHERE (category IS NOT NULL) GROUP BY month"
 
         sql = self.sql_generator.select_classified_expenses_by_month()
 
         self.assertEqual(expected_sql, sql)
 
     def test__select_classified_expenses_by_type_and_month(self):
-        expected_sql = "SELECT type, substr(date, 0, 7) AS month, sum(quantity) AS sum FROM expenses (category IS NOT NULL) group by type, month"
+        expected_sql = "SELECT category, substr(date, 0, 7) AS month, sum(amount) AS sum FROM expenses WHERE (category IS NOT NULL) GROUP BY category, month"
 
         sql = self.sql_generator.select_classified_expenses_by_type_and_month()
 

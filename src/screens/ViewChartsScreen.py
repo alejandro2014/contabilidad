@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import QVBoxLayout, QWidget
+from PySide6.QtWidgets import QVBoxLayout, QWidget
 
 from src.events.ListenerNode import ListenerNode
 
@@ -17,14 +17,15 @@ class ViewChartsScreen(QWidget, ListenerNode):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
+        # The charts must exist before the filter widget, as it reloads them when created
+        self.pie_chart = PieChart()
+        self.bar_chart = BarChart()
+
         self.filter_widget = FilterWidget('chart', listeners_pool)
         self.layout.addWidget(self.filter_widget)
 
         self.filter = self.filter_widget.filter
 
-        self.pie_chart = PieChart()
-        self.bar_chart = BarChart()
-        
         self.layout.addWidget(self.pie_chart)
         self.layout.addWidget(self.bar_chart)
 

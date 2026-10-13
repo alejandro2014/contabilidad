@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import QGroupBox, QLineEdit, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QGroupBox, QLineEdit, QVBoxLayout, QWidget
 
 from src.events.ListenerNode import ListenerNode
 

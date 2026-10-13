@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import QWidget, QStatusBar
+from PySide6.QtWidgets import QWidget, QStatusBar
 
 from src.events.ListenerNode import ListenerNode
 from src.services.expenses_service import ExpensesService

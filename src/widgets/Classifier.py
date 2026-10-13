@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import QGroupBox, QLabel, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QGroupBox, QLabel, QVBoxLayout, QWidget
 
 from src.dialogs.WidgetCreator import WidgetCreator
 

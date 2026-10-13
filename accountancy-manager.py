@@ -1,5 +1,5 @@
 import sys
-from PySide2.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication
 
 from MainWindow import MainWindow
 
@@ -8,4 +8,4 @@ if __name__ == "__main__":
     main_window = MainWindow()
     main_window.show()
 
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

@@ -1,5 +1,5 @@
-from PySide2 import QtCore
-from PySide2.QtWidgets import QCheckBox, QGroupBox, QHBoxLayout, QVBoxLayout, QWidget
+from PySide6 import QtCore
+from PySide6.QtWidgets import QCheckBox, QGroupBox, QHBoxLayout, QVBoxLayout, QWidget
 
 from src.events.ListenerNode import ListenerNode
 

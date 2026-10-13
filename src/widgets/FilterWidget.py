@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget
 
 from src.events.ListenerNode import ListenerNode
 
@@ -13,6 +13,7 @@ class FilterWidget(QWidget, ListenerNode):
         super(FilterWidget, self).__init__(*args, **kwargs)
         ListenerNode.__init__(self, 'filter-widget', listeners_pool)
 
+        self.screen_type = screen_type
         self.table_name = screen_type + '-expenses-table'
 
         self.filter = {
@@ -67,8 +68,10 @@ class FilterWidget(QWidget, ListenerNode):
         self.filter['date']['from'] = dates['from']
         self.filter['date']['to'] = dates['to']
 
-        self.send_event(self.table_name, 'refresh_rows', self.filter)
-        self.send_event('view-charts-screen', 'reload_charts', self.filter)
+        if self.screen_type == 'chart':
+            self.send_event('view-charts-screen', 'reload_charts', self.filter)
+        else:
+            self.send_event(self.table_name, 'refresh_rows', self.filter)
 
     def change_search_value(self, search_value = None):
         self.filter['search_value'] = search_value

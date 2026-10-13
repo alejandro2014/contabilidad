@@ -1,5 +1,5 @@
-from PySide2 import QtWidgets, QtGui
-from PySide2.QtWidgets import QDialog, QFileDialog, QGridLayout, QHBoxLayout, QLabel, QLineEdit
+from PySide6 import QtWidgets, QtGui
+from PySide6.QtWidgets import QDialog, QFileDialog, QGridLayout, QHBoxLayout, QLabel, QLineEdit
 
 from src.dialogs.InfoDialog import InfoDialog
 from src.dialogs.WidgetCreator import WidgetCreator

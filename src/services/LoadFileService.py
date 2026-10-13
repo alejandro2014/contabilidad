@@ -67,4 +67,4 @@ class LoadFileService:
         return self.insert_expense_lines(expense_lines, reader_info)
     
     def format_nan(self, value):
-        return None if value == np.nan else value
+        return None if pd.isna(value) else value

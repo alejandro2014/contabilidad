@@ -1,5 +1,5 @@
 import copy
-from PySide2 import QtWidgets
+from PySide6 import QtWidgets
 
 from DateConverter import DateConverter
 
@@ -48,45 +48,44 @@ class ClassifiedExpensesTable(QtWidgets.QTableWidget, ListenerNode):
             self.refresh_expenses_by_type_and_month()
 
     def refresh_expenses_raw(self, filter):
-        self.expenses = self.expenses_service.get_expenses(filter)
+        self.expenses = self.expenses_service.get_classified_expenses(filter)
 
         expenses = copy.deepcopy(self.expenses)
         expenses = [ self.format_expense(ex) for ex in expenses ]
 
         self.populate(expenses)
-        self.send_event('sum-text', 'update_expenses_sum_from_table', expenses)
+        self.send_event('sum-text', 'update_expenses_sum_from_table', self.expenses)
         self.send_event('sum-text', 'set_records_no_value', len(expenses))
 
     def refresh_expenses_by_month(self):
-        self.expenses = self.expenses_service.get_expenses_by_month()
+        self.expenses = self.expenses_service.get_classified_expenses_by_month()
 
         expenses = copy.deepcopy(self.expenses)
 
         self.populate(expenses)
-        self.send_event('sum-text', 'update_expenses_sum_from_table', expenses)
+        self.send_event('sum-text', 'set_sum_value', round(sum([ float(ex['quantity']) for ex in expenses ]), 2))
         self.send_event('sum-text', 'set_records_no_value', len(expenses))
 
     def refresh_expenses_by_type(self):
-        self.expenses = self.expenses_service.get_expenses_by_type()
+        self.expenses = self.expenses_service.get_classified_expenses_by_type()
 
         expenses = copy.deepcopy(self.expenses)
 
         self.populate(expenses)
-        self.send_event('sum-text', 'update_expenses_sum_from_table', expenses)
+        self.send_event('sum-text', 'set_sum_value', round(sum([ float(ex['quantity']) for ex in expenses ]), 2))
         self.send_event('sum-text', 'set_records_no_value', len(expenses))
 
     def refresh_expenses_by_type_and_month(self):
-        self.expenses = self.expenses_service.get_expenses_by_type_and_month()
+        self.expenses = self.expenses_service.get_classified_expenses_by_type_and_month()
 
         expenses = copy.deepcopy(self.expenses)
 
         self.populate(expenses)
-        self.send_event('sum-text', 'update_expenses_sum_from_table', expenses)
+        self.send_event('sum-text', 'set_sum_value', round(sum([ float(ex['quantity']) for ex in expenses ]), 2))
         self.send_event('sum-text', 'set_records_no_value', len(expenses))
 
     def populate(self, table_rows):
-        #TODO This throws a runtime error but not critical. Fix it.
-        self.clearContents()
+        self.setRowCount(0)
 
         categories = [ x['field'] for x in self.table_info ]
 
@@ -99,9 +98,12 @@ class ClassifiedExpensesTable(QtWidgets.QTableWidget, ListenerNode):
         self.resizeColumnsToContents()
 
     def format_expense(self, expense):
-        expense['date'] = DateConverter().format_pretty(expense['date'])
-
-        return expense
+        return {
+            'date': DateConverter().format_pretty(expense.date),
+            'concept': expense.title,
+            'type': expense.category,
+            'quantity': str(expense.amount)
+        }
 
     def get_current_expenses(self, value = None):
         return self.expenses

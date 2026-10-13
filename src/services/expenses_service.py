@@ -14,6 +14,9 @@ class ExpensesService:
         for expense_id in expense_ids:
             self.dao.update_classified_expense(expense_id, category)
 
+    def get_classified_expenses(self, filter=None, sort_by=None):
+        return self.dao.get_classified_expenses(filter, sort_by)
+
     def get_classified_expenses_by_month(self):
         return self.dao.get_classified_expenses_by_month()
 

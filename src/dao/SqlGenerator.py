@@ -18,7 +18,7 @@ class SqlGenerator:
         return self.select_expenses(sql, filter, sort_by)
     
     def select_classified_expenses(self, filter=None, sort_by=None):
-        sql = "SELECT id, date, title, amount FROM expenses WHERE (category IS NOT NULL)"
+        sql = "SELECT id, date, title, amount, category FROM expenses WHERE (category IS NOT NULL)"
 
         return self.select_expenses(sql, filter, sort_by)
     
@@ -55,14 +55,14 @@ class SqlGenerator:
         return 'SELECT count(*) FROM expenses WHERE (category IS NOT NULL)'
 
     def select_classified_expenses_by_type(self):
-        return "SELECT type, sum(amount) AS sum FROM expenses WHERE (category IS NOT NULL) GROUP BY type"
+        return "SELECT category, sum(amount) AS sum FROM expenses WHERE (category IS NOT NULL) GROUP BY category"
 
     def select_classified_expenses_by_month(self):
         # TODO Consider the savings account as well
-        return "SELECT substr(date, 0, 7) AS month, sum(amount) AS sum FROM expenses (category IS NOT NULL) GROUP BY month"
+        return "SELECT substr(date, 0, 7) AS month, sum(amount) AS sum FROM expenses WHERE (category IS NOT NULL) GROUP BY month"
     
     def select_classified_expenses_by_type_and_month(self):
-        return "SELECT type, substr(date, 0, 7) AS month, sum(quantity) AS sum FROM expenses (category IS NOT NULL) group by type, month"
+        return "SELECT category, substr(date, 0, 7) AS month, sum(amount) AS sum FROM expenses WHERE (category IS NOT NULL) GROUP BY category, month"
     
     def select_pending_expenses_count(self):
         return "SELECT count(*) FROM expenses WHERE (category IS NULL)"

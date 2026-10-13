@@ -1,6 +1,6 @@
-from PySide2 import QtCore
-from PySide2.QtGui import QFont
-from PySide2.QtWidgets import QGroupBox, QLabel, QVBoxLayout, QWidget
+from PySide6 import QtCore
+from PySide6.QtGui import QFont
+from PySide6.QtWidgets import QGroupBox, QLabel, QVBoxLayout, QWidget
 
 from src.events.ListenerNode import ListenerNode
 

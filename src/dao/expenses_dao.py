@@ -40,6 +40,45 @@ class ExpensesDao:
             ) for e in expenses_db
         ]
     
+    def get_classified_expenses(self, filter=None, sort_by=None):
+        sql = self.sql_generator.select_classified_expenses(filter, sort_by)
+        expenses_db = self.db.select(sql)
+
+        return [
+            Expense(
+                id = e[0],
+                date = e[1],
+                title = e[2],
+                amount = e[3],
+                category = e[4]
+            ) for e in expenses_db
+        ]
+
+    def get_classified_expenses_by_month(self):
+        sql = self.sql_generator.select_classified_expenses_by_month()
+
+        return [ {
+            'month': e[0],
+            'quantity': str(round(e[1], 2))
+        } for e in self.db.select(sql) ]
+
+    def get_classified_expenses_by_type(self):
+        sql = self.sql_generator.select_classified_expenses_by_type()
+
+        return [ {
+            'type': e[0],
+            'quantity': str(round(e[1], 2))
+        } for e in self.db.select(sql) ]
+
+    def get_classified_expenses_by_type_and_month(self):
+        sql = self.sql_generator.select_classified_expenses_by_type_and_month()
+
+        return [ {
+            'type': e[0],
+            'month': e[1],
+            'quantity': str(round(e[2], 2))
+        } for e in self.db.select(sql) ]
+
     def update_classified_expense(self, expense_id, category):
         sql = self.sql_generator.update_classified_expense(expense_id, category)
         

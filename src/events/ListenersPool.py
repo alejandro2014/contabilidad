@@ -34,7 +34,7 @@ class ListenersPool:
             print("[ERROR] The node " + node_id + " doesn't exist")
             return None
 
-        if info:
+        if info is not None:
             return getattr(node, event_id)(info)
 
         return getattr(node, event_id)()

@@ -2,7 +2,7 @@ import copy
 
 from DateConverter import DateConverter
 
-from PySide2.QtWidgets import QAbstractItemView, QTableWidget, QTableWidgetItem
+from PySide6.QtWidgets import QAbstractItemView, QTableWidget, QTableWidgetItem
 
 from src.config.ConfigLoader import ConfigLoader
 from src.events.ListenerNode import ListenerNode
@@ -21,7 +21,7 @@ class PendingExpensesTable(QTableWidget, ListenerNode):
         super().__init__(1, len(self.table_info))
 
         self.setHorizontalHeaderLabels(column_labels)
-        self.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         #self.setSortingEnabled(True)
 
     def refresh_rows(self, filter = None):
@@ -35,7 +35,7 @@ class PendingExpensesTable(QTableWidget, ListenerNode):
         self.send_event('sum-text', 'set_records_no_value', len(expenses))
 
     def populate(self, expenses):
-        self.clearContents()
+        self.setRowCount(0)
 
         for index_row, expense in enumerate(expenses):
             self.insertRow(index_row)

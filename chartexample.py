@@ -1,9 +1,9 @@
 import sys
 
-from PySide2.QtCore import Qt
-from PySide2.QtGui import QPainter
-from PySide2.QtWidgets import QMainWindow, QApplication
-from PySide2.QtCharts import QtCharts
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QPainter
+from PySide6.QtWidgets import QMainWindow, QApplication
+from PySide6 import QtCharts
 
 
 class TestChart(QMainWindow):
@@ -24,11 +24,13 @@ class TestChart(QMainWindow):
         self.categories = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
         self.axisX = QtCharts.QBarCategoryAxis()
         self.axisX.append(self.categories)
-        self.chart.setAxisX(self.axisX, self.barSeries)
+        self.chart.addAxis(self.axisX, Qt.AlignmentFlag.AlignBottom)
+        self.barSeries.attachAxis(self.axisX)
         #self.axisX.setRange("Jan", "Jun")
 
         self.axisY = QtCharts.QValueAxis()
-        self.chart.setAxisY(self.axisY, self.barSeries)
+        self.chart.addAxis(self.axisY, Qt.AlignmentFlag.AlignLeft)
+        self.barSeries.attachAxis(self.axisY)
         self.axisY.setRange(0, 20)
 
         self.chart.legend().setVisible(False)
@@ -47,4 +49,4 @@ if __name__ == "__main__":
     window.show()
     window.resize(440, 300)
 
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
