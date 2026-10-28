@@ -6,8 +6,6 @@ from DateConverter import DateConverter
 
 from src.dialogs.WidgetCreator import WidgetCreator
 from src.events.ListenerNode import ListenerNode
-from src.model.date_filter import DateFilter
-from src.services.expenses_service import ExpensesService
 
 class DateFilterWidget(QWidget, ListenerNode):
     def __init__(self, listeners_pool, *args, **kwargs):
@@ -16,11 +14,6 @@ class DateFilterWidget(QWidget, ListenerNode):
 
         widget_creator = WidgetCreator()
         
-        #self.expenses_service = PendingExpensesService()
-        self.expenses_service = ExpensesService()
-
-        self.date_filter = DateFilter()
-
         self.cbx = {
             'from': {
                 'day': widget_creator.create_combobox('day'),
@@ -81,29 +74,9 @@ class DateFilterWidget(QWidget, ListenerNode):
         return layout
 
     def select_period(self, period):
-        date_from, date_to = self.get_period_dates(period, datetime.date.today())
+        date_from, date_to = DateConverter().period_dates(period, datetime.date.today())
 
         self.change_filter_dates(date_from.strftime('%Y%m%d'), date_to.strftime('%Y%m%d'))
-
-    def get_period_dates(self, period, today):
-        if period == 'this_month':
-            return today.replace(day=1), today
-
-        if period == 'last_month':
-            last_day = today.replace(day=1) - datetime.timedelta(days=1)
-            return last_day.replace(day=1), last_day
-
-        if period in [ 'last_3_months', 'last_12_months' ]:
-            # The current month is one of them
-            months_back = 2 if period == 'last_3_months' else 11
-            month_index = today.year * 12 + today.month - 1 - months_back
-            return datetime.date(month_index // 12, month_index % 12 + 1, 1), today
-
-        if period == 'this_year':
-            return datetime.date(today.year, 1, 1), today
-
-        if period == 'last_year':
-            return datetime.date(today.year - 1, 1, 1), datetime.date(today.year - 1, 12, 31)
 
     def date_changed(self, index):
         day_from = self.cbx['from']['day'].currentIndex() + 1
@@ -127,22 +100,6 @@ class DateFilterWidget(QWidget, ListenerNode):
         date_to = today.strftime('%Y%m%d')
 
         self.change_filter_dates(date_from, date_to)
-
-    def get_top_dates(self, dates):
-        min_date = None
-        max_date = None
-
-        for date in dates:
-            if max_date == None or date > max_date:
-                max_date = date
-
-            if min_date == None or date < min_date:
-                min_date = date
-
-        if min_date == None or max_date == None:
-            return None
-
-        return min_date, max_date
 
     def change_filter_dates(self, date_from, date_to):
         if date_from == None or date_to == None:

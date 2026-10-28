@@ -11,10 +11,14 @@ class SqliteConnector:
         conn = self.create_connection()
         rows = []
 
-        with conn:
-            cur = conn.cursor()
-            cur.execute(sql)
-            rows = cur.fetchall()
+        # "with" only commits, the connection has to be closed by hand
+        try:
+            with conn:
+                cur = conn.cursor()
+                cur.execute(sql)
+                rows = cur.fetchall()
+        finally:
+            conn.close()
 
         return rows
 
@@ -22,9 +26,12 @@ class SqliteConnector:
         print(sql)
         conn = self.create_connection()
 
-        with conn:
-            cur = conn.cursor()
-            cur.execute(sql)
+        try:
+            with conn:
+                cur = conn.cursor()
+                cur.execute(sql)
+        finally:
+            conn.close()
 
     def create_connection(self):
         conn = None

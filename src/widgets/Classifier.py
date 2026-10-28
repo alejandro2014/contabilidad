@@ -5,14 +5,11 @@ from src.dialogs.WidgetCreator import WidgetCreator
 from src.events.ListenerNode import ListenerNode
 
 from src.services.ComboBoxService import ComboBoxService
-from src.services.PendingExpensesService import PendingExpensesService
 
 class Classifier(QWidget, ListenerNode):
     def __init__(self, listeners_pool, show_classify_button, *args, **kwargs):
         super(Classifier, self).__init__(*args, **kwargs)
         ListenerNode.__init__(self, 'classificator', listeners_pool)
-
-        self.expenses_service = PendingExpensesService()
 
         widget_creator = WidgetCreator()
 

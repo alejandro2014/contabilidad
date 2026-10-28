@@ -1,5 +1,3 @@
-import csv
-
 from src.services.BaseService import BaseService
 
 class RulesService(BaseService):
@@ -12,14 +10,6 @@ class RulesService(BaseService):
             return 1
 
         sql = self.sql_generator.insert_rule(category, rule)
-        self.db.execute_sql(sql)
-
-    def delete_rule(self, category, rule):
-        if not self.rule_exists(category, rule):
-            print(f'Error: The rule "{rule}" in the category "{category}" does not exist')
-            return 1
-
-        sql = self.sql_generator.delete_rule(category, rule)
         self.db.execute_sql(sql)
 
     def rule_exists(self, category, rule):
@@ -61,20 +51,6 @@ class RulesService(BaseService):
                 return index
 
         return None
-
-    def import_rules(self, file_path):
-        # One rule per line: category <tab> rule, added in the same order as in the file
-        with open(file_path, encoding='utf-8', newline='') as f:
-            for line in csv.reader(f, delimiter='\t'):
-                if len(line) >= 2:
-                    self.add_rule(line[0], line[1])
-
-    def export_rules(self, file_path):
-        rules = self.get_rules()
-
-        with open(file_path, 'w', encoding='utf-8') as f:
-            for r in rules:
-                f.write(f'{r["category"]}\t{r["rule"]}\n')
 
     def classify_expenses(self, expenses):
         rules = self.get_rules()

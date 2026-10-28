@@ -163,19 +163,6 @@ class SqlGeneratorTestCase(unittest.TestCase):
         self.assertEqual('20221106', date_to)
         self.assertEqual('Search', search_value)
 
-    def test__delete_pending_expense(self):
-        expected_sql = "DELETE FROM expenses WHERE date = '20221006' AND title = 'Alquiler' AND amount = 100.87"
-
-        expense = {
-            'date': '20221006',
-            'title': 'Alquiler',
-            'amount': 100.87
-        }
-
-        sql = self.sql_generator.delete_pending_expense(expense)
-
-        self.assertEqual(expected_sql, sql)
-
     def test__select_classified_expenses_count(self):
         expected_sql = "SELECT count(*) FROM expenses WHERE (category IS NOT NULL)"
 
@@ -375,13 +362,6 @@ class SqlGeneratorTestCase(unittest.TestCase):
         expected_sql = "INSERT INTO rules (priority, rule, category) VALUES ((SELECT COALESCE(MAX(priority), 0) + 1 FROM rules), 'MERCADONA', 'Comida')"
 
         sql = self.sql_generator.insert_rule('Comida', 'MERCADONA')
-
-        self.assertEqual(expected_sql, sql)
-
-    def test__delete_rule(self):
-        expected_sql = "DELETE FROM rules WHERE category = 'Comida' AND rule = 'MERCADONA'"
-
-        sql = self.sql_generator.delete_rule('Comida', 'MERCADONA')
 
         self.assertEqual(expected_sql, sql)
 

@@ -12,9 +12,6 @@ from src.screens.ClassifyExpensesScreen import ClassifyExpensesScreen
 from src.screens.ViewChartsScreen import ViewChartsScreen
 from src.screens.ViewExpensesScreen import ViewExpensesScreen
 
-from src.services.ClassifiedExpensesService import ClassifiedExpensesService
-from src.services.PendingExpensesService import PendingExpensesService
-
 from src.widgets.StatusBar import StatusBar
 
 class MainWindow(QMainWindow):
@@ -42,9 +39,6 @@ class MainWindow(QMainWindow):
         classify_expenses_action = menu_gastos.addAction('Clasificar pendientes')
         classify_expenses_action.triggered.connect(self.classify_expenses)
 
-        print_report_action = menu_gastos.addAction('Imprimir informe')
-        print_report_action.triggered.connect(self.print_report)
-
         menu_gastos.addSeparator()
 
         exit_app_action = menu_gastos.addAction('Salir')
@@ -62,9 +56,6 @@ class MainWindow(QMainWindow):
         view_cashflow_action.triggered.connect(self.view_cashflow)
 
         menu_configuracion = self.menubar.addMenu('Configuracion')
-
-        configure_columns_action = menu_configuracion.addAction('Columnas de entrada')
-        configure_columns_action.triggered.connect(self.configure_columns)
 
         configure_expense_types_action = menu_configuracion.addAction('Tipos de gastos')
         configure_expense_types_action.triggered.connect(self.configure_expense_types)
@@ -107,12 +98,6 @@ class MainWindow(QMainWindow):
 
     def configure_rules(self):
         configure_rules_dialog = ConfigureRulesDialog(self)
-
-    def print_report(self):
-        return
-
-    def configure_columns(self):
-        return
 
     def exit_app(self):
         QCoreApplication.instance().quit()

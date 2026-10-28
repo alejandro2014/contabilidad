@@ -44,7 +44,8 @@ class LoadFileDialog(QDialog):
 
     def choose_file(self):
         file_dialog = QFileDialog()
-        file_name = file_dialog.getOpenFileName()
+        # Only the xls bank statements can be loaded
+        file_name = file_dialog.getOpenFileName(self, 'Cargar fichero', '', 'Extracto bancario (*.xls)')
 
         self.load_file_textbox.insert(file_name[0])
 

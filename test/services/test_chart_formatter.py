@@ -6,32 +6,21 @@ class ChartFormatterTestCase(unittest.TestCase):
     def setUp(self):
         self.chart_formatter = ChartFormatter()
 
-    def test__format_bar_values__month_names_when_same_year(self):
-        values = [ ('202601', -100.123), ('202602', -50.0), ('202612', -20.5) ]
+    def test__format_income_expense_values__refunds_are_subtracted(self):
+        values = self.chart_formatter.format_income_expense_values([ ('202601', 30.0) ], [], [ '202601' ])
 
-        bar_values = self.chart_formatter.format_bar_values(values)
+        self.assertEqual([ -30.0 ], values['amounts'])
 
-        self.assertEqual([ 'Enero', 'Febrero', 'Diciembre' ], bar_values['months'])
-        self.assertEqual([ 100.12, 50.0, 20.5 ], bar_values['amounts'])
+    def test__format_income_expense_values__labels_with_year_when_several_years(self):
+        values = self.chart_formatter.format_income_expense_values([], [], [ '202512', '202601' ])
 
-    def test__format_bar_values__refunds_are_subtracted(self):
-        values = [ ('202601', 30.0) ]
+        self.assertEqual([ 'Diciembre 2025', 'Enero 2026' ], values['months'])
+        self.assertEqual([ 'Dic 25', 'Ene 26' ], values['short_months'])
 
-        bar_values = self.chart_formatter.format_bar_values(values)
+    def test__format_income_expense_values__empty(self):
+        values = self.chart_formatter.format_income_expense_values([], [], [])
 
-        self.assertEqual([ -30.0 ], bar_values['amounts'])
-
-    def test__format_bar_values__month_names_with_year_when_several_years(self):
-        values = [ ('202512', -10.0), ('202601', -20.0) ]
-
-        bar_values = self.chart_formatter.format_bar_values(values)
-
-        self.assertEqual([ 'Diciembre 2025', 'Enero 2026' ], bar_values['months'])
-
-    def test__format_bar_values__empty(self):
-        bar_values = self.chart_formatter.format_bar_values([])
-
-        self.assertEqual({ 'months': [], 'amounts': [] }, bar_values)
+        self.assertEqual({ 'months': [], 'short_months': [], 'amounts': [], 'incomes': [] }, values)
 
     def test__format_categories__expenses_as_positive_amounts(self):
         categories = [ ('Alquiler', -900.0), ('Comida', -123.456) ]
@@ -46,6 +35,9 @@ class ChartFormatterTestCase(unittest.TestCase):
         dict_categories = self.chart_formatter.format_categories(categories)
 
         self.assertEqual({ 'Comida': 100.0 }, dict_categories)
+
+    def test__year_months__same_month(self):
+        self.assertEqual([ '202602' ], self.chart_formatter.year_months('20260201', '20260228'))
 
     def test__year_months__across_years(self):
         year_months = self.chart_formatter.year_months('20251115', '20260210')
@@ -110,6 +102,21 @@ class ChartFormatterTestCase(unittest.TestCase):
         self.assertEqual({ 'name': 'Alquiler', 'amount': 600.0 }, kpis['top_category'])
         self.assertEqual({ 'name': 'Febrero', 'amount': 500.0 }, kpis['max_month'])
         self.assertEqual(3, kpis['pending'])
+
+    def test__format_kpis__spending_more_than_the_incomes(self):
+        bar_info = { 'months': [ 'Enero' ], 'amounts': [ 1200.0 ], 'incomes': [ 1000.0 ] }
+
+        kpis = self.chart_formatter.format_kpis({ 'Alquiler': 1200.0 }, bar_info, 0)
+
+        self.assertEqual(-200.0, kpis['balance'])
+        self.assertEqual(-20.0, kpis['savings_rate'])
+
+    def test__format_kpis__no_max_month_when_there_are_only_refunds(self):
+        bar_info = { 'months': [ 'Enero' ], 'amounts': [ -10.0 ], 'incomes': [ 0.0 ] }
+
+        kpis = self.chart_formatter.format_kpis({}, bar_info, 0)
+
+        self.assertIsNone(kpis['max_month'])
 
     def test__format_kpis__no_savings_rate_without_incomes(self):
         bar_info = { 'months': [], 'amounts': [], 'incomes': [] }

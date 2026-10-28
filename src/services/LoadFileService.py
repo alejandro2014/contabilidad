@@ -1,12 +1,8 @@
-import numpy as np
 import pandas as pd
 import uuid
 
-from FileReader import FileReader
 from src.services.expenses_service import ExpensesService
 from src.services.RulesService import RulesService
-
-from src.config.ConfigLoader import ConfigLoader
 
 from src.model.expense import Expense
 
@@ -14,15 +10,10 @@ class LoadFileService:
     def __init__(self):
         self.expenses_service = ExpensesService()
         self.rules_service = RulesService()
-        self.config_loader = ConfigLoader()
 
     def load_file(self, file_name):
-        if file_name.endswith('.xls'):
-            expenses = self.extract_expenses_from_xls(file_name)
+        expenses = self.extract_expenses_from_xls(file_name)
 
-        if file_name.endswith('.csv'):
-            expenses = self.extract_expenses_from_csv(file_name)
-        
         return self.insert_expense_lines(expenses)
 
     def insert_expense_lines(self, expenses):
@@ -86,12 +77,5 @@ class LoadFileService:
 
         return expense
 
-    def extract_expenses_from_csv(self, csv_name):
-        reader_info = ConfigLoader().load_config_file('csv/csv-loader')
-        file_reader = FileReader(reader_info)
-        expense_lines = file_reader.read_file(csv_name)
-
-        return self.insert_expense_lines(expense_lines, reader_info)
-    
     def format_nan(self, value):
         return None if pd.isna(value) else value

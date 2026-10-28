@@ -13,7 +13,6 @@ class ClassifiedExpensesTable(QtWidgets.QTableWidget, ListenerNode):
         self.listeners_pool = listeners_pool
         self.table_type = table_type
         self.table_id = 'classified-expenses-table'
-        #self.expenses_service = ClassifiedExpensesService()
         self.expenses_service = ExpensesService()
         self.expense_types_service = ExpenseTypesService()
         self.expenses = []

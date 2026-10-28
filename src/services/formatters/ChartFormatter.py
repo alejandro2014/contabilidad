@@ -15,23 +15,6 @@ class ChartFormatter:
 
         return dict_categories
     
-    def format_bar_values(self, values):
-        months = []
-        amounts = []
-
-        # The year is only needed to tell apart the same month of different years
-        years = set([ value[0][0:4] for value in values ])
-        show_year = len(years) > 1
-
-        for value in values:
-            months.append(self.month_label(value[0], show_year))
-            amounts.append(round(-value[1], 2))
-
-        return {
-            'months': months,
-            'amounts': amounts
-        }
-
     def format_income_expense_values(self, expenses, incomes, year_months):
         # Every month of the range has a bar, even without movements, so both series are aligned
         expenses_by_month = dict(expenses)

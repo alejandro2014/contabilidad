@@ -44,13 +44,6 @@ class SqlGenerator:
 
         return date_from, date_to, search_value
     
-    def delete_pending_expense(self, expense):
-        date_record = expense['date']
-        title = expense['title']
-        amount = expense['amount']
-
-        return f"DELETE FROM expenses WHERE date = '{date_record}' AND title = '{title}' AND amount = {amount}"
-    
     def select_classified_expenses_count(self):
         return 'SELECT count(*) FROM expenses WHERE (category IS NOT NULL)'
 
@@ -122,9 +115,6 @@ class SqlGenerator:
     def insert_rule(self, category, rule):
         # New rules go to the end of the list, with the lowest priority
         return f"INSERT INTO rules (priority, rule, category) VALUES ((SELECT COALESCE(MAX(priority), 0) + 1 FROM rules), '{self.escape(rule)}', '{self.escape(category)}')"
-
-    def delete_rule(self, category, rule):
-        return f"DELETE FROM rules WHERE category = '{self.escape(category)}' AND rule = '{self.escape(rule)}'"
 
     def delete_rule_by_priority(self, priority):
         return f"DELETE FROM rules WHERE priority = {int(priority)}"
