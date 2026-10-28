@@ -1,53 +1,90 @@
-from CsvReader import CsvReader
+import csv
 
-from src.dao.RulesDao import RulesDao
+from src.services.BaseService import BaseService
 
-class RulesService:
+class RulesService(BaseService):
     def __init__(self):
-        self.rules_dao = RulesDao()
-
-        self._csv_reader = CsvReader(self.get_line_transform())
+        super().__init__()
 
     def add_rule(self, category, rule):
-        rule_exists = self.rules_dao.rule_exists(category, rule)
-
-        if rule_exists:
+        if self.rule_exists(category, rule):
             print(f'Error: The rule "{rule}" in the category "{category}" already exists')
             return 1
 
-        self.rules_dao.add_rule(category, rule)
+        sql = self.sql_generator.insert_rule(category, rule)
+        self.db.execute_sql(sql)
 
     def delete_rule(self, category, rule):
-        rule_exists = self.rules_dao.rule_exists(category, rule)
-
-        if not rule_exists:
+        if not self.rule_exists(category, rule):
             print(f'Error: The rule "{rule}" in the category "{category}" does not exist')
             return 1
 
-        self.rules_dao.delete_rule(category, rule)
+        sql = self.sql_generator.delete_rule(category, rule)
+        self.db.execute_sql(sql)
+
+    def rule_exists(self, category, rule):
+        sql = self.sql_generator.select_rule_count(category, rule)
+
+        return self.get_single_value(sql) > 0
 
     def get_rules(self):
-        return self.rules_dao.get_rules()
+        sql = self.sql_generator.select_rules()
+
+        return [ {
+            'priority': r[0],
+            'rule': r[1],
+            'category': r[2]
+        } for r in self.db.select(sql) ]
+
+    def update_rule(self, priority, rule, category):
+        sql = self.sql_generator.update_rule(priority, rule, category)
+        self.db.execute_sql(sql)
+
+    def delete_rule_by_priority(self, priority):
+        sql = self.sql_generator.delete_rule_by_priority(priority)
+        self.db.execute_sql(sql)
+
+    def swap_priorities(self, priority_a, priority_b):
+        # The priority is the primary key, so one of them has to be moved out of the way first
+        temporary_priority = 0
+
+        self.db.execute_sql(self.sql_generator.update_rule_priority(priority_a, temporary_priority))
+        self.db.execute_sql(self.sql_generator.update_rule_priority(priority_b, priority_a))
+        self.db.execute_sql(self.sql_generator.update_rule_priority(temporary_priority, priority_b))
+
+    def find_rule_index(self, rules, concept):
+        # Index of the first rule matched by the concept, or None
+        concept = concept.lower()
+
+        for index, rule in enumerate(rules):
+            if rule['rule'].lower() in concept:
+                return index
+
+        return None
 
     def import_rules(self, file_path):
-        rules, _ = self._csv_reader.read_file(file_path)
-
-        for r in rules:
-            category = r['category']
-            rule = r['rule']
-
-            self.rules_dao.add_rule(category, rule)
-
-    def get_line_transform(self):
-        return lambda l: {
-            'category': l[0],
-            'rule': l[1]
-        }
+        # One rule per line: category <tab> rule, added in the same order as in the file
+        with open(file_path, encoding='utf-8', newline='') as f:
+            for line in csv.reader(f, delimiter='\t'):
+                if len(line) >= 2:
+                    self.add_rule(line[0], line[1])
 
     def export_rules(self, file_path):
-        rules = self.rules_dao.get_rules()
+        rules = self.get_rules()
 
-        with open(file_path, 'w') as f:
+        with open(file_path, 'w', encoding='utf-8') as f:
             for r in rules:
-                line = f'{r["category"]}\t{r["rule"]}\n'
-                f.write(line)
+                f.write(f'{r["category"]}\t{r["rule"]}\n')
+
+    def classify_expenses(self, expenses):
+        rules = self.get_rules()
+
+        for expense in expenses:
+            if expense.category is None:
+                expense.category = self.find_category(rules, expense.title)
+
+    def find_category(self, rules, concept):
+        # The rules are sorted by priority, so only the first match counts
+        index = self.find_rule_index(rules, concept)
+
+        return None if index is None else rules[index]['category']

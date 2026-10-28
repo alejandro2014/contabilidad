@@ -6,5 +6,15 @@
     {
         "field": "comment",
         "field_text": "Comentarios"
+    },
+    {
+        "field": "income",
+        "field_text": "Ingreso",
+        "checkbox": true
+    },
+    {
+        "field": "not_computed",
+        "field_text": "No computar",
+        "checkbox": true
     }
 ]

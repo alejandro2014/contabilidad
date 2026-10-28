@@ -1,18 +1,21 @@
-from PySide6 import QtCore
-
 from PySide6 import QtCharts
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QPainter, QPen, QColor
+from PySide6.QtGui import QPainter, QPen
 
 from src.services.ChartService import ChartService
+
+from src.widgets.charts.ChartPalette import ChartPalette
 
 class PieChart(QtCharts.QChartView):
     def __init__(self):
         super().__init__()
 
         self.chart_service = ChartService()
+        self.chart_palette = ChartPalette()
 
         self.series = None
+        # Color of each category, shared with the other charts so a category looks the same in all of them
+        self.colors = {}
 
         self.setRenderHint(QPainter.Antialiasing)
 
@@ -23,11 +26,13 @@ class PieChart(QtCharts.QChartView):
         if self.series:
             chart.removeSeries(self.series)
 
-        self.series = self.compose_series(chart_info)
+        categories = self.chart_service.formatter.group_categories(chart_info, len(ChartPalette.SERIES))
+        self.colors = self.chart_palette.category_colors(categories)
+        self.series = self.compose_series(categories)
 
         chart.addSeries(self.series)
 
-        chart.setTitle('Gastos relativos')
+        chart.setTitle('Gastos por categoría')
 
         chart.legend().setAlignment(Qt.AlignRight)
 
@@ -35,81 +40,29 @@ class PieChart(QtCharts.QChartView):
 
     def compose_series(self, categories):
         series = QtCharts.QPieSeries()
-        colors = self.get_colors(categories)
-        print(categories)
+        # A hole in the middle makes the slices easier to compare
+        series.setHoleSize(0.35)
         total = sum(categories.values())
 
         for i, category_name in enumerate(categories):
             amount = categories[category_name]
-            title = self.get_chart_slice_title(categories, category_name, amount, total)
+            title = self.get_chart_slice_title(category_name, amount, total)
             series.append(title, amount)
 
             slice = series.slices()[i]
-            slice.setBrush(colors[i])
+            slice.setBrush(self.colors[category_name])
+            # A thin gap between the slices
+            slice.setPen(QPen(Qt.GlobalColor.white, 2))
+
+        series.hovered.connect(self.slice_hovered)
 
         return series
 
-    def get_chart_slice_title(self, categories, category_name, amount, total):
-        percentage = round(amount / total * 100.0, 2)
+    def slice_hovered(self, slice, state):
+        slice.setExploded(state)
+        slice.setLabelVisible(state)
 
-        return f'{category_name}: {amount}€ ({percentage}%)'
+    def get_chart_slice_title(self, category_name, amount, total):
+        percentage = round(amount / total * 100.0, 1)
 
-    def get_colors(self, categories):
-        color_palette = [
-            QColor(200, 0, 0), QColor(0, 0, 200), QColor(0, 200, 0), QColor(200, 200, 0),
-            QColor(150, 40, 80),
-            QColor(self.random(200), self.random(200), self.random(200)),
-            QColor(self.random(200), self.random(200), self.random(200)),
-            QColor(self.random(200), self.random(200), self.random(200)),
-
-            QColor(self.random(200), self.random(200), self.random(200)),
-            QColor(self.random(200), self.random(200), self.random(200)),
-            QColor(self.random(200), self.random(200), self.random(200)),
-            QColor(self.random(200), self.random(200), self.random(200)),
-
-            QColor(self.random(200), self.random(200), self.random(200)),
-            QColor(self.random(200), self.random(200), self.random(200)),
-            QColor(self.random(200), self.random(200), self.random(200)),
-            QColor(self.random(200), self.random(200), self.random(200)),
-
-            QColor(self.random(200), self.random(200), self.random(200)),
-            QColor(self.random(200), self.random(200), self.random(200)),
-            QColor(self.random(200), self.random(200), self.random(200)),
-            QColor(self.random(200), self.random(200), self.random(200)),
-
-            QColor(self.random(200), self.random(200), self.random(200)),
-            QColor(self.random(200), self.random(200), self.random(200)),
-            QColor(self.random(200), self.random(200), self.random(200)),
-            QColor(self.random(200), self.random(200), self.random(200)),
-
-            QColor(self.random(200), self.random(200), self.random(200)),
-            QColor(self.random(200), self.random(200), self.random(200)),
-            QColor(self.random(200), self.random(200), self.random(200)),
-            QColor(self.random(200), self.random(200), self.random(200)),
-
-            QColor(self.random(200), self.random(200), self.random(200)),
-            QColor(self.random(200), self.random(200), self.random(200)),
-            QColor(self.random(200), self.random(200), self.random(200)),
-            QColor(self.random(200), self.random(200), self.random(200)),
-
-            QColor(self.random(200), self.random(200), self.random(200)),
-            QColor(self.random(200), self.random(200), self.random(200)),
-            QColor(self.random(200), self.random(200), self.random(200)),
-            QColor(self.random(200), self.random(200), self.random(200)),
-
-            QColor(self.random(200), self.random(200), self.random(200)),
-            QColor(self.random(200), self.random(200), self.random(200)),
-            QColor(self.random(200), self.random(200), self.random(200)),
-            QColor(self.random(200), self.random(200), self.random(200))
-        ]
-
-        colors = []
-
-        for i, category in enumerate(categories):
-            color = color_palette[i]
-            colors.append(color)
-
-        return colors
-
-    def random(self, boundary):
-        return QtCore.QRandomGenerator.global_().bounded(boundary)
+        return f'{category_name}: {self.chart_palette.format_amount(amount)} ({percentage}%)'

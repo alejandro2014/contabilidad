@@ -2,10 +2,12 @@ from PySide6.QtCore import QCoreApplication
 from PySide6.QtWidgets import QMainWindow, QStatusBar
 
 from src.dialogs.ConfigureExpensesDialog import ConfigureExpensesDialog
+from src.dialogs.ConfigureRulesDialog import ConfigureRulesDialog
 from src.dialogs.LoadFileDialog import LoadFileDialog
 
 from src.events.ListenersPool import ListenersPool
 
+from src.screens.CashflowWindow import CashflowWindow
 from src.screens.ClassifyExpensesScreen import ClassifyExpensesScreen
 from src.screens.ViewChartsScreen import ViewChartsScreen
 from src.screens.ViewExpensesScreen import ViewExpensesScreen
@@ -20,8 +22,9 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
 
         self.listeners_pool = ListenersPool()
+        self.cashflow_window = None
         self.setWindowTitle('Contabilidad')
-        self.resize(1000, 900)
+        self.resize(1300, 1000)
 
         self.menubar = self.menuBar()
 
@@ -55,6 +58,9 @@ class MainWindow(QMainWindow):
         view_expenses_charts_action = menu_gastos.addAction('Ver graficos')
         view_expenses_charts_action.triggered.connect(self.view_expenses_charts)
 
+        view_cashflow_action = menu_gastos.addAction('Flujo de caja')
+        view_cashflow_action.triggered.connect(self.view_cashflow)
+
         menu_configuracion = self.menubar.addMenu('Configuracion')
 
         configure_columns_action = menu_configuracion.addAction('Columnas de entrada')
@@ -62,6 +68,9 @@ class MainWindow(QMainWindow):
 
         configure_expense_types_action = menu_configuracion.addAction('Tipos de gastos')
         configure_expense_types_action.triggered.connect(self.configure_expense_types)
+
+        configure_rules_action = menu_configuracion.addAction('Reglas de clasificación')
+        configure_rules_action.triggered.connect(self.configure_rules)
 
     def init_status_bar(self):
         self.status_bar = StatusBar(self.listeners_pool)
@@ -82,8 +91,22 @@ class MainWindow(QMainWindow):
         view_charts_screen = ViewChartsScreen(self.listeners_pool)
         self.setCentralWidget(view_charts_screen)
 
+    def view_cashflow(self):
+        # Only one cashflow window, brought to the front if it is already open
+        if self.cashflow_window is None:
+            self.cashflow_window = CashflowWindow(self)
+        else:
+            self.cashflow_window.refresh()
+
+        self.cashflow_window.show()
+        self.cashflow_window.raise_()
+        self.cashflow_window.activateWindow()
+
     def configure_expense_types(self):
-        configure_expenses_dialog = ConfigureExpensesDialog(self)
+        configure_expenses_dialog = ConfigureExpensesDialog(self, self.listeners_pool)
+
+    def configure_rules(self):
+        configure_rules_dialog = ConfigureRulesDialog(self)
 
     def print_report(self):
         return

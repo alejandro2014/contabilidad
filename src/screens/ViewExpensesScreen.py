@@ -32,3 +32,6 @@ class ViewExpensesScreen(QWidget, ListenerNode):
         self.classified_expenses_table = ClassifiedExpensesTable(self.listeners_pool, table_type)
         self.classified_expenses_table.refresh_rows()
         self.layout.addWidget(self.classified_expenses_table)
+
+        # Grouped rows are not single expenses, so they can't be unclassified
+        self.filter_widget.unclassify_button.setEnabled(table_type == 'expenses_raw')

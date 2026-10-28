@@ -14,6 +14,10 @@ class ExpensesService:
         for expense_id in expense_ids:
             self.dao.update_classified_expense(expense_id, category)
 
+    def unclassify_expenses(self, expense_ids):
+        for expense_id in expense_ids:
+            self.dao.update_unclassified_expense(expense_id)
+
     def get_classified_expenses(self, filter=None, sort_by=None):
         return self.dao.get_classified_expenses(filter, sort_by)
 

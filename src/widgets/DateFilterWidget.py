@@ -1,4 +1,6 @@
-from PySide6.QtWidgets import QGroupBox, QHBoxLayout, QLabel, QVBoxLayout, QWidget
+import datetime
+
+from PySide6.QtWidgets import QGroupBox, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 
 from DateConverter import DateConverter
 
@@ -41,6 +43,7 @@ class DateFilterWidget(QWidget, ListenerNode):
         inner_layout = QVBoxLayout()
         inner_layout.addLayout(from_layout)
         inner_layout.addLayout(to_layout)
+        inner_layout.addLayout(self.create_periods_layout())
 
         group_box = QGroupBox("Fechas")
         group_box.setLayout(inner_layout)
@@ -66,6 +69,42 @@ class DateFilterWidget(QWidget, ListenerNode):
 
         return layout
 
+    def create_periods_layout(self):
+        layout = QHBoxLayout()
+
+        for title, period in [ ('Este mes', 'this_month'), ('Mes pasado', 'last_month'), ('Últimos 3 meses', 'last_3_months'),
+                               ('Últimos 12 meses', 'last_12_months'), ('Este año', 'this_year'), ('Año pasado', 'last_year') ]:
+            button = QPushButton(title)
+            button.clicked.connect(lambda checked=False, period=period: self.select_period(period))
+            layout.addWidget(button)
+
+        return layout
+
+    def select_period(self, period):
+        date_from, date_to = self.get_period_dates(period, datetime.date.today())
+
+        self.change_filter_dates(date_from.strftime('%Y%m%d'), date_to.strftime('%Y%m%d'))
+
+    def get_period_dates(self, period, today):
+        if period == 'this_month':
+            return today.replace(day=1), today
+
+        if period == 'last_month':
+            last_day = today.replace(day=1) - datetime.timedelta(days=1)
+            return last_day.replace(day=1), last_day
+
+        if period in [ 'last_3_months', 'last_12_months' ]:
+            # The current month is one of them
+            months_back = 2 if period == 'last_3_months' else 11
+            month_index = today.year * 12 + today.month - 1 - months_back
+            return datetime.date(month_index // 12, month_index % 12 + 1, 1), today
+
+        if period == 'this_year':
+            return datetime.date(today.year, 1, 1), today
+
+        if period == 'last_year':
+            return datetime.date(today.year - 1, 1, 1), datetime.date(today.year - 1, 12, 31)
+
     def date_changed(self, index):
         day_from = self.cbx['from']['day'].currentIndex() + 1
         month_from = self.cbx['from']['month'].currentIndex() + 1
@@ -83,13 +122,9 @@ class DateFilterWidget(QWidget, ListenerNode):
         self.send_event('filter-widget', 'change_dates', dates)
 
     def update_top_dates(self):
-        expenses = self.expenses_service.get_pending_expenses()
-        dates = [ e.date for e in expenses ]
-
-        if len(dates) == 0:
-            return
-
-        date_from, date_to = self.get_top_dates(dates)
+        today = datetime.date.today()
+        date_from = f'{today.year}0101'
+        date_to = today.strftime('%Y%m%d')
 
         self.change_filter_dates(date_from, date_to)
 
@@ -113,8 +148,19 @@ class DateFilterWidget(QWidget, ListenerNode):
         if date_from == None or date_to == None:
             return
 
+        combos = list(self.cbx['from'].values()) + list(self.cbx['to'].values())
+
+        # Every combo would send its own change, so the screen is reloaded only once at the end
+        for combo in combos:
+            combo.blockSignals(True)
+
         self.change_filter_date('from', date_from)
         self.change_filter_date('to', date_to)
+
+        for combo in combos:
+            combo.blockSignals(False)
+
+        self.date_changed(None)
 
     def change_filter_date(self, combo_group, date_value):
         day = date_value[6:8]
@@ -123,7 +169,8 @@ class DateFilterWidget(QWidget, ListenerNode):
 
         day_index = int(day) - 1
         month_index = int(month) - 1
-        year_index = int(self.cbx[combo_group]['year'].findText(year))
+        # The years before the first one of the combo are not available
+        year_index = max(int(self.cbx[combo_group]['year'].findText(year)), 0)
 
         self.cbx[combo_group]['day'].setCurrentIndex(day_index)
         self.cbx[combo_group]['month'].setCurrentIndex(month_index)

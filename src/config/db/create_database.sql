@@ -39,5 +39,13 @@ DROP TABLE IF EXISTS expense_types;
 CREATE TABLE expense_types (
     category VARCHAR NOT NULL PRIMARY KEY,
     comment VARCHAR NULL,
-    positive BOOLEAN DEFAULT FALSE
+    income BOOLEAN DEFAULT FALSE,
+    not_computed BOOLEAN DEFAULT FALSE
+);
+
+DROP TABLE IF EXISTS rules;
+CREATE TABLE rules (
+    priority INTEGER NOT NULL PRIMARY KEY,
+    rule VARCHAR NOT NULL,
+    category VARCHAR NOT NULL
 );

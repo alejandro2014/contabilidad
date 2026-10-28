@@ -4,6 +4,8 @@ from PySide6.QtWidgets import QGroupBox, QLabel, QVBoxLayout, QWidget
 
 from src.events.ListenerNode import ListenerNode
 
+from src.widgets.charts.ChartPalette import ChartPalette
+
 class Summatory(QWidget, ListenerNode):
     def __init__(self, listeners_pool, *args, **kwargs):
         super(Summatory, self).__init__(*args, **kwargs)
@@ -34,26 +36,24 @@ class Summatory(QWidget, ListenerNode):
         self.lbl2.show()
 
     def update_expenses_sum_from_table(self, expenses):
-        total_value = sum([ float(ex.amount) for ex in expenses ])
+        self.update_expenses_sum_from_amounts([ ex.amount for ex in expenses ])
+
+    def update_expenses_sum_from_amounts(self, amounts):
+        # Expenses are stored as negative amounts, but the sum shows how much has been spent
+        total_value = -sum([ float(amount) for amount in amounts ])
+
+        # Adding 0.0 avoids showing "-0.0" when the amounts cancel out
+        self.set_sum_value(round(total_value, 2) + 0.0)
+
+    def update_expenses_sum_from_chart(self, amounts):
+        total_value = sum([ float(amount) for amount in amounts ])
 
         self.set_sum_value(round(total_value, 2))
-
-    def update_expenses_sum_from_chart(self, categories):
-        sum = 0.0
-
-        values = categories.values()
-
-        for value in values:
-            sum += float(value)
-
-        sum = round(sum, 2)
-
-        self.set_sum_value(sum)
 
     def set_sum_value(self, value):
         #TODO Set color depending on the value
 
-        self.lbl.setText(str(value) + ' €')
+        self.lbl.setText(ChartPalette().format_amount(value))
 
     def set_records_no_value(self, value):
         self.lbl2.setText(str(value) + ' registros')

@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QLabel, QLineEdit
+from PySide6.QtWidgets import QCheckBox, QDialog, QHBoxLayout, QVBoxLayout, QLabel, QLineEdit
 
 from src.services.ExpenseTypesService import ExpenseTypesService
 
@@ -30,6 +30,9 @@ class AddCategoryDialog(QDialog):
         self.description_textbox = QLineEdit()
         description_label.setBuddy(self.description_textbox)
 
+        self.income_checkbox = QCheckBox("Es un ingreso")
+        self.not_computed_checkbox = QCheckBox("No computar")
+
         name_layout.addWidget(name_label)
         name_layout.addWidget(self.name_textbox)
 
@@ -46,6 +49,8 @@ class AddCategoryDialog(QDialog):
         self.layout = QVBoxLayout()
         self.layout.addLayout(name_layout)
         self.layout.addLayout(description_layout)
+        self.layout.addWidget(self.income_checkbox)
+        self.layout.addWidget(self.not_computed_checkbox)
         self.layout.addLayout(button_box)
 
         self.setLayout(self.layout)
@@ -54,6 +59,8 @@ class AddCategoryDialog(QDialog):
     def save_category(self):
         category_name = self.name_textbox.text()
         category_description = self.description_textbox.text()
+        income = self.income_checkbox.isChecked()
+        not_computed = self.not_computed_checkbox.isChecked()
 
         if category_name == '':
             error_dialog = ErrorDialog(self, title = "Error: Nombre vacío", message = "El nombre de la categoría no puede estar vacío")
@@ -65,6 +72,6 @@ class AddCategoryDialog(QDialog):
             error_dialog = ErrorDialog(self, title = "Error: La categoría ya existe", message = f'Ya se ha introducido una categoría "{category_name}"')
             return
 
-        self.expense_types_service.add_category(category_name, category_description)
-        self.parent.add_category_to_table(category_name, category_description)
+        self.expense_types_service.add_category(category_name, category_description, income, not_computed)
+        self.parent.add_category_to_table(category_name, category_description, income, not_computed)
         self.accept()

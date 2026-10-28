@@ -35,6 +35,18 @@ class Classifier(QWidget, ListenerNode):
 
         layout.addWidget(group_box)
 
+    def refresh_categories(self):
+        current_category = self.categories.currentText()
+
+        self.categories.clear()
+        self.categories.addItems(ComboBoxService().get_categories())
+
+        # Keep the selected category if it still exists
+        index = self.categories.findText(current_category)
+
+        if index >= 0:
+            self.categories.setCurrentIndex(index)
+
     def classify_elements(self):
         category = self.categories.currentText()
 

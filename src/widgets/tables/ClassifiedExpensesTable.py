@@ -6,6 +6,7 @@ from DateConverter import DateConverter
 from src.config.ConfigLoader import ConfigLoader
 from src.events.ListenerNode import ListenerNode
 from src.services.expenses_service import ExpensesService
+from src.services.ExpenseTypesService import ExpenseTypesService
 
 class ClassifiedExpensesTable(QtWidgets.QTableWidget, ListenerNode):
     def __init__(self, listeners_pool, table_type):
@@ -14,7 +15,9 @@ class ClassifiedExpensesTable(QtWidgets.QTableWidget, ListenerNode):
         self.table_id = 'classified-expenses-table'
         #self.expenses_service = ClassifiedExpensesService()
         self.expenses_service = ExpensesService()
+        self.expense_types_service = ExpenseTypesService()
         self.expenses = []
+        self.current_filter = None
 
         self.set_table_type(table_type)
 
@@ -36,8 +39,11 @@ class ClassifiedExpensesTable(QtWidgets.QTableWidget, ListenerNode):
         super().__init__(1, len(self.table_info))
 
         self.setHorizontalHeaderLabels(column_labels)
+        self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
 
     def refresh_rows(self, filter = None):
+        self.current_filter = filter
+
         if self.table_type == 'expenses_raw':
             self.refresh_expenses_raw(filter)
         elif self.table_type == 'expenses_by_month':
@@ -54,7 +60,7 @@ class ClassifiedExpensesTable(QtWidgets.QTableWidget, ListenerNode):
         expenses = [ self.format_expense(ex) for ex in expenses ]
 
         self.populate(expenses)
-        self.send_event('sum-text', 'update_expenses_sum_from_table', self.expenses)
+        self.send_expenses_sum(expenses)
         self.send_event('sum-text', 'set_records_no_value', len(expenses))
 
     def refresh_expenses_by_month(self):
@@ -63,7 +69,7 @@ class ClassifiedExpensesTable(QtWidgets.QTableWidget, ListenerNode):
         expenses = copy.deepcopy(self.expenses)
 
         self.populate(expenses)
-        self.send_event('sum-text', 'set_sum_value', round(sum([ float(ex['quantity']) for ex in expenses ]), 2))
+        self.send_expenses_sum(expenses)
         self.send_event('sum-text', 'set_records_no_value', len(expenses))
 
     def refresh_expenses_by_type(self):
@@ -72,7 +78,7 @@ class ClassifiedExpensesTable(QtWidgets.QTableWidget, ListenerNode):
         expenses = copy.deepcopy(self.expenses)
 
         self.populate(expenses)
-        self.send_event('sum-text', 'set_sum_value', round(sum([ float(ex['quantity']) for ex in expenses ]), 2))
+        self.send_expenses_sum(expenses)
         self.send_event('sum-text', 'set_records_no_value', len(expenses))
 
     def refresh_expenses_by_type_and_month(self):
@@ -81,8 +87,15 @@ class ClassifiedExpensesTable(QtWidgets.QTableWidget, ListenerNode):
         expenses = copy.deepcopy(self.expenses)
 
         self.populate(expenses)
-        self.send_event('sum-text', 'set_sum_value', round(sum([ float(ex['quantity']) for ex in expenses ]), 2))
+        self.send_expenses_sum(expenses)
         self.send_event('sum-text', 'set_records_no_value', len(expenses))
+
+    def send_expenses_sum(self, expenses):
+        # Incomes and not computed types are shown in the table, but they are not money spent
+        not_computed_categories = self.expense_types_service.get_not_computed_categories()
+        amounts = [ ex['quantity'] for ex in expenses if ex.get('type') not in not_computed_categories ]
+
+        self.send_event('sum-text', 'update_expenses_sum_from_amounts', amounts)
 
     def populate(self, table_rows):
         self.setRowCount(0)
@@ -104,6 +117,20 @@ class ClassifiedExpensesTable(QtWidgets.QTableWidget, ListenerNode):
             'type': expense.category,
             'quantity': str(expense.amount)
         }
+
+    def unclassify_selected(self):
+        # Only the raw table has one row per expense
+        if self.table_type != 'expenses_raw':
+            return
+
+        rows = sorted(set([ si.row() for si in self.selectedIndexes() ]))
+        expense_ids = [ self.expenses[r].id for r in rows ]
+
+        if len(expense_ids) == 0:
+            return
+
+        self.expenses_service.unclassify_expenses(expense_ids)
+        self.refresh_rows(self.current_filter)
 
     def get_current_expenses(self, value = None):
         return self.expenses

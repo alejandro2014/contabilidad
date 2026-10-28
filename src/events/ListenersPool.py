@@ -1,3 +1,5 @@
+import shiboken6
+
 class ListenersPool:
     def __init__(self):
         self.nodes = []
@@ -29,6 +31,11 @@ class ListenersPool:
             if n.node_id == node_id:
                 node = n
                 break
+
+        # The Qt object of the node is deleted when its screen is replaced
+        if node != None and not shiboken6.isValid(node):
+            self.nodes.remove(node)
+            node = None
 
         if node == None:
             print("[ERROR] The node " + node_id + " doesn't exist")

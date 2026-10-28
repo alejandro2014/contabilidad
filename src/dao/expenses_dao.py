@@ -84,6 +84,11 @@ class ExpensesDao:
         
         self.db.execute_sql(sql)
 
+    def update_unclassified_expense(self, expense_id):
+        sql = self.sql_generator.update_unclassified_expense(expense_id)
+
+        self.db.execute_sql(sql)
+
     def get_pending_expenses_count(self):
         sql = self.sql_generator.select_pending_expenses_count()
 

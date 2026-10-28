@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget
 
+from src.dialogs.WidgetCreator import WidgetCreator
 from src.events.ListenerNode import ListenerNode
 
 from src.widgets.Classifier import Classifier
@@ -60,6 +61,10 @@ class FilterWidget(QWidget, ListenerNode):
             secondary_part = QHBoxLayout()
             secondary_part.addWidget(self.secondary_filters)
 
+            if screen_type == 'classified':
+                self.unclassify_button = WidgetCreator().create_button('Desclasificar seleccionados', 'cancel', self.unclassify_selected)
+                secondary_part.addWidget(self.unclassify_button)
+
             main_layout.addLayout(secondary_part)
 
         self.setLayout(main_layout)
@@ -72,6 +77,10 @@ class FilterWidget(QWidget, ListenerNode):
             self.send_event('view-charts-screen', 'reload_charts', self.filter)
         else:
             self.send_event(self.table_name, 'refresh_rows', self.filter)
+
+    def unclassify_selected(self):
+        self.send_event(self.table_name, 'unclassify_selected')
+        self.send_event('status-bar', 'refresh')
 
     def change_search_value(self, search_value = None):
         self.filter['search_value'] = search_value
