@@ -28,10 +28,24 @@ class ExpenseTypesService(BaseService):
             'not_computed': bool(etf[3])
         } for etf in expense_types_full ]
 
-    def remove_category(self, category):
-        sql = self.sql_generator.delete_expense_type(category)
+    def get_category_usage(self, category):
+        # How many expenses and rules have this type
+        expenses_count, rules_count = self.db.select(self.sql_generator.select_expense_type_usage(category))[0]
 
-        self.db.execute_sql(sql)
+        return expenses_count, rules_count
+
+    def remove_category(self, category, new_category=None):
+        # The expenses and rules of the type go to new_category. Without it, the expenses are pending again and the rules are deleted
+        if new_category is None:
+            rules_sql = self.sql_generator.delete_rules_of_type(category)
+        else:
+            rules_sql = self.sql_generator.move_rules_to_type(category, new_category)
+
+        self.db.execute_transaction([
+            self.sql_generator.move_expenses_to_type(category, new_category),
+            rules_sql,
+            self.sql_generator.delete_expense_type(category)
+        ])
 
     def check_category_exists(self, category_name):
         sql = self.sql_generator.select_category_name(category_name)
@@ -45,8 +59,16 @@ class ExpenseTypesService(BaseService):
 
         self.db.execute_sql(sql)
 
-    def update_expense_type(self, old_category, old_comment, field, new_value):
-        sql = self.sql_generator.update_expense_type(old_category, old_comment, field, new_value)
+    def rename_category(self, old_category, new_category):
+        # The expenses and rules keep pointing to the type, so they are renamed together
+        self.db.execute_transaction([
+            self.sql_generator.rename_expense_type(old_category, new_category),
+            self.sql_generator.move_expenses_to_type(old_category, new_category),
+            self.sql_generator.move_rules_to_type(old_category, new_category)
+        ])
+
+    def update_comment(self, category, comment):
+        sql = self.sql_generator.update_expense_type_comment(category, comment)
 
         self.db.execute_sql(sql)
 

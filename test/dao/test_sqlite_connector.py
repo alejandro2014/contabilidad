@@ -37,6 +37,85 @@ class SqliteConnectorTestCase(unittest.TestCase):
 
         self.assertEqual([ ('Comida', 0, 0) ], self.connector.select('SELECT category, income, not_computed FROM expense_types'))
 
+    def test__params__quotes_in_the_values(self):
+        self.connector.execute_sql(("INSERT INTO expense_types (category, comment) VALUES (?, ?)", ("O'Hara", "it's")))
+
+        self.assertEqual([ ("O'Hara", "it's") ], self.connector.select(("SELECT category, comment FROM expense_types WHERE category = ?", ("O'Hara",))))
+
+    def test__execute_transaction__nothing_saved_when_one_fails(self):
+        self.connector.execute_sql("INSERT INTO expense_types (category) VALUES ('Comida')")
+
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.connector.execute_transaction([
+                "INSERT INTO expense_types (category) VALUES ('Casa')",
+                "INSERT INTO expense_types (category) VALUES ('Comida')"
+            ])
+
+        self.assertEqual([ ('Comida',) ], self.connector.select('SELECT category FROM expense_types'))
+
+    def test__execute_many__returns_the_rows_changed(self):
+        sql = "INSERT OR IGNORE INTO expense_types (category) VALUES (?)"
+
+        self.assertEqual(2, self.connector.execute_many(sql, [ ('Comida',), ('Casa',), ('Comida',) ]))
+
+    def test__execute_many__nothing_saved_when_one_fails(self):
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.connector.execute_many("INSERT INTO expense_types (category) VALUES (?)", [ ('Comida',), (None,) ])
+
+        self.assertEqual(0, self.connector.select('SELECT count(*) FROM expense_types')[0][0])
+
+    def test__backup__copy_of_the_database(self):
+        self.connector.execute_sql("INSERT INTO expense_types (category) VALUES ('Comida')")
+
+        self.connector.backup()
+
+        backups = os.listdir(self.connector.backups_folder())
+        self.assertEqual(1, len(backups))
+        self.assertRegex(backups[0], r'^test-\d{8}-\d{6}\.db$')
+
+        conn = sqlite3.connect(os.path.join(self.connector.backups_folder(), backups[0]))
+        self.assertEqual([ ('Comida',) ], conn.execute('SELECT category FROM expense_types').fetchall())
+        conn.close()
+
+    def test__backup__no_database_no_backup(self):
+        self.connector.backup()
+
+        self.assertFalse(os.path.exists(self.connector.backups_folder()))
+
+    def test__backup__only_the_last_ones_are_kept(self):
+        self.connector.select('SELECT 1')
+        folder = self.connector.backups_folder()
+        os.makedirs(folder)
+
+        for day in range(1, 13):
+            open(os.path.join(folder, f'test-202601{day:02d}-120000.db'), 'w').close()
+
+        self.connector.backup()
+
+        backups = sorted(os.listdir(folder))
+        self.assertEqual(SqliteConnector.BACKUPS_NO, len(backups))
+        self.assertEqual('test-20260104-120000.db', backups[0])
+
+    def test__old_database__backup_before_the_migration(self):
+        self.create_old_database("CREATE TABLE expense_types (category VARCHAR NOT NULL PRIMARY KEY, comment VARCHAR NULL)")
+
+        self.connector.select('SELECT 1')
+
+        backups = os.listdir(self.connector.backups_folder())
+        self.assertEqual(1, len(backups))
+
+        # The copy is the database as it was before the migrations
+        conn = sqlite3.connect(os.path.join(self.connector.backups_folder(), backups[0]))
+        columns = [ c[1] for c in conn.execute('PRAGMA table_info(expense_types)').fetchall() ]
+        conn.close()
+
+        self.assertEqual([ 'category', 'comment' ], columns)
+
+    def test__new_database__no_backup(self):
+        self.connector.select('SELECT 1')
+
+        self.assertFalse(os.path.exists(self.connector.backups_folder()))
+
     def test__old_database__positive_column_renamed_to_income(self):
         self.create_old_database("CREATE TABLE expense_types (category VARCHAR NOT NULL PRIMARY KEY, comment VARCHAR NULL, positive BOOLEAN DEFAULT FALSE)")
         self.insert_old_expense_types([ 'Nómina', 'Otros ingresos', 'Comida' ])

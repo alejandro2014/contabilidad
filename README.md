@@ -13,11 +13,13 @@ make run            # or: python accountancy-manager.py
 
 Run it from the repository root: paths such as `src/config/db/accountancy.db` are relative to it. The database is created automatically the first time, with the tables from `src/config/db/create_database.sql` and the classification rules from `src/config/db/initial-rules.json`.
 
+Before every import and every schema migration, the database is copied to `src/config/db/backups/accountancy-YYYYMMDD-HHMMSS.db`. Only the last 10 copies are kept.
+
 ## Using the app
 
 ### Gastos
 
-- **Cargar fichero**: imports a bank statement (`.xls`, see below). Every movement is checked against the classification rules: the ones that match get their expense type, the rest stay pending. Movements already in the database (same date, concept and amount) are ignored.
+- **Cargar fichero**: imports a bank statement (`.xls`, see below). Every movement is checked against the classification rules: the ones that match get their expense type, the rest stay pending. Movements already in the database (same date, concept and amount) are ignored. The whole file is loaded in a single transaction: if anything fails, nothing is loaded.
 - **Clasificar pendientes**: table of the movements without an expense type, to classify them by hand.
 - **Salir**
 
@@ -35,7 +37,7 @@ Run it from the repository root: paths such as `src/config/db/accountancy.db` ar
 
 ### Configuracion
 
-- **Tipos de gastos**: add, edit and delete expense types. Two flags change how a type is counted:
+- **Tipos de gastos**: add, edit and delete expense types. Renaming a type also renames it in its movements and rules. Deleting a type that is in use asks whether to move its movements and rules to another type, or to leave the movements pending again (and delete its rules). Two flags change how a type is counted:
   - *Ingreso*: it is an income (e.g. payroll), shown as income and left out of the expenses.
   - *No computar*: it is neither an income nor an expense (e.g. transfers to a savings account), left out of every sum.
 - **Reglas de clasificación**: ordered list of rules (text in the concept → expense type). The first rule that matches wins.
@@ -81,23 +83,12 @@ The tests never touch `accountancy.db`: the database is mocked, or a temporary o
 
 ## TODO
 
-### Bugs and data safety
-
-- [ ] **Renaming an expense type** only updates `expense_types`: the expenses and the rules that use the old name keep it, so they drop out of every chart. Rename them in a single transaction.
-- [ ] **Deleting an expense type** leaves its expenses and rules pointing to a type that no longer exists. Ask first, then either move them to another type or leave the expenses pending again.
-- [ ] **Quotes in the SQL**: `insert_expense`, `insert_category`, `update_expense_type`, `delete_expense_type`, `update_classified_expense`... don't escape the values. A concept like `O'Hara` can't be imported, and `load_expenses` only catches `IntegrityError`, so the whole import stops halfway. Replace every f-string with parameters (`?`) in `SqliteConnector.select/execute_sql`, and drop `escape()`.
-- [ ] **Imports are not atomic**: every movement is a separate connection and commit. Insert the whole file in one transaction (`executemany` + `INSERT OR IGNORE`), so a failure leaves nothing half-loaded and big files load faster.
-- [ ] `LoadFileDialog`: check that the file exists and is an `.xls` before loading it, and show an `ErrorDialog` instead of a traceback when the file can't be read or has no `F. VALOR` header.
-- [ ] `ExpensesDao.get_pending_expenses` ignores `sort_by` (always `'amount'`).
-- [ ] `sort_by` goes straight into `ORDER BY`: only accept the column names from the table config.
-- [ ] Backups: copy `accountancy.db` (e.g. to `accountancy-YYYYMMDD.db`) before every import and every schema migration, keeping the last N.
-
 ### Database
 
 - [ ] Versioned migrations (`PRAGMA user_version` + numbered scripts) instead of the `add_*_if_needed` checks, which run on every single query.
 - [ ] Open one connection for the life of the app instead of one per query.
 - [ ] Store amounts as integer cents instead of `FLOAT`: sums like `0.1 + 0.2` then add up exactly.
-- [ ] Foreign keys from `expenses.category` and `rules.category` to `expense_types` (`ON UPDATE CASCADE`), which also fixes the rename bug above.
+- [ ] Foreign keys from `expenses.category` and `rules.category` to `expense_types` (`ON UPDATE CASCADE`), so the database itself keeps them consistent (today `ExpenseTypesService` renames and deletes them by hand).
 - [ ] Index on `expenses(date)` and `expenses(category)`: every dashboard query filters by them.
 - [ ] Remove or use the columns that are never filled: `subcategory`, `category_suggested`, `subcategory_suggested`.
 - [ ] `substr(date, 0, 7)` works only because SQLite treats position 0 as 1: use `substr(date, 1, 6)` like the other queries.
@@ -146,7 +137,7 @@ The tests never touch `accountancy.db`: the database is mocked, or a temporary o
 - [ ] Keyboard shortcuts for the main screens and for classifying (`Ctrl+O` import, type ahead in the type combo, `Enter` to classify and move to the next one).
 - [ ] Dark mode that follows the system, also in the charts.
 - [ ] Show the number of pending movements in the menu (`Clasificar pendientes (12)`) and a button on the "pending" KPI card that opens that screen.
-- [ ] Confirmation before deleting types or rules, and before unclassifying.
+- [ ] Confirmation before deleting rules, and before unclassifying.
 - [ ] Remove commented-out code (`#self.view_expenses_table()`, the commented `sql` in `ExpensesDao`) and solve or drop the old `#TODO`s in `ListenersPool` and `Summatory`.
 
 ### Code quality and tooling

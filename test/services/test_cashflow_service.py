@@ -16,7 +16,7 @@ class CashflowServiceTestCase(unittest.TestCase):
         cashflow = self.cashflow_service.get_cashflow('2026', 'type')
 
         self.assertEqual([ 'Balance', 1850.0 ] + [ None ] * 11 + [ 1850.0, 92.5 ], cashflow['balance'])
-        self.assertIn("date LIKE '2026%'", self.cashflow_service.db.select.call_args[0][0])
+        self.assertEqual(('2026%',), self.cashflow_service.db.select.call_args[0][0][1])
 
     def test__export_cashflow__tab_separated_with_empty_cells(self):
         header = [ 'Categoría', 'Enero', 'Febrero', 'Total' ]

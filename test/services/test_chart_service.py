@@ -45,7 +45,7 @@ class ChartServiceTestCase(unittest.TestCase):
         kpis = self.chart_service.get_kpis(self.filter, {}, bar_info)
 
         self.assertEqual(7, kpis['pending'])
-        self.assertIn("BETWEEN '20260101' AND '20260331'", self.chart_service.db.select.call_args[0][0])
+        self.assertEqual(('20260101', '20260331'), self.chart_service.db.select.call_args[0][0][1])
 
     def test__get_kpis__no_pending_without_dates(self):
         bar_info = { 'months': [], 'amounts': [], 'incomes': [] }
@@ -61,7 +61,7 @@ class ChartServiceTestCase(unittest.TestCase):
         merchants = self.chart_service.get_merchants_info(self.filter, 'Comida')
 
         self.assertEqual({ 'Mercadona': 30.0, 'Lidl': 10.0 }, merchants)
-        self.assertIn("category = 'Comida'", self.chart_service.db.select.call_args[0][0])
+        self.assertEqual('Comida', self.chart_service.db.select.call_args[0][0][1][0])
 
     def test__get_merchants_info__no_dates__no_queries(self):
         self.assertEqual({}, self.chart_service.get_merchants_info(self.no_dates_filter, 'Comida'))

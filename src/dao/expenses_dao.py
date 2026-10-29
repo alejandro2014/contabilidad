@@ -1,5 +1,3 @@
-from sqlite3 import IntegrityError
-
 from src.model.expense import Expense
 from src.dao.SqlGenerator import SqlGenerator
 from src.dao.SqliteConnector import SqliteConnector
@@ -12,23 +10,17 @@ class ExpensesDao:
         self.db = db
 
     def load_expenses(self, expenses):
-        successes_number = 0
-        errors_number = 0
+        # The whole file in a single transaction: when something fails nothing is loaded
+        self.db.backup()
 
-        for expense in expenses:
-            sql = self.sql_generator.insert_expense(expense)
+        rows = [ self.sql_generator.expense_values(e) for e in expenses ]
+        successes_number = self.db.execute_many(self.sql_generator.insert_expenses(), rows)
 
-            try:
-                self.db.execute_sql(sql)
-                successes_number += 1
-            except IntegrityError:
-                errors_number += 1
-
-        return successes_number, errors_number
+        # The ones not inserted were already in the database
+        return successes_number, len(expenses) - successes_number
     
     def get_pending_expenses(self, filter=None, sort_by=None):
-        #sql = self.sql_generator.select_pending_expenses(filter, sort_by)
-        sql = self.sql_generator.select_pending_expenses(filter, 'amount')
+        sql = self.sql_generator.select_pending_expenses(filter, sort_by)
         expenses_db = self.db.select(sql)
 
         return [

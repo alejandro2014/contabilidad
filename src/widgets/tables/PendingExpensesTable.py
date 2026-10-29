@@ -40,7 +40,7 @@ class PendingExpensesTable(QTableWidget, ListenerNode):
 
     def refresh_rows(self, filter = None):
         self.current_filter = filter
-        self.expenses = self.expenses_service.get_pending_expenses(filter, sort_by='title')
+        self.expenses = self.expenses_service.get_pending_expenses(filter, sort_by='amount')
         
         expenses = copy.deepcopy(self.expenses)
 

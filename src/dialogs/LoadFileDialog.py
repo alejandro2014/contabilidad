@@ -1,10 +1,16 @@
+import os
+
 from PySide6 import QtWidgets, QtGui
 from PySide6.QtWidgets import QDialog, QFileDialog, QGridLayout, QHBoxLayout, QLabel, QLineEdit
 
+from src.dialogs.ErrorDialog import ErrorDialog
 from src.dialogs.InfoDialog import InfoDialog
 from src.dialogs.WidgetCreator import WidgetCreator
 
 from src.services.LoadFileService import LoadFileService
+from src.logger import get_logger
+
+logger = get_logger(__name__)
 
 class LoadFileDialog(QDialog):
     def __init__(self, parent, listeners_pool):
@@ -47,18 +53,48 @@ class LoadFileDialog(QDialog):
         # Only the xls bank statements can be loaded
         file_name = file_dialog.getOpenFileName(self, 'Cargar fichero', '', 'Extracto bancario (*.xls)')
 
-        self.load_file_textbox.insert(file_name[0])
+        # Empty when the dialog is cancelled
+        if file_name[0] != '':
+            self.load_file_textbox.setText(file_name[0])
 
     def load_file(self):
-        file_name = self.load_file_textbox.text()
-        values = self.expenses_service.load_file(file_name)
+        file_name = self.load_file_textbox.text().strip()
+
+        error = self.check_file(file_name)
+
+        if error is not None:
+            ErrorDialog(self, title="Error al cargar el fichero", message=error)
+            return
+
+        try:
+            values = self.expenses_service.load_file(file_name)
+        except ValueError as e:
+            # The file has no F. VALOR header: it is not a bank statement
+            logger.error(f'{file_name} can not be loaded: {e}')
+            ErrorDialog(self, title="Error al cargar el fichero", message="El fichero no es un extracto bancario: no tiene la cabecera \"F. VALOR\".\nNo se ha cargado ningún registro.")
+            return
+        except Exception as e:
+            logger.exception(f'{file_name} can not be loaded')
+            ErrorDialog(self, title="Error al cargar el fichero", message=f"No se ha podido cargar el fichero: {e}\nNo se ha cargado ningún registro.")
+            return
 
         self.listeners_pool.send_event('pending-expenses-table', 'refresh_rows')
+        self.listeners_pool.send_event('status-bar', 'refresh')
 
         message = f"Registros cargados: {str(values['inserted'])}\nRegistros ignorados: {str(values['ignored'])}"
         info_dialog = InfoDialog(self, title="Cargado fichero", message=message)
 
-        #TODO Check whether file exists
-        #TODO Check extension is correct
-
         self.load_file_textbox.clear()
+
+    def check_file(self, file_name):
+        # The error to show, or None when the file can be loaded
+        if file_name == '':
+            return "Elige el fichero que quieres cargar"
+
+        if not os.path.isfile(file_name):
+            return f'El fichero "{file_name}" no existe'
+
+        if os.path.splitext(file_name)[1].lower() != '.xls':
+            return "Solo se pueden cargar extractos bancarios en formato .xls"
+
+        return None

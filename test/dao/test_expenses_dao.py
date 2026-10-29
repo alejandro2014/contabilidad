@@ -1,51 +1,37 @@
-from sqlite3 import IntegrityError
-
+import os
+import tempfile
 import unittest
 from unittest import TestCase
-from unittest.mock import call, Mock
+from unittest.mock import ANY, call, Mock
 
 from src.dao.expenses_dao import ExpensesDao
+from src.dao.SqlGenerator import SqlGenerator
+from src.dao.SqliteConnector import SqliteConnector
 from src.model.expense import Expense
 
 class ExpensesDaoTestCase(TestCase):
-    def test__load_expenses__oneerror_onecorrect(self):
+    def test__load_expenses__one_already_loaded(self):
         mock_db = Mock()
-        mock_db.execute_sql.side_effect = [[], IntegrityError("Test integrity error")]
+        mock_db.execute_many.return_value = 1
 
         dao = ExpensesDao(db=mock_db)
 
-        input_expenses = self.get_two_expenses()
-
-        successes_number, errors_number = dao.load_expenses(input_expenses)
+        successes_number, errors_number = dao.load_expenses(self.get_two_expenses())
 
         self.assertEqual(1, successes_number)
         self.assertEqual(1, errors_number)
 
-    def test__load_expenses__twoerrors(self):
+    def test__load_expenses__a_single_transaction_after_a_backup(self):
         mock_db = Mock()
-        mock_db.execute_sql.side_effect = [IntegrityError("Test integrity error"), IntegrityError("Test integrity error")]
+        mock_db.execute_many.return_value = 2
 
         dao = ExpensesDao(db=mock_db)
 
-        input_expenses = self.get_two_expenses()
+        successes_number, errors_number = dao.load_expenses(self.get_two_expenses())
 
-        successes_number, errors_number = dao.load_expenses(input_expenses)
-
-        self.assertEqual(0, successes_number)
-        self.assertEqual(2, errors_number)
-
-    def test__load_expenses__twocorrect(self):
-        mock_db = Mock()
-        mock_db.execute_sql.side_effect = [[], []]
-
-        dao = ExpensesDao(db=mock_db)
-
-        input_expenses = self.get_two_expenses()
-
-        successes_number, errors_number = dao.load_expenses(input_expenses)
-
-        self.assertEqual(2, successes_number)
-        self.assertEqual(0, errors_number)
+        self.assertEqual((2, 0), (successes_number, errors_number))
+        self.assertEqual([ call.backup(), call.execute_many(dao.sql_generator.insert_expenses(), ANY) ], mock_db.mock_calls)
+        self.assertEqual(2, len(mock_db.execute_many.call_args[0][1]))
 
     def test__get_pending_expenses(self):
         mock_db = Mock()
@@ -64,6 +50,14 @@ class ExpensesDaoTestCase(TestCase):
         
         for index, pending_expense in enumerate(pending_expenses):
             self.assertEqual(expected_expenses[index], pending_expense)
+
+    def test__get_pending_expenses__sorted_by(self):
+        mock_db = Mock()
+        mock_db.select.return_value = []
+
+        ExpensesDao(db=mock_db).get_pending_expenses(sort_by='title')
+
+        self.assertTrue(mock_db.select.call_args[0][0][0].endswith(' ORDER BY title ASC'))
 
     def test__get_expenses_date_range(self):
         mock_db = Mock()
@@ -120,3 +114,32 @@ class ExpensesDaoTestCase(TestCase):
 
 
         
+class ExpensesDaoDatabaseTestCase(TestCase):
+    def setUp(self):
+        self.directory = tempfile.TemporaryDirectory()
+
+        self.db = SqliteConnector()
+        self.db.db = os.path.join(self.directory.name, 'test.db')
+
+        self.dao = ExpensesDao(sql_generator=SqlGenerator(), db=self.db)
+
+    def tearDown(self):
+        self.directory.cleanup()
+
+    def test__load_expenses__quotes_and_already_loaded(self):
+        expenses = [
+            Expense(id = '1', date = '20260105', title = "Pago en O'HARA", amount = -12.5),
+            Expense(id = '2', date = '20260106', title = 'Pago en LIDL', amount = -10.0, category = 'Comida')
+        ]
+
+        self.assertEqual((2, 0), self.dao.load_expenses(expenses))
+
+        # The same movements again, with other ids
+        expenses[0].id = '3'
+        expenses[1].id = '4'
+
+        self.assertEqual((0, 2), self.dao.load_expenses(expenses))
+
+        pending = self.dao.get_pending_expenses(filter={ 'search_value': "O'HARA" }, sort_by='amount')
+
+        self.assertEqual([ "Pago en O'HARA" ], [ e.title for e in pending ])
