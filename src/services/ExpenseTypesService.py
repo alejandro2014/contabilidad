@@ -35,17 +35,14 @@ class ExpenseTypesService(BaseService):
         return expenses_count, rules_count
 
     def remove_category(self, category, new_category=None):
-        # The expenses and rules of the type go to new_category. Without it, the expenses are pending again and the rules are deleted
-        if new_category is None:
-            rules_sql = self.sql_generator.delete_rules_of_type(category)
-        else:
-            rules_sql = self.sql_generator.move_rules_to_type(category, new_category)
-
-        self.db.execute_transaction([
+        # The expenses and rules of the type go to new_category. Without it, the foreign keys leave
+        # the expenses pending again and delete the rules
+        queries = [] if new_category is None else [
             self.sql_generator.move_expenses_to_type(category, new_category),
-            rules_sql,
-            self.sql_generator.delete_expense_type(category)
-        ])
+            self.sql_generator.move_rules_to_type(category, new_category)
+        ]
+
+        self.db.execute_transaction(queries + [ self.sql_generator.delete_expense_type(category) ])
 
     def check_category_exists(self, category_name):
         sql = self.sql_generator.select_category_name(category_name)
@@ -60,12 +57,8 @@ class ExpenseTypesService(BaseService):
         self.db.execute_sql(sql)
 
     def rename_category(self, old_category, new_category):
-        # The expenses and rules keep pointing to the type, so they are renamed together
-        self.db.execute_transaction([
-            self.sql_generator.rename_expense_type(old_category, new_category),
-            self.sql_generator.move_expenses_to_type(old_category, new_category),
-            self.sql_generator.move_rules_to_type(old_category, new_category)
-        ])
+        # The foreign keys rename it in the expenses and rules too
+        self.db.execute_sql(self.sql_generator.rename_expense_type(old_category, new_category))
 
     def update_comment(self, category, comment):
         sql = self.sql_generator.update_expense_type_comment(category, comment)

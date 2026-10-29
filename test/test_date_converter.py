@@ -46,3 +46,28 @@ class DateConverterTestCase(unittest.TestCase):
 
     def assert_period(self, period, today, expected_from, expected_to):
         self.assertEqual((expected_from, expected_to), self.date_converter.period_dates(period, today))
+
+    def test__month_dates__last_day_of_the_month(self):
+        self.assertEqual(('20240201', '20240229'), self.date_converter.month_dates('202402'))
+        self.assertEqual(('20261201', '20261231'), self.date_converter.month_dates('202612'))
+
+    def test__comparison_dates__previous_part_of_a_month(self):
+        # This month until today, compared with the same days of the month before
+        self.assertEqual(('20260901', '20260929'), self.date_converter.comparison_dates('20261001', '20261029', 'previous'))
+
+    def test__comparison_dates__previous_whole_months(self):
+        self.assertEqual(('20251001', '20251231'), self.date_converter.comparison_dates('20260101', '20260331', 'previous'))
+        self.assertEqual(('20250101', '20250131'), self.date_converter.comparison_dates('20250201', '20250228', 'previous'))
+
+    def test__comparison_dates__previous_month_end_to_a_longer_month(self):
+        self.assertEqual(('20251101', '20251130'), self.date_converter.comparison_dates('20251201', '20251231', 'previous'))
+        # The end of the month is the end of the other month, not the same day
+        self.assertEqual(('20260301', '20260331'), self.date_converter.comparison_dates('20260401', '20260430', 'previous'))
+
+    def test__comparison_dates__previous_days(self):
+        # Ranges that don't start on the first day are compared with the same number of days before them
+        self.assertEqual(('20260925', '20261004'), self.date_converter.comparison_dates('20261005', '20261014', 'previous'))
+
+    def test__comparison_dates__last_year(self):
+        self.assertEqual(('20250101', '20251029'), self.date_converter.comparison_dates('20260101', '20261029', 'last_year'))
+        self.assertEqual(('20230201', '20230228'), self.date_converter.comparison_dates('20240201', '20240229', 'last_year'))

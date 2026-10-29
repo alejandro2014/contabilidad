@@ -1,11 +1,15 @@
 from PySide6.QtCore import QCoreApplication
-from PySide6.QtWidgets import QMainWindow, QStatusBar
+from PySide6.QtGui import QKeySequence
+from PySide6.QtWidgets import QMainWindow
+
+from src.config.settings import app_settings
 
 from src.dialogs.ConfigureExpensesDialog import ConfigureExpensesDialog
 from src.dialogs.ConfigureRulesDialog import ConfigureRulesDialog
 from src.dialogs.InfoDialog import InfoDialog
 from src.dialogs.LoadFileDialog import LoadFileDialog
 
+from src.events.ListenerNode import ListenerNode
 from src.events.ListenersPool import ListenersPool
 
 from src.screens.CashflowWindow import CashflowWindow
@@ -19,59 +23,94 @@ from DateConverter import DateConverter
 
 from src.widgets.StatusBar import StatusBar
 
-class MainWindow(QMainWindow):
+class MainWindow(QMainWindow, ListenerNode):
+    CLASSIFY_EXPENSES_TEXT = 'Clasificar pendientes'
+
+    # Settings kept between sessions: size and place of the window, and the last screen
+    GEOMETRY_SETTING = 'main_window/geometry'
+    SCREEN_SETTING = 'main_window/screen'
+
     def __init__(self):
         super(MainWindow, self).__init__()
 
         self.listeners_pool = ListenersPool()
+        ListenerNode.__init__(self, 'main-window', self.listeners_pool)
+
         self.cashflow_window = None
         self.setWindowTitle('Contabilidad')
         self.resize(1300, 1000)
+        self.restore_geometry()
 
         self.menubar = self.menuBar()
 
         self.load_options_menu()
+        # The status bar sets the number of pending expenses in the menu, so it goes after it
         self.init_status_bar()
-        #self.view_expenses_table()
-        self.view_expenses_charts()
+        self.restore_screen()
+
+    def restore_geometry(self):
+        geometry = app_settings().value(self.GEOMETRY_SETTING)
+
+        if geometry is not None:
+            self.restoreGeometry(geometry)
+
+    def restore_screen(self):
+        screens = {
+            'charts': self.view_expenses_charts,
+            'table': self.view_expenses_table,
+            'classify': self.classify_expenses
+        }
+
+        # The dashboard when there is no screen saved yet
+        screens.get(app_settings().value(self.SCREEN_SETTING), self.view_expenses_charts)()
+
+    def save_screen(self, screen):
+        app_settings().setValue(self.SCREEN_SETTING, screen)
+
+    def save_geometry(self):
+        app_settings().setValue(self.GEOMETRY_SETTING, self.saveGeometry())
+
+    def closeEvent(self, event):
+        self.save_geometry()
+        super().closeEvent(event)
 
     def load_options_menu(self):
         menu_gastos = self.menubar.addMenu('Gastos')
 
-        load_expenses_file_action = menu_gastos.addAction('Cargar fichero')
-        load_expenses_file_action.triggered.connect(self.load_expenses_file)
-
-        classify_expenses_action = menu_gastos.addAction('Clasificar pendientes')
-        classify_expenses_action.triggered.connect(self.classify_expenses)
+        self.add_action(menu_gastos, 'Cargar fichero', self.load_expenses_file, QKeySequence.StandardKey.Open)
+        self.classify_expenses_action = self.add_action(menu_gastos, self.CLASSIFY_EXPENSES_TEXT, self.classify_expenses, 'Ctrl+3')
 
         menu_gastos.addSeparator()
 
-        exit_app_action = menu_gastos.addAction('Salir')
-        exit_app_action.triggered.connect(self.exit_app)
+        self.add_action(menu_gastos, 'Salir', self.exit_app, 'Ctrl+Q')
 
-        menu_gastos = self.menubar.addMenu('Ver')
+        menu_ver = self.menubar.addMenu('Ver')
 
-        view_expenses_table_action = menu_gastos.addAction('Ver tabla')
-        view_expenses_table_action.triggered.connect(self.view_expenses_table)
+        self.add_action(menu_ver, 'Ver gráficos', self.view_expenses_charts, 'Ctrl+1')
+        self.add_action(menu_ver, 'Ver tabla', self.view_expenses_table, 'Ctrl+2')
+        self.add_action(menu_ver, 'Flujo de caja', self.view_cashflow, 'Ctrl+4')
 
-        view_expenses_charts_action = menu_gastos.addAction('Ver graficos')
-        view_expenses_charts_action.triggered.connect(self.view_expenses_charts)
+        menu_ver.addSeparator()
 
-        view_cashflow_action = menu_gastos.addAction('Flujo de caja')
-        view_cashflow_action.triggered.connect(self.view_cashflow)
+        self.add_action(menu_ver, 'Rango de fechas', self.view_date_range)
 
-        menu_gastos.addSeparator()
+        menu_configuracion = self.menubar.addMenu('Configuración')
 
-        view_date_range_action = menu_gastos.addAction('Rango de fechas')
-        view_date_range_action.triggered.connect(self.view_date_range)
+        self.add_action(menu_configuracion, 'Tipos de gastos', self.configure_expense_types)
+        self.add_action(menu_configuracion, 'Reglas de clasificación', self.configure_rules)
 
-        menu_configuracion = self.menubar.addMenu('Configuracion')
+    def add_action(self, menu, text, slot, shortcut = None):
+        action = menu.addAction(text)
+        action.triggered.connect(slot)
 
-        configure_expense_types_action = menu_configuracion.addAction('Tipos de gastos')
-        configure_expense_types_action.triggered.connect(self.configure_expense_types)
+        if shortcut is not None:
+            action.setShortcut(QKeySequence(shortcut))
 
-        configure_rules_action = menu_configuracion.addAction('Reglas de clasificación')
-        configure_rules_action.triggered.connect(self.configure_rules)
+        return action
+
+    def set_pending_count(self, pending):
+        text = self.CLASSIFY_EXPENSES_TEXT if pending == 0 else f'{self.CLASSIFY_EXPENSES_TEXT} ({pending})'
+        self.classify_expenses_action.setText(text)
 
     def init_status_bar(self):
         self.status_bar = StatusBar(self.listeners_pool)
@@ -83,14 +122,21 @@ class MainWindow(QMainWindow):
     def classify_expenses(self):
         classify_expenses_screen = ClassifyExpensesScreen(self.listeners_pool)
         self.setCentralWidget(classify_expenses_screen)
+        self.save_screen('classify')
 
     def view_expenses_table(self):
-        view_expenses_screen = ViewExpensesScreen(self.listeners_pool)
+        self.open_expenses_table(None)
+
+    def open_expenses_table(self, filter):
+        # From a chart of the dashboard, with the filter of the movements behind it
+        view_expenses_screen = ViewExpensesScreen(self.listeners_pool, filter)
         self.setCentralWidget(view_expenses_screen)
+        self.save_screen('table')
 
     def view_expenses_charts(self):
         view_charts_screen = ViewChartsScreen(self.listeners_pool)
         self.setCentralWidget(view_charts_screen)
+        self.save_screen('charts')
 
     def view_cashflow(self):
         # Only one cashflow window, brought to the front if it is already open
@@ -130,4 +176,6 @@ class MainWindow(QMainWindow):
         configure_rules_dialog = ConfigureRulesDialog(self)
 
     def exit_app(self):
+        # Quitting doesn't close the window, so its size is saved here
+        self.save_geometry()
         QCoreApplication.instance().quit()

@@ -8,6 +8,7 @@ from src.services.ComboBoxService import ComboBoxService
 
 class SearchFilter(QWidget, ListenerNode):
     ALL_CATEGORIES = 'Todos los tipos'
+    ALL_TAGS = 'Todas las etiquetas'
 
     def __init__(self, listeners_pool, show_categories, *args, **kwargs):
         super(SearchFilter, self).__init__(*args, **kwargs)
@@ -22,6 +23,7 @@ class SearchFilter(QWidget, ListenerNode):
         self.amount_to = self.create_amount_edit('Máximo')
 
         self.categories = QComboBox()
+        self.tags = QComboBox()
 
         self.clear_button = QPushButton('Limpiar')
         self.clear_button.clicked.connect(self.clear)
@@ -52,6 +54,14 @@ class SearchFilter(QWidget, ListenerNode):
 
             self.refresh_categories()
 
+            # The tags are only given to classified expenses too
+            tag_layout = QHBoxLayout()
+            tag_layout.addWidget(QLabel('Etiqueta:'))
+            tag_layout.addWidget(self.tags)
+            inner_layout.addLayout(tag_layout)
+
+            self.refresh_tags()
+
         inner_layout.addWidget(self.clear_button)
 
         group_box = QGroupBox("Buscar")
@@ -63,6 +73,7 @@ class SearchFilter(QWidget, ListenerNode):
         self.amount_from.textEdited.connect(self.search_changed)
         self.amount_to.textEdited.connect(self.search_changed)
         self.categories.currentIndexChanged.connect(self.search_changed)
+        self.tags.currentIndexChanged.connect(self.search_changed)
 
     def create_amount_edit(self, placeholder):
         line_edit = QLineEdit()
@@ -71,19 +82,39 @@ class SearchFilter(QWidget, ListenerNode):
         return line_edit
 
     def refresh_categories(self):
-        current_category = self.categories.currentText()
+        self.refresh_combo(self.categories, self.ALL_CATEGORIES, ComboBoxService().get_categories())
+
+    def refresh_tags(self):
+        self.refresh_combo(self.tags, self.ALL_TAGS, ComboBoxService().get_tags())
+
+    def refresh_combo(self, combo, all_text, values):
+        current_value = combo.currentText()
 
         # Filling the combo must not launch a search for every item
-        self.categories.blockSignals(True)
+        combo.blockSignals(True)
 
-        self.categories.clear()
-        self.categories.addItem(self.ALL_CATEGORIES)
-        self.categories.addItems(ComboBoxService().get_categories())
+        combo.clear()
+        combo.addItem(all_text)
+        combo.addItems(values)
 
-        # Keep the selected category if it still exists
-        self.categories.setCurrentIndex(max(self.categories.findText(current_category), 0))
+        # Keep the selected value if it still exists
+        combo.setCurrentIndex(max(combo.findText(current_value), 0))
 
-        self.categories.blockSignals(False)
+        combo.blockSignals(False)
+
+    def set_search(self, search_value=None, category=None, tag=None):
+        # Shows a search chosen somewhere else (a chart of the dashboard) without searching for every field
+        for widget in [ self.line_edit, self.amount_from, self.amount_to, self.categories, self.tags ]:
+            widget.blockSignals(True)
+
+        self.line_edit.setText(search_value or '')
+        self.amount_from.clear()
+        self.amount_to.clear()
+        self.categories.setCurrentIndex(max(self.categories.findText(category or self.ALL_CATEGORIES), 0))
+        self.tags.setCurrentIndex(max(self.tags.findText(tag or self.ALL_TAGS), 0))
+
+        for widget in [ self.line_edit, self.amount_from, self.amount_to, self.categories, self.tags ]:
+            widget.blockSignals(False)
 
     def search_changed(self, value = None):
         self.send_event('filter-widget', 'change_search', self.get_search())
@@ -91,6 +122,7 @@ class SearchFilter(QWidget, ListenerNode):
     def get_search(self):
         text = self.line_edit.text()
         category = self.categories.currentText()
+        tag = self.tags.currentText()
 
         return {
             'search_value': text if len(text) > 1 else None,
@@ -98,7 +130,8 @@ class SearchFilter(QWidget, ListenerNode):
                 'from': self.parse_amount(self.amount_from.text()),
                 'to': self.parse_amount(self.amount_to.text())
             },
-            'category': category if self.show_categories and category != self.ALL_CATEGORIES else None
+            'category': category if self.show_categories and category != self.ALL_CATEGORIES else None,
+            'tag': tag if self.show_categories and tag != self.ALL_TAGS else None
         }
 
     def parse_amount(self, text):
@@ -115,8 +148,9 @@ class SearchFilter(QWidget, ListenerNode):
         self.amount_from.clear()
         self.amount_to.clear()
 
-        self.categories.blockSignals(True)
-        self.categories.setCurrentIndex(0)
-        self.categories.blockSignals(False)
+        for combo in [ self.categories, self.tags ]:
+            combo.blockSignals(True)
+            combo.setCurrentIndex(0)
+            combo.blockSignals(False)
 
         self.search_changed()

@@ -78,11 +78,41 @@ class PendingExpensesTable(QTableWidget, ListenerNode):
     def classify_selected(self, category):
         indexes = self.get_selected_indexes()
 
+        if len(indexes) == 0:
+            return
+
         # The rows may be sorted differently than self.expenses, so the id is taken from the row
         expense_ids = [ self.item(i, 0).data(Qt.ItemDataRole.UserRole) for i in indexes ]
 
         self.expenses_service.classify_expenses(expense_ids, category)
         self.refresh_rows(self.current_filter)
+
+        # The classified rows are gone, so the next one is now where the first of them was
+        self.select_row(min(indexes))
+        self.setFocus()
+
+    def select_row(self, row):
+        row = min(row, self.rowCount() - 1)
+
+        if row < 0:
+            return
+
+        self.selectRow(row)
+        self.scrollToItem(self.item(row, 0))
+
+    def keyPressEvent(self, event):
+        # Enter classifies the selected rows with the type of the combo, and typing a letter looks for a type
+        if event.key() in [ Qt.Key.Key_Return, Qt.Key.Key_Enter ]:
+            self.send_event('classificator', 'classify_elements')
+            return
+
+        with_modifier = event.modifiers() & (Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.MetaModifier | Qt.KeyboardModifier.AltModifier)
+
+        if event.text().strip() != '' and not with_modifier:
+            self.send_event('classificator', 'type_ahead', event.text())
+            return
+
+        super().keyPressEvent(event)
     
     def get_selected_indexes(self):
         selected_indexes = self.selectedIndexes()

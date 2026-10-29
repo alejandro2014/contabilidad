@@ -10,6 +10,8 @@ class SecondaryFilters(QWidget, ListenerNode):
 
         self.group_by_month = QCheckBox('Por mes')
         self.group_by_type = QCheckBox('Por tipo de gasto')
+        # The totals of each tag of the range, alone: a movement can have several tags
+        self.group_by_tag = QCheckBox('Por etiqueta')
 
         layout = QVBoxLayout()
         self.setLayout(layout)
@@ -17,6 +19,7 @@ class SecondaryFilters(QWidget, ListenerNode):
         inner_layout = QHBoxLayout()
         inner_layout.addWidget(self.group_by_month)
         inner_layout.addWidget(self.group_by_type)
+        inner_layout.addWidget(self.group_by_tag)
 
         group_box = QGroupBox('Agrupaciones')
         group_box.setLayout(inner_layout)
@@ -25,12 +28,19 @@ class SecondaryFilters(QWidget, ListenerNode):
 
         self.group_by_month.stateChanged.connect(self.grouping_changed)
         self.group_by_type.stateChanged.connect(self.grouping_changed)
+        self.group_by_tag.stateChanged.connect(self.grouping_changed)
 
     def grouping_changed(self):
         month_status = self.group_by_month.checkState()
         type_status = self.group_by_type.checkState()
+        by_tag = self.group_by_tag.isChecked()
 
-        if month_status == QtCore.Qt.CheckState.Unchecked and type_status == QtCore.Qt.CheckState.Unchecked:
+        self.group_by_month.setEnabled(not by_tag)
+        self.group_by_type.setEnabled(not by_tag)
+
+        if by_tag:
+            criteria = 'expenses_by_tag'
+        elif month_status == QtCore.Qt.CheckState.Unchecked and type_status == QtCore.Qt.CheckState.Unchecked:
             criteria = 'expenses_raw'
         elif month_status == QtCore.Qt.CheckState.Unchecked and type_status == QtCore.Qt.CheckState.Checked:
             criteria = 'expenses_by_type'

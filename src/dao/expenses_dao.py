@@ -5,7 +5,7 @@ from src.dao.SqliteConnector import SqliteConnector
 class ExpensesDao:
     def __init__(self, 
                  sql_generator=SqlGenerator(), 
-                 db=SqliteConnector()):
+                 db=SqliteConnector.shared()):
         self.sql_generator = sql_generator
         self.db = db
 
@@ -14,7 +14,11 @@ class ExpensesDao:
         self.db.backup()
 
         rows = [ self.sql_generator.expense_values(e) for e in expenses ]
-        successes_number = self.db.execute_many(self.sql_generator.insert_expenses(), rows)
+
+        # The movements already loaded are updated with their balance, so the rows changed are not the ones inserted
+        count_before = self.get_expenses_count()
+        self.db.execute_many(self.sql_generator.insert_expenses(), rows)
+        successes_number = self.get_expenses_count() - count_before
 
         # The ones not inserted were already in the database
         return successes_number, len(expenses) - successes_number
@@ -42,9 +46,14 @@ class ExpensesDao:
                 date = e[1],
                 title = e[2],
                 amount = e[3],
-                category = e[4]
+                category = e[4],
+                note = e[5],
+                tags = self.split_tags(e[6])
             ) for e in expenses_db
         ]
+
+    def split_tags(self, tags):
+        return [] if tags is None else sorted(tags.split(self.sql_generator.TAGS_SEPARATOR), key=str.casefold)
 
     def get_classified_expenses_by_month(self):
         sql = self.sql_generator.select_classified_expenses_by_month()
@@ -80,6 +89,31 @@ class ExpensesDao:
         sql = self.sql_generator.update_unclassified_expense(expense_id)
 
         self.db.execute_sql(sql)
+
+    def update_notes_and_tags(self, expense_ids, note, tags):
+        # The note and the tags of every expense are replaced, all of them together
+        queries = []
+
+        for expense_id in expense_ids:
+            queries.append(self.sql_generator.update_expense_note(expense_id, note))
+            queries.append(self.sql_generator.delete_expense_tags(expense_id))
+            queries += [ self.sql_generator.insert_expense_tag(expense_id, tag) for tag in tags ]
+
+        self.db.execute_transaction(queries)
+
+    def get_tags(self):
+        return [ t[0] for t in self.db.select(self.sql_generator.select_tags()) ]
+
+    def get_tag_totals(self, filter=None):
+        # Expenses are negative amounts, like in the other grouped tables
+        return [ {
+            'tag': t[0],
+            'quantity': str(round(t[1], 2)),
+            'count': str(t[2])
+        } for t in self.db.select(self.sql_generator.select_tag_totals(filter)) ]
+
+    def get_expenses_count(self):
+        return self.db.select(self.sql_generator.select_expenses_count())[0][0]
 
     def get_pending_expenses_count(self):
         sql = self.sql_generator.select_pending_expenses_count()

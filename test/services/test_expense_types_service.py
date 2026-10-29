@@ -11,17 +11,18 @@ class ExpenseTypesServiceTestCase(unittest.TestCase):
         self.directory = tempfile.TemporaryDirectory()
 
         self.service = ExpenseTypesService()
-        self.service.db = SqliteConnector()
-        self.service.db.db = os.path.join(self.directory.name, 'test.db')
+        self.service.db = SqliteConnector(os.path.join(self.directory.name, 'test.db'))
 
         self.service.db.execute_transaction([
             "DELETE FROM rules",
+            "DELETE FROM expense_types",
             "INSERT INTO expense_types (category) VALUES ('Comida'), ('Casa')",
             "INSERT INTO expenses (id, date, title, amount, category) VALUES ('1', '20260105', 'MERCADONA', -30.0, 'Comida'), ('2', '20260106', 'LIDL', -10.0, 'Comida'), ('3', '20260107', 'IKEA', -99.0, 'Casa')",
             "INSERT INTO rules (priority, rule, category) VALUES (1, 'MERCADONA', 'Comida'), (2, 'IKEA', 'Casa')"
         ])
 
     def tearDown(self):
+        self.service.db.close()
         self.directory.cleanup()
 
     def test__rename_category__expenses_and_rules_too(self):

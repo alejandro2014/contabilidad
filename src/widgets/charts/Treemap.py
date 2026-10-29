@@ -1,15 +1,14 @@
 from PySide6.QtCore import QRectF, Qt
-from PySide6.QtGui import QColor, QFont, QFontMetrics, QPainter, QPen
+from PySide6.QtGui import QColor, QFont, QFontMetrics, QPainter, QPalette, QPen
 from PySide6.QtWidgets import QSizePolicy, QToolTip, QWidget
 
 from src.widgets.charts.ChartPalette import ChartPalette
 
 class Treemap(QWidget):
-    # Soft colors, so the dark labels are easy to read on all of them
+    # Soft colors, so the dark labels are easy to read on all of them, also in dark mode
     COLORS = [ '#a8c8e8', '#f4c2a1', '#b5dfc4', '#f6dc9b', '#f2bcd0', '#c9c1ec',
                '#a9dcdc', '#e6c7b0', '#d4e4a8', '#f0b8b0', '#bcd0f0', '#dcc8e0' ]
     TEXT_COLOR = '#2b2b2b'
-    BORDER_COLOR = '#ffffff'
     PADDING = 6
 
     def __init__(self, *args, **kwargs):
@@ -94,7 +93,8 @@ class Treemap(QWidget):
             return
 
         for index, (rect, (category, amount, percentage)) in enumerate(zip(self.split_rectangles(QRectF(self.rect())), self.items)):
-            painter.setPen(QPen(QColor(self.BORDER_COLOR), 2))
+            # The gaps between the pieces have the color of the window, light or dark
+            painter.setPen(QPen(self.palette().color(QPalette.ColorRole.Window), 2))
             painter.setBrush(QColor(self.COLORS[index % len(self.COLORS)]))
             painter.drawRect(rect)
 

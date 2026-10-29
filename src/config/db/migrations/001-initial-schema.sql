@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS expenses;
+-- Schema of the databases created before the versioned migrations
 CREATE TABLE expenses (
     id CHAR(36) NOT NULL,
     date CHAR(8) NOT NULL,
@@ -13,10 +13,8 @@ CREATE TABLE expenses (
     PRIMARY KEY (date, title, amount)
 );
 
-DROP INDEX IF EXISTS expenses_id;
 CREATE INDEX expenses_id ON expenses (id);
 
-DROP TABLE IF EXISTS expense_types;
 CREATE TABLE expense_types (
     category VARCHAR NOT NULL PRIMARY KEY,
     comment VARCHAR NULL,
@@ -24,7 +22,6 @@ CREATE TABLE expense_types (
     not_computed BOOLEAN DEFAULT FALSE
 );
 
-DROP TABLE IF EXISTS rules;
 CREATE TABLE rules (
     priority INTEGER NOT NULL PRIMARY KEY,
     rule VARCHAR NOT NULL,

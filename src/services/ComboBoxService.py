@@ -1,5 +1,6 @@
 import datetime
 
+from src.services.expenses_service import ExpensesService
 from src.services.ExpenseTypesService import ExpenseTypesService
 
 class ComboBoxService:
@@ -20,3 +21,6 @@ class ComboBoxService:
 
     def get_categories(self):
         return self.expense_types_service.get_categories_simple()
+
+    def get_tags(self):
+        return ExpensesService().get_tags()

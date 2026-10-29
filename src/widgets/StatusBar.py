@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QStatusBar
+from PySide6.QtWidgets import QStatusBar
 
 from src.events.ListenerNode import ListenerNode
 from src.services.expenses_service import ExpensesService
@@ -17,3 +17,4 @@ class StatusBar(QStatusBar, ListenerNode):
         classified = self.expenses_service.get_classified_expenses_count()
 
         self.showMessage(f'Pendientes: {str(pending)}, Clasificados: {str(classified)}', 0)
+        self.send_event('main-window', 'set_pending_count', pending)

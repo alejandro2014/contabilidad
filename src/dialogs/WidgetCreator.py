@@ -3,13 +3,15 @@ from PySide6 import QtWidgets, QtGui
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QComboBox, QPushButton, QTableWidget, QTableWidgetItem
 
+from src.config.paths import config_path
+
 class WidgetCreator:
     def __init__(self):
         self.__combobox_service = ComboBoxService()
 
     def create_button(self, button_text, button_image, button_action):
         button = QPushButton(button_text)
-        button.setIcon(QtGui.QIcon("src/config/images/" + button_image + ".png"))
+        button.setIcon(QtGui.QIcon(config_path("images", button_image + ".png")))
         button.clicked.connect(button_action)
 
         return button

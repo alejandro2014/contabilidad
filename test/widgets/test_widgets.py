@@ -2,18 +2,21 @@ import datetime
 import unittest
 from unittest.mock import Mock, patch
 
-from test.qt_app import get_app
+from test.qt_app import clear_settings, get_app
 
 from src.widgets.DateFilterWidget import DateFilterWidget
+from src.widgets.FilterWidget import FilterWidget
 from src.widgets.KpiCards import KpiCards
 from src.widgets.SearchFilter import SearchFilter
 from src.widgets.Summatory import Summatory
+from src.widgets.charts.BarChart import BarChart
 from src.widgets.charts.ChartPalette import ChartPalette
 from src.widgets.charts.PieChart import PieChart
 from src.widgets.charts.Treemap import Treemap
 
 from src.services.formatters.ChartFormatter import ChartFormatter
 
+from PySide6.QtCharts import QChart
 from PySide6.QtCore import QRectF
 
 class SummatoryTestCase(unittest.TestCase):
@@ -40,6 +43,7 @@ class SummatoryTestCase(unittest.TestCase):
 class DateFilterWidgetTestCase(unittest.TestCase):
     def setUp(self):
         get_app()
+        clear_settings()
         self.pool = Mock()
         self.date_filter = DateFilterWidget(self.pool)
         self.pool.send_event.reset_mock()
@@ -81,6 +85,30 @@ class DateFilterWidgetTestCase(unittest.TestCase):
     def this_year(self):
         return datetime.date.today().year
 
+    def test__new_session__this_year(self):
+        pool = Mock()
+
+        DateFilterWidget(pool)
+
+        today = datetime.date.today()
+        self.assertEqual({ 'from': f'{today.year}0101', 'to': today.strftime('%Y%m%d') }, pool.send_event.call_args[0][2])
+
+    def test__last_range_remembered(self):
+        self.date_filter.change_filter_dates(f'{self.this_year() - 1}0215', f'{self.this_year()}0110')
+        pool = Mock()
+
+        DateFilterWidget(pool)
+
+        self.assertEqual({ 'from': f'{self.this_year() - 1}0215', 'to': f'{self.this_year()}0110' }, pool.send_event.call_args[0][2])
+
+    def test__range_set_by_the_app_not_remembered(self):
+        self.date_filter.change_filter_dates(f'{self.this_year()}0201', f'{self.this_year()}0228', remember=False)
+        pool = Mock()
+
+        DateFilterWidget(pool)
+
+        self.assertEqual(f'{self.this_year()}0101', pool.send_event.call_args[0][2]['from'])
+
     def last_day_of_february(self):
         return (datetime.date(self.this_year(), 3, 1) - datetime.timedelta(days=1)).day
 
@@ -91,13 +119,15 @@ class SearchFilterTestCase(unittest.TestCase):
 
         with patch('src.widgets.SearchFilter.ComboBoxService') as mock_service:
             mock_service.return_value.get_categories.return_value = [ 'Alquiler', 'Comida' ]
+            mock_service.return_value.get_tags.return_value = [ 'Viaje' ]
             self.search_filter = SearchFilter(self.pool, True)
 
     def test__get_search__nothing_typed(self):
         self.assertEqual({
             'search_value': None,
             'amount': { 'from': None, 'to': None },
-            'category': None
+            'category': None,
+            'tag': None
         }, self.search_filter.get_search())
 
     def test__get_search__all_the_fields(self):
@@ -105,11 +135,13 @@ class SearchFilterTestCase(unittest.TestCase):
         self.search_filter.amount_from.setText('10,5')
         self.search_filter.amount_to.setText('-20')
         self.search_filter.categories.setCurrentText('Comida')
+        self.search_filter.tags.setCurrentText('Viaje')
 
         self.assertEqual({
             'search_value': 'mercadona',
             'amount': { 'from': 10.5, 'to': 20.0 },
-            'category': 'Comida'
+            'category': 'Comida',
+            'tag': 'Viaje'
         }, self.search_filter.get_search())
 
     def test__get_search__a_single_letter_and_wrong_amounts_are_ignored(self):
@@ -139,7 +171,8 @@ class SearchFilterTestCase(unittest.TestCase):
         self.pool.send_event.assert_called_once_with('filter-widget', 'change_search', {
             'search_value': None,
             'amount': { 'from': None, 'to': None },
-            'category': None
+            'category': None,
+            'tag': None
         })
 
 class KpiCardsTestCase(unittest.TestCase):
@@ -173,6 +206,29 @@ class KpiCardsTestCase(unittest.TestCase):
 
         self.assertEqual('4', self.kpi_cards.cards['pending'].value.text())
         self.assertIn(ChartPalette.WARNING, self.kpi_cards.cards['pending'].value.styleSheet())
+        self.assertFalse(self.kpi_cards.pending_button.isHidden())
+
+    def test__reload__no_button_without_pending_expenses(self):
+        self.kpi_cards.reload(self.kpis(pending = 0))
+
+        self.assertTrue(self.kpi_cards.pending_button.isHidden())
+
+    def test__reload__compared_with_the_previous_period(self):
+        changes = { 'expenses': 12.4, 'incomes': None, 'monthly_average': -0.3, 'balance': -120.0, 'savings_rate': 3.25 }
+
+        self.kpi_cards.reload(self.kpis(changes = changes), 'previous')
+
+        self.assertEqual('+12 % vs. periodo anterior', self.kpi_cards.cards['expenses'].detail.text())
+        self.assertEqual('Sin datos para comparar', self.kpi_cards.cards['incomes'].detail.text())
+        self.assertEqual('+0 % vs. periodo anterior', self.kpi_cards.cards['monthly_average'].detail.text())
+        self.assertEqual('-120,00 € vs. periodo anterior', self.kpi_cards.cards['balance'].detail.text())
+        self.assertEqual('+3,2 pp vs. periodo anterior', self.kpi_cards.cards['savings_rate'].detail.text())
+
+    def test__reload__not_compared(self):
+        self.kpi_cards.reload(self.kpis(changes = None))
+
+        self.assertEqual('', self.kpi_cards.cards['expenses'].detail.text())
+        self.assertEqual('Ingresos - gastos', self.kpi_cards.cards['balance'].detail.text())
 
     def kpis(self, **values):
         kpis = {
@@ -236,6 +292,16 @@ class PieChartTestCase(unittest.TestCase):
         self.assertEqual(8, len(self.pie_chart.series.slices()))
         self.assertTrue(self.pie_chart.back_button.isHidden())
 
+    def test__reload__dark_mode(self):
+        with patch.object(ChartPalette, 'is_dark', return_value = True):
+            self.pie_chart.reload(self.pie_chart.filter)
+
+        self.assertEqual(QChart.ChartTheme.ChartThemeDark, self.pie_chart.chart().theme())
+        # The gaps between the slices have the color of the dark background, and the colors of the categories are kept
+        slice = self.pie_chart.series.slices()[0]
+        self.assertEqual(ChartPalette().background_color(self.pie_chart.chart()), slice.pen().color())
+        self.assertEqual(ChartPalette.SERIES[0], slice.brush().color().name())
+
     def test__zoom_in__category_shows_its_merchants(self):
         self.pie_chart.chart_service.get_merchants_info.return_value = { 'Mercadona': 60.0, 'Lidl': 40.0 }
 
@@ -253,13 +319,20 @@ class PieChartTestCase(unittest.TestCase):
         # They are still categories, so they can show their merchants
         self.assertEqual('category', self.pie_chart.levels[-1]['kind'])
 
-    def test__zoom_in__merchant_does_nothing(self):
+    def test__zoom_in__merchant_opens_its_movements(self):
         self.pie_chart.chart_service.get_merchants_info.return_value = { 'Mercadona': 60.0 }
-        self.pie_chart.zoom_in('Categoría 0')
+        self.pie_chart.chart_service.expenses_filter.return_value = { 'category': 'Categoría 8' }
+        opened = []
+        self.pie_chart.open_expenses.connect(opened.append)
+        self.pie_chart.zoom_in('Otros')
+        self.pie_chart.zoom_in('Categoría 8')
 
         self.pie_chart.zoom_in('Mercadona')
 
-        self.assertEqual(2, len(self.pie_chart.levels))
+        # The category is the one with the merchants, not "Otros"
+        self.assertEqual(3, len(self.pie_chart.levels))
+        self.pie_chart.chart_service.expenses_filter.assert_called_once_with(self.pie_chart.filter, category = 'Categoría 8', search_value = 'Mercadona')
+        self.assertEqual([ { 'category': 'Categoría 8' } ], opened)
 
     def test__zoom_out__back_to_the_previous_level(self):
         self.pie_chart.zoom_in('Otros')
@@ -269,3 +342,45 @@ class PieChartTestCase(unittest.TestCase):
         self.assertEqual(1, len(self.pie_chart.levels))
         self.assertEqual(8, len(self.pie_chart.series.slices()))
         self.assertTrue(self.pie_chart.back_button.isHidden())
+
+class FilterWidgetTestCase(unittest.TestCase):
+    def setUp(self):
+        get_app()
+        clear_settings()
+        self.pool = Mock()
+
+        with patch('src.services.ComboBoxService.ExpenseTypesService') as types_service, patch('src.services.ComboBoxService.ExpensesService') as expenses_service:
+            types_service.return_value.get_categories_simple.return_value = [ 'Alquiler', 'Comida' ]
+            expenses_service.return_value.get_tags.return_value = [ 'Viaje' ]
+            self.filter_widget = FilterWidget('classified', self.pool)
+
+    def test__set_filter__shown_and_not_remembered(self):
+        year = datetime.date.today().year
+
+        self.filter_widget.set_filter({ 'date': { 'from': f'{year}0201', 'to': f'{year}0228' }, 'category': 'Comida', 'search_value': 'Mercadona' })
+
+        self.assertEqual('Mercadona', self.filter_widget.search_filter.line_edit.text())
+        self.assertEqual('Comida', self.filter_widget.search_filter.categories.currentText())
+        self.assertEqual('Comida', self.filter_widget.filter['category'])
+        self.pool.send_event.assert_called_with('filter-widget', 'change_dates', { 'from': f'{year}0201', 'to': f'{year}0228' })
+
+        # The last range chosen by the user is still the one of the next screen
+        pool = Mock()
+        DateFilterWidget(pool)
+        self.assertEqual(f'{year}0101', pool.send_event.call_args[0][2]['from'])
+
+class BarChartTestCase(unittest.TestCase):
+    def setUp(self):
+        get_app()
+        self.bar_chart = BarChart()
+        self.bar_chart.chart_service.db = Mock()
+        self.bar_chart.chart_service.db.select.side_effect = [ [ ('202601', -100.0) ], [] ]
+        self.bar_chart.reload({ 'date': { 'from': '20260115', 'to': '20260310' } })
+
+    def test__bar_clicked__movements_of_its_month(self):
+        opened = []
+        self.bar_chart.open_expenses.connect(opened.append)
+
+        self.bar_chart.bar_clicked(0)
+
+        self.assertEqual([ { 'date': { 'from': '20260115', 'to': '20260131' }, 'category': None, 'search_value': None } ], opened)

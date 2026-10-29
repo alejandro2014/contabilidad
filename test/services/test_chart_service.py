@@ -66,3 +66,55 @@ class ChartServiceTestCase(unittest.TestCase):
     def test__get_merchants_info__no_dates__no_queries(self):
         self.assertEqual({}, self.chart_service.get_merchants_info(self.no_dates_filter, 'Comida'))
         self.chart_service.db.select.assert_not_called()
+
+    def test__get_kpis__compared_with_the_previous_period(self):
+        # Pending count, then the expenses and incomes of October-December
+        self.chart_service.db.select.side_effect = [ [ (0,) ], [ ('202510', -50.0), ('202511', -50.0) ], [] ]
+        bar_info = { 'months': [ 'Enero', 'Febrero', 'Marzo' ], 'amounts': [ 100.0, 0.0, 20.0 ], 'incomes': [ 0.0, 0.0, 0.0 ] }
+
+        kpis = self.chart_service.get_kpis(self.filter, {}, bar_info, 'previous')
+
+        self.assertEqual(('20251001', '20251231'), self.chart_service.db.select.call_args_list[1][0][0][1])
+        self.assertEqual(20.0, kpis['changes']['expenses'])
+
+    def test__get_kpis__no_comparison(self):
+        self.chart_service.db.select.return_value = [ (0,) ]
+        bar_info = { 'months': [ 'Enero' ], 'amounts': [ 100.0 ], 'incomes': [ 0.0 ] }
+
+        kpis = self.chart_service.get_kpis(self.filter, {}, bar_info)
+
+        self.assertIsNone(kpis['changes'])
+        self.assertEqual(1, self.chart_service.db.select.call_count)
+
+    def test__expenses_filter__month_inside_the_range(self):
+        filter = { 'date': { 'from': '20260115', 'to': '20260310' } }
+
+        self.assertEqual({ 'date': { 'from': '20260115', 'to': '20260131' }, 'category': 'Comida', 'search_value': None },
+                         self.chart_service.expenses_filter(filter, '202601', 'Comida'))
+        self.assertEqual({ 'from': '20260301', 'to': '20260310' }, self.chart_service.expenses_filter(filter, '202603')['date'])
+
+    def test__expenses_filter__whole_range(self):
+        self.assertEqual({ 'date': { 'from': '20260101', 'to': '20260331' }, 'category': 'Comida', 'search_value': 'Mercadona' },
+                         self.chart_service.expenses_filter(self.filter, category = 'Comida', search_value = 'Mercadona'))
+
+    def test__get_category_average_info__the_12_months_before_the_end_of_the_range(self):
+        self.chart_service.db.select.return_value = [ ('Comida', '202603', -100.0) ]
+
+        average = self.chart_service.get_category_average_info(self.filter)
+
+        self.assertEqual(('20250301', '20260331'), self.chart_service.db.select.call_args[0][0][1])
+        self.assertEqual('202603', average['year_month'])
+
+    def test__get_balance_chart_info__balances_until_the_end_of_the_range(self):
+        self.chart_service.db.select.return_value = [ ('20251220', -10.0, 500.0) ]
+
+        balances = self.chart_service.get_balance_chart_info(self.filter)
+
+        self.assertEqual(('20260331',), self.chart_service.db.select.call_args[0][0][1])
+        self.assertEqual([ 500.0, 500.0, 500.0 ], balances['balances'])
+
+    def test__no_dates__no_average_nor_balances(self):
+        self.assertIsNone(self.chart_service.get_category_average_info(self.no_dates_filter))
+        self.assertEqual([], self.chart_service.get_balance_chart_info(self.no_dates_filter)['balances'])
+
+        self.chart_service.db.select.assert_not_called()

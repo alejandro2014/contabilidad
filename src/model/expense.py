@@ -9,9 +9,9 @@ class Expense(ModelBaseClass):
                  title = None,
                  amount = 0,
                  category = None,
-                 subcategory = None,
-                 category_suggested = None,
-                 subcategory_suggested = None):
+                 balance = None,
+                 note = None,
+                 tags = None):
         super().__init__(self.__class__.__name__)
 
         self.id = id
@@ -21,9 +21,10 @@ class Expense(ModelBaseClass):
         self.title = title
         self.amount = amount
         self.category = category
-        self.subcategory = subcategory
-        self.category_suggested = category_suggested
-        self.subcategory_suggested = subcategory_suggested
+        # Balance of the account after the movement, when the statement has it
+        self.balance = balance
+        self.note = note
+        self.tags = [] if tags is None else tags
 
     def __eq__(self, other):
         if type(self) != type(other):

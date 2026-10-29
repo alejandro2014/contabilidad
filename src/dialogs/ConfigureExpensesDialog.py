@@ -30,7 +30,7 @@ class ConfigureExpensesDialog(QDialog):
         self.usecases_service = LoadFileService()
         self.expense_types_service = ExpenseTypesService()
 
-        self.setWindowTitle("Configuración de categorías")
+        self.setWindowTitle("Tipos de gastos")
         self.resize(600, 400)
         self.setModal(True)
 

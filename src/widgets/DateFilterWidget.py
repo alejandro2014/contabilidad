@@ -4,13 +4,20 @@ from PySide6.QtWidgets import QGroupBox, QHBoxLayout, QLabel, QPushButton, QVBox
 
 from DateConverter import DateConverter
 
+from src.config.settings import app_settings
 from src.dialogs.WidgetCreator import WidgetCreator
 from src.events.ListenerNode import ListenerNode
 
 class DateFilterWidget(QWidget, ListenerNode):
+    # The last range chosen, shown again in every screen and in the next session
+    DATES_SETTING = 'date_filter/dates'
+
     def __init__(self, listeners_pool, *args, **kwargs):
         super(DateFilterWidget, self).__init__(*args, **kwargs)
         ListenerNode.__init__(self, 'date-filter', listeners_pool)
+
+        # The ranges set by the app (opening the movements of a chart) are not the ones chosen by the user
+        self.remember_dates = True
 
         widget_creator = WidgetCreator()
         
@@ -50,7 +57,7 @@ class DateFilterWidget(QWidget, ListenerNode):
         self.cbx['to']['month'].currentIndexChanged.connect(self.date_changed)
         self.cbx['to']['year'].currentIndexChanged.connect(self.date_changed)
 
-        self.update_top_dates()
+        self.restore_dates()
 
     def create_date_layout(self, title, cbx):
         layout = QHBoxLayout()
@@ -100,7 +107,28 @@ class DateFilterWidget(QWidget, ListenerNode):
             'to': DateConverter().format_raw_dmy(day_to, month_to, year_to)
         }
 
+        if self.remember_dates:
+            app_settings().setValue(self.DATES_SETTING, [ dates['from'], dates['to'] ])
+
         self.send_event('filter-widget', 'change_dates', dates)
+
+    def restore_dates(self):
+        saved = app_settings().value(self.DATES_SETTING)
+
+        if self.valid_dates(saved):
+            self.change_filter_dates(saved[0], saved[1])
+        else:
+            self.update_top_dates()
+
+    def valid_dates(self, dates):
+        # The settings may be from another version, or edited by hand
+        if not isinstance(dates, list) or len(dates) != 2:
+            return False
+
+        try:
+            return all(DateConverter().parse(date) for date in dates)
+        except (TypeError, ValueError):
+            return False
 
     def update_top_dates(self):
         today = datetime.date.today()
@@ -109,9 +137,11 @@ class DateFilterWidget(QWidget, ListenerNode):
 
         self.change_filter_dates(date_from, date_to)
 
-    def change_filter_dates(self, date_from, date_to):
+    def change_filter_dates(self, date_from, date_to, remember=True):
         if date_from == None or date_to == None:
             return
+
+        self.remember_dates = remember
 
         combos = list(self.cbx['from'].values()) + list(self.cbx['to'].values())
 
@@ -126,6 +156,7 @@ class DateFilterWidget(QWidget, ListenerNode):
             combo.blockSignals(False)
 
         self.date_changed(None)
+        self.remember_dates = True
 
     def change_filter_date(self, combo_group, date_value):
         day = date_value[6:8]

@@ -1,5 +1,5 @@
 from PySide6 import QtWidgets
-from PySide6.QtWidgets import QAbstractItemView, QComboBox, QDialog, QHBoxLayout, QLabel, QLineEdit, QStyle, QTableWidgetItem, QVBoxLayout
+from PySide6.QtWidgets import QAbstractItemView, QComboBox, QDialog, QHBoxLayout, QLabel, QLineEdit, QMessageBox, QStyle, QTableWidgetItem, QVBoxLayout
 
 from src.dialogs.ErrorDialog import ErrorDialog
 from src.dialogs.WidgetCreator import WidgetCreator
@@ -165,10 +165,24 @@ class ConfigureRulesDialog(QDialog):
     def remove_selected_rules(self):
         rows = self.get_selected_rows()
 
+        if len(rows) == 0 or not self.confirm_remove_rules(rows):
+            return
+
         for row in rows:
             self.rules_service.delete_rule_by_priority(self.rules[row]['priority'])
 
         self.reload()
+
+    def confirm_remove_rules(self, rows):
+        if len(rows) == 1:
+            rule = self.rules[rows[0]]
+            message = f'¿Eliminar la regla "{rule["rule"]}" → {rule["category"]}?'
+        else:
+            message = f'¿Eliminar las {len(rows)} reglas seleccionadas?'
+
+        answer = QMessageBox.question(self, "Eliminar reglas", message)
+
+        return answer == QMessageBox.StandardButton.Yes
 
     def move_selected_rule(self, offset):
         rows = self.get_selected_rows()

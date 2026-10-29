@@ -11,25 +11,20 @@ class ListenersPool:
     def add_node(self, node):
         self.nodes.append(node)
 
+    def find_node(self, node_id):
+        return next((node for node in self.nodes if node.node_id == node_id), None)
+
     def delete_node(self, node_id):
-        #TODO Can it be replaced?
-        for i in range(len(self.nodes)):
-            current_node = self.nodes[i]
+        node = self.find_node(node_id)
 
-            if current_node.node_id == node_id:
-                self.nodes.remove(current_node)
-                return
+        if node == None:
+            logger.warning(f'The node {node_id} cannot be deleted from the listeners pool, it does not exist')
+            return
 
-        logger.warning(f'The node {node_id} cannot be deleted from the listeners pool, it does not exist')
+        self.nodes.remove(node)
 
     def send_event(self, node_id, event_id, info = None):
-        node = None
-
-        #TODO Replace with filter
-        for n in self.nodes:
-            if n.node_id == node_id:
-                node = n
-                break
+        node = self.find_node(node_id)
 
         # The Qt object of the node is deleted when its screen is replaced
         if node != None and not shiboken6.isValid(node):

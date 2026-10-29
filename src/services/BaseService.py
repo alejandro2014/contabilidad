@@ -7,7 +7,7 @@ logger = get_logger(__name__)
 class BaseService:
     def __init__(self):
         self.sql_generator = SqlGenerator()
-        self.db = SqliteConnector()
+        self.db = SqliteConnector.shared()
 
     def get_single_value(self, sql):
         count = self.db.select(sql)

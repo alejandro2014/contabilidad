@@ -30,6 +30,36 @@ class ExpensesService:
     def get_classified_expenses_by_type_and_month(self):
         return self.dao.get_classified_expenses_by_type_and_month()
     
+    def update_notes_and_tags(self, expense_ids, note, tags):
+        # A tag that already exists keeps how it is written
+        existing_tags = { tag.casefold(): tag for tag in self.dao.get_tags() }
+        tags = [ existing_tags.get(tag.casefold(), tag) for tag in self.clean_tags(tags) ]
+
+        self.dao.update_notes_and_tags(expense_ids, self.clean_note(note), tags)
+
+    def clean_note(self, note):
+        note = (note or '').strip()
+
+        return note if note != '' else None
+
+    def clean_tags(self, tags):
+        # Typed separated by commas. The same tag with other case or spaces is only once
+        cleaned = {}
+
+        for tag in tags.split(',') if isinstance(tags, str) else tags:
+            tag = ' '.join(tag.split())
+
+            if tag != '' and tag.casefold() not in cleaned:
+                cleaned[tag.casefold()] = tag
+
+        return list(cleaned.values())
+
+    def get_tags(self):
+        return self.dao.get_tags()
+
+    def get_tag_totals(self, filter=None):
+        return self.dao.get_tag_totals(filter)
+
     def get_classified_expenses_count(self):
         return self.dao.get_classified_expenses_count()
 

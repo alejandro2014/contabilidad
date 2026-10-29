@@ -39,10 +39,11 @@ class LoadFileService:
 
         df = df.iloc[header_row + 1:, :len(columns)]
         df.columns = columns
-        df = df.drop(['comment', 'balance'], axis=1)
+        df = df.drop(['comment'], axis=1)
 
         df['date'] = df['date'].map(lambda d: pd.to_datetime(d, dayfirst=True, errors='coerce'))
         df['value'] = df['value'].map(self.format_amount)
+        df['balance'] = df['balance'].map(self.format_amount)
 
         # Ignore the rows that are not expenses (empty lines, totals...)
         df = df.dropna(subset=['date', 'value'])
@@ -74,7 +75,9 @@ class LoadFileService:
             category_src = self.format_nan(r['category']),
             subcategory_src = self.format_nan(r['subcategory']),
             title = r['concept'],
-            amount = float(r['value'])
+            amount = float(r['value']),
+            # Older statements may come without the balance
+            balance = None if pd.isna(r['balance']) else float(r['balance'])
         )
 
         return expense

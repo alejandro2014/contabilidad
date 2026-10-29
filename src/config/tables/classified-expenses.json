@@ -14,5 +14,13 @@
     {
         "field": "quantity",
         "field_text": "Cantidad"
+    },
+    {
+        "field": "tags",
+        "field_text": "Etiquetas"
+    },
+    {
+        "field": "note",
+        "field_text": "Nota"
     }
 ]

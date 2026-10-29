@@ -1,5 +1,5 @@
 from PySide6 import QtCharts
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QFont, QPainter, QPen
 from PySide6.QtWidgets import QGraphicsSimpleTextItem, QPushButton
 
@@ -9,6 +9,9 @@ from src.widgets.charts.ChartPalette import ChartPalette
 
 class PieChart(QtCharts.QChartView):
     TITLE = 'Gastos por categoría'
+
+    # Clicking a merchant opens its movements, with this filter
+    open_expenses = Signal(dict)
 
     def __init__(self):
         super().__init__()
@@ -44,6 +47,9 @@ class PieChart(QtCharts.QChartView):
     def reload(self, filter):
         self.filter = filter
         chart_info = self.chart_service.get_chart_info('pie', filter)
+
+        # Before showing the series, as the theme would change their colors
+        self.chart_palette.apply_theme(self.chart())
 
         # Other dates change what is inside every slice, so it starts again from the categories
         self.levels = [ { 'title': self.TITLE, 'kind': 'category', 'items': chart_info } ]
@@ -92,6 +98,8 @@ class PieChart(QtCharts.QChartView):
         # A hole in the middle makes the slices easier to compare
         series.setHoleSize(0.35)
         total = sum(categories.values())
+        # The gap has the color of the background, light or dark
+        gap_color = self.chart_palette.background_color(self.chart())
 
         for i, category_name in enumerate(categories):
             amount = categories[category_name]
@@ -101,7 +109,7 @@ class PieChart(QtCharts.QChartView):
             slice = series.slices()[i]
             slice.setBrush(colors[category_name])
             # A thin gap between the slices
-            slice.setPen(QPen(Qt.GlobalColor.white, 2))
+            slice.setPen(QPen(gap_color, 2))
             slice.clicked.connect(lambda name=category_name: self.zoom_in(name))
             slice.hovered.connect(lambda state, slice=slice, name=category_name: self.slice_hovered(slice, name, state))
 
@@ -110,9 +118,6 @@ class PieChart(QtCharts.QChartView):
     def is_others(self, name):
         # "Otros" is not one of the items when it groups the smallest ones
         return name not in self.levels[-1]['items']
-
-    def can_zoom_in(self, name):
-        return self.is_others(name) or self.levels[-1]['kind'] == 'category'
 
     def zoom_in(self, name):
         level = self.levels[-1]
@@ -126,10 +131,17 @@ class PieChart(QtCharts.QChartView):
             items = self.chart_service.get_merchants_info(self.filter, name)
             self.levels.append({ 'title': name, 'kind': 'merchant', 'items': items })
         else:
+            self.open_merchant_expenses(name)
             return
 
         self.unsetCursor()
         self.show_level()
+
+    def open_merchant_expenses(self, merchant):
+        # The category is the level where its merchants start, before any "Otros" of the merchants
+        category = next(level['title'] for level in self.levels if level['kind'] == 'merchant')
+
+        self.open_expenses.emit(self.chart_service.expenses_filter(self.filter, category = category, search_value = merchant))
 
     def zoom_out(self):
         if len(self.levels) <= 1:
@@ -156,7 +168,8 @@ class PieChart(QtCharts.QChartView):
         slice.setExploded(state)
         slice.setLabelVisible(state)
 
-        if state and self.can_zoom_in(name):
+        # Every slice can be clicked: the categories and "Otros" show what is inside, the merchants their movements
+        if state:
             self.setCursor(Qt.PointingHandCursor)
         else:
             self.unsetCursor()

@@ -51,8 +51,6 @@ class Summatory(QWidget, ListenerNode):
         self.set_sum_value(round(total_value, 2))
 
     def set_sum_value(self, value):
-        #TODO Set color depending on the value
-
         self.lbl.setText(ChartPalette().format_amount(value))
 
     def set_records_no_value(self, value):

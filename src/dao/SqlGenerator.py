@@ -4,25 +4,36 @@ class SqlGenerator:
     # Columns of the expenses tables that can be used to sort (the "field"s of the table configs, as they are in the database)
     SORTABLE_COLUMNS = { 'date': 'date', 'concept': 'title', 'title': 'title', 'quantity': 'amount', 'amount': 'amount', 'type': 'category', 'category': 'category' }
 
-    EXPENSE_COLUMNS = [ 'id', 'date', 'category_src', 'subcategory_src', 'title', 'amount', 'category', 'subcategory', 'category_suggested', 'subcategory_suggested' ]
+    EXPENSE_COLUMNS = [ 'id', 'date', 'category_src', 'subcategory_src', 'title', 'amount', 'category', 'balance' ]
+
+    # Separator of the tags of a movement when they come in a single column, so a tag can't have it
+    TAGS_SEPARATOR = ','
 
     def insert_expenses(self):
-        # The movements already loaded (same date, concept and amount) are ignored
+        # The movements already loaded (same date, concept and amount) are ignored, but they get the balance when
+        # they were loaded before it was stored
         fields = ', '.join(self.EXPENSE_COLUMNS)
         values = ', '.join([ '?' for _ in self.EXPENSE_COLUMNS ])
 
-        return f"INSERT OR IGNORE INTO expenses ({fields}) VALUES ({values})"
+        return f"INSERT INTO expenses ({fields}) VALUES ({values}) ON CONFLICT (date, title, amount) DO UPDATE SET balance = excluded.balance WHERE expenses.balance IS NULL"
 
     def expense_values(self, expense):
-        return tuple(getattr(expense, c) for c in self.EXPENSE_COLUMNS)
+        return tuple(self.cents_or_none(getattr(expense, c)) if c in ('amount', 'balance') else getattr(expense, c) for c in self.EXPENSE_COLUMNS)
+
+    def cents_or_none(self, amount):
+        return None if amount is None else self.cents(amount)
+
+    def cents(self, amount):
+        # The amounts are stored as integer cents, so the sums are exact. The queries return them in euros (amount / 100.0)
+        return int(round(float(amount) * 100))
 
     def select_pending_expenses(self, filter=None, sort_by=None):
-        sql = "SELECT id, date, title, amount FROM expenses WHERE (category IS NULL)"
+        sql = "SELECT id, date, title, amount / 100.0 FROM expenses WHERE (category IS NULL)"
 
         return self.select_expenses(sql, filter, sort_by)
 
     def select_classified_expenses(self, filter=None, sort_by=None):
-        sql = "SELECT id, date, title, amount, category FROM expenses WHERE (category IS NOT NULL)"
+        sql = f"SELECT id, date, title, amount / 100.0, category, note, {self.tags_column()} FROM expenses WHERE (category IS NOT NULL)"
 
         return self.select_expenses(sql, filter, sort_by)
 
@@ -43,16 +54,22 @@ class SqlGenerator:
 
             # Expenses are stored as negative amounts, but they are searched by how much they are
             if amount_from != None:
-                sql += " AND (ROUND(ABS(amount), 2) >= ?)"
-                params.append(float(amount_from))
+                sql += " AND (ABS(amount) >= ?)"
+                params.append(self.cents(amount_from))
 
             if amount_to != None:
-                sql += " AND (ROUND(ABS(amount), 2) <= ?)"
-                params.append(float(amount_to))
+                sql += " AND (ABS(amount) <= ?)"
+                params.append(self.cents(amount_to))
 
             if category != None:
                 sql += " AND (category = ?)"
                 params.append(category)
+
+            tag = filter.get('tag')
+
+            if tag != None:
+                sql += " AND (id IN (SELECT expense_id FROM expense_tags WHERE tag = ?))"
+                params.append(tag)
 
         if sort_by != None:
             sql += f' ORDER BY {self.sort_column(sort_by)} ASC'
@@ -80,17 +97,23 @@ class SqlGenerator:
 
         return amount_from, amount_to, category
 
+    def tags_column(self):
+        return f"(SELECT group_concat(tag, '{self.TAGS_SEPARATOR}') FROM expense_tags WHERE expense_id = expenses.id) AS tags"
+
+    def select_expenses_count(self):
+        return 'SELECT count(*) FROM expenses'
+
     def select_classified_expenses_count(self):
         return 'SELECT count(*) FROM expenses WHERE (category IS NOT NULL)'
 
     def select_classified_expenses_by_type(self):
-        return "SELECT category, sum(amount) AS sum FROM expenses WHERE (category IS NOT NULL) GROUP BY category"
+        return "SELECT category, sum(amount) / 100.0 AS sum FROM expenses WHERE (category IS NOT NULL) GROUP BY category"
 
     def select_classified_expenses_by_month(self):
-        return f"SELECT substr(date, 0, 7) AS month, sum(amount) AS sum FROM expenses WHERE (category IS NOT NULL) AND {self.computed_expense_condition()} GROUP BY month"
+        return f"SELECT substr(date, 1, 6) AS month, sum(amount) / 100.0 AS sum FROM expenses WHERE (category IS NOT NULL) AND {self.computed_expense_condition()} GROUP BY month"
 
     def select_classified_expenses_by_type_and_month(self):
-        return "SELECT category, substr(date, 0, 7) AS month, sum(amount) AS sum FROM expenses WHERE (category IS NOT NULL) GROUP BY category, month"
+        return "SELECT category, substr(date, 1, 6) AS month, sum(amount) / 100.0 AS sum FROM expenses WHERE (category IS NOT NULL) GROUP BY category, month"
 
     def select_pending_expenses_count(self):
         return "SELECT count(*) FROM expenses WHERE (category IS NULL)"
@@ -114,14 +137,10 @@ class SqlGenerator:
         return "DELETE FROM expense_types WHERE category = ?", (category,)
 
     def move_expenses_to_type(self, old_category, new_category):
-        # new_category None leaves the expenses pending again
         return "UPDATE expenses SET category = ? WHERE category = ?", (new_category, old_category)
 
     def move_rules_to_type(self, old_category, new_category):
         return "UPDATE rules SET category = ? WHERE category = ?", (new_category, old_category)
-
-    def delete_rules_of_type(self, category):
-        return "DELETE FROM rules WHERE category = ?", (category,)
 
     def rename_expense_type(self, old_category, new_category):
         return "UPDATE expense_types SET category = ? WHERE category = ?", (new_category, old_category)
@@ -147,6 +166,31 @@ class SqlGenerator:
 
     def update_unclassified_expense(self, expense_id):
         return "UPDATE expenses set category = NULL WHERE id = ?", (expense_id,)
+
+    def update_expense_note(self, expense_id, note):
+        return "UPDATE expenses SET note = ? WHERE id = ?", (note, expense_id)
+
+    def delete_expense_tags(self, expense_id):
+        return "DELETE FROM expense_tags WHERE expense_id = ?", (expense_id,)
+
+    def insert_expense_tag(self, expense_id, tag):
+        return "INSERT OR IGNORE INTO expense_tags (expense_id, tag) VALUES (?, ?)", (expense_id, tag)
+
+    def select_tags(self):
+        return "SELECT DISTINCT tag FROM expense_tags ORDER BY tag"
+
+    def select_tag_totals(self, filter):
+        # Totals of what has been spent, so the incomes and the not computed types are left out like in the dashboard
+        sql = f"SELECT t.tag, sum(e.amount) / 100.0, count(*) FROM expense_tags t JOIN expenses e ON e.id = t.expense_id WHERE (e.category IS NOT NULL) AND e.{self.computed_expense_condition()}"
+        params = ()
+
+        date_from, date_to, search_value = self.get_filter_values(filter or {})
+
+        if date_from != None and date_to != None:
+            sql += " AND (e.date BETWEEN ? AND ?)"
+            params = (date_from, date_to)
+
+        return sql + " GROUP BY t.tag ORDER BY t.tag", params
 
     def computed_expense_condition(self):
         return "category NOT IN (SELECT category FROM expense_types WHERE income OR not_computed)"
@@ -176,29 +220,34 @@ class SqlGenerator:
         income_field = "(category IS NOT NULL AND category IN (SELECT category FROM expense_types WHERE income))"
         not_computed_condition = "(category IS NULL OR category NOT IN (SELECT category FROM expense_types WHERE not_computed))"
 
-        return f"SELECT {income_field} AS is_income, {group_field} AS grp, CAST(substr(date, 5, 2) AS INTEGER) AS month, sum(amount) FROM expenses WHERE date LIKE ? AND {not_computed_condition} GROUP BY is_income, grp, month", (f'{year}%',)
+        return f"SELECT {income_field} AS is_income, {group_field} AS grp, CAST(substr(date, 5, 2) AS INTEGER) AS month, sum(amount) / 100.0 FROM expenses WHERE date LIKE ? AND {not_computed_condition} GROUP BY is_income, grp, month", (f'{year}%',)
 
     def date_params(self, params):
         return (params['date_from'], params['date_to'])
 
     def select_pie_chart_categories(self, params):
-        return f"SELECT category, sum(amount) AS amnt FROM expenses WHERE category IS NOT NULL AND {self.computed_expense_condition()} AND date BETWEEN ? AND ? GROUP BY category ORDER BY abs(amnt) DESC", self.date_params(params)
+        return f"SELECT category, sum(amount) / 100.0 AS amnt FROM expenses WHERE category IS NOT NULL AND {self.computed_expense_condition()} AND date BETWEEN ? AND ? GROUP BY category ORDER BY abs(amnt) DESC", self.date_params(params)
 
     def select_category_titles(self, params, category):
-        return "SELECT title, sum(amount) FROM expenses WHERE category = ? AND date BETWEEN ? AND ? GROUP BY title", (category,) + self.date_params(params)
+        return "SELECT title, sum(amount) / 100.0 FROM expenses WHERE category = ? AND date BETWEEN ? AND ? GROUP BY title", (category,) + self.date_params(params)
 
     def select_bar_chart_values(self, params):
-        return f"SELECT SUBSTR(date, 1, 6) AS d, SUM(amount) FROM expenses WHERE category IS NOT NULL AND {self.computed_expense_condition()} AND date BETWEEN ? AND ? GROUP BY d", self.date_params(params)
+        return f"SELECT SUBSTR(date, 1, 6) AS d, SUM(amount) / 100.0 FROM expenses WHERE category IS NOT NULL AND {self.computed_expense_condition()} AND date BETWEEN ? AND ? GROUP BY d", self.date_params(params)
 
     def select_income_chart_values(self, params):
-        return "SELECT SUBSTR(date, 1, 6) AS d, SUM(amount) FROM expenses WHERE category IN (SELECT category FROM expense_types WHERE income) AND date BETWEEN ? AND ? GROUP BY d", self.date_params(params)
+        return "SELECT SUBSTR(date, 1, 6) AS d, SUM(amount) / 100.0 FROM expenses WHERE category IN (SELECT category FROM expense_types WHERE income) AND date BETWEEN ? AND ? GROUP BY d", self.date_params(params)
 
     def select_category_month_values(self, params):
-        return f"SELECT category, SUBSTR(date, 1, 6) AS d, SUM(amount) FROM expenses WHERE category IS NOT NULL AND {self.computed_expense_condition()} AND date BETWEEN ? AND ? GROUP BY category, d", self.date_params(params)
+        return f"SELECT category, SUBSTR(date, 1, 6) AS d, SUM(amount) / 100.0 FROM expenses WHERE category IS NOT NULL AND {self.computed_expense_condition()} AND date BETWEEN ? AND ? GROUP BY category, d", self.date_params(params)
 
     def select_top_expenses(self, params, limit):
         # The biggest expenses are the most negative amounts. The repeated ones (same concept and amount, like the rent) are a single row
-        return f"SELECT MIN(date), MAX(date), title, category, amount, count(*) FROM expenses WHERE category IS NOT NULL AND {self.computed_expense_condition()} AND amount < 0 AND date BETWEEN ? AND ? GROUP BY title, category, amount ORDER BY amount ASC LIMIT ?", self.date_params(params) + (int(limit),)
+        return f"SELECT MIN(date), MAX(date), title, category, amount / 100.0, count(*) FROM expenses WHERE category IS NOT NULL AND {self.computed_expense_condition()} AND amount < 0 AND date BETWEEN ? AND ? GROUP BY title, category, amount ORDER BY amount ASC LIMIT ?", self.date_params(params) + (int(limit),)
 
     def select_pending_expenses_count_between(self, params):
         return "SELECT count(*) FROM expenses WHERE (category IS NULL) AND date BETWEEN ? AND ?", self.date_params(params)
+
+    def select_balances(self, params):
+        # Every movement with the balance it left, to know the balance at the end of each month. The ones before the
+        # range give the balance of its first months
+        return "SELECT date, amount / 100.0, balance / 100.0 FROM expenses WHERE balance IS NOT NULL AND date <= ? ORDER BY date", (params['date_to'],)

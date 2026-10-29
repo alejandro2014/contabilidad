@@ -20,3 +20,7 @@ class ClassifyExpensesScreen(QWidget):
         layout.addWidget(self.pending_expenses_table)
 
         self.pending_expenses_table.refresh_rows(self.filter_widget.filter)
+
+        # Ready to classify with the keyboard: type the expense type and Enter
+        self.pending_expenses_table.select_row(0)
+        self.pending_expenses_table.setFocus()

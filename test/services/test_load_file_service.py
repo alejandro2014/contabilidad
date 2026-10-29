@@ -53,6 +53,9 @@ class LoadFileServiceTestCase(unittest.TestCase):
         self.assertEqual(('20260128', 'Nómina enero', 2500.0), (expenses[1].date, expenses[1].title, expenses[1].amount))
         self.assertIsNone(expenses[1].subcategory_src)
 
+        # The balance left by each movement
+        self.assertEqual((1000.0, 3500.0), (expenses[0].balance, expenses[1].balance))
+
         # Every expense gets its own id
         self.assertNotEqual(expenses[0].id, expenses[1].id)
 

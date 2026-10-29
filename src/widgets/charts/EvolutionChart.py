@@ -1,5 +1,5 @@
 from PySide6 import QtCharts
-from PySide6.QtCore import QPointF, Qt
+from PySide6.QtCore import QPointF, Qt, Signal
 from PySide6.QtGui import QCursor, QFont, QPainter, QPen
 from PySide6.QtWidgets import QToolTip
 
@@ -10,12 +10,16 @@ from src.widgets.charts.ChartPalette import ChartPalette
 class EvolutionChart(QtCharts.QChartView):
     CATEGORIES_NO = 5
 
+    # Clicking a point opens the movements of its category and month, with this filter
+    open_expenses = Signal(dict)
+
     def __init__(self):
         super(EvolutionChart, self).__init__()
 
         self.title = f'Evolución de las {self.CATEGORIES_NO} categorías con más gasto (€)'
         self.chart_palette = ChartPalette()
         self.chart_info = None
+        self.filter = None
 
         self.chart_service = ChartService()
 
@@ -27,8 +31,10 @@ class EvolutionChart(QtCharts.QChartView):
 
         chart_info = self.chart_service.get_evolution_chart_info(filter, top_categories)
         self.chart_info = chart_info
+        self.filter = filter
 
         chart = QtCharts.QChart()
+        self.chart_palette.apply_theme(chart)
         chart.setTitle(self.title)
 
         axis_x = QtCharts.QBarCategoryAxis()
@@ -72,16 +78,25 @@ class EvolutionChart(QtCharts.QChartView):
         series.setPointsVisible(True)
         series.setMarkerSize(4)
         series.hovered.connect(lambda point, state: self.point_hovered(category, point, state))
+        series.clicked.connect(lambda point: self.point_clicked(category, point))
 
         return series
+
+    def point_clicked(self, category, point):
+        # The click can be anywhere on the line, so it is for the closest month
+        index = round(point.x())
+
+        self.open_expenses.emit(self.chart_service.expenses_filter(self.filter, self.chart_info['year_months'][index], category))
 
     def point_hovered(self, category, point, state):
         if not state:
             QToolTip.hideText()
+            self.unsetCursor()
             return
 
         index = round(point.x())
         month = self.chart_info['months'][index]
         amount = self.chart_info['series'][category][index]
 
-        QToolTip.showText(QCursor.pos(), f'{month}\n{category}: {self.chart_palette.format_amount(amount)}')
+        self.setCursor(Qt.PointingHandCursor)
+        QToolTip.showText(QCursor.pos(), f'{month}\n{category}: {self.chart_palette.format_amount(amount)}\nClic para ver los movimientos')
