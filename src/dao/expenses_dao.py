@@ -98,3 +98,18 @@ class ExpensesDao:
         sql = self.sql_generator.select_classified_expenses_count()
 
         return self.db.select(sql)[0][0]
+
+    def get_expenses_date_range(self):
+        sql = self.sql_generator.select_expenses_date_range()
+
+        # Classified and pending expenses, None when there are no expenses of that kind
+        date_range = { 'classified': None, 'pending': None }
+
+        for e in self.db.select(sql):
+            date_range['classified' if e[0] else 'pending'] = {
+                'min_date': e[1],
+                'max_date': e[2],
+                'count': e[3]
+            }
+
+        return date_range

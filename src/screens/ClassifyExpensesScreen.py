@@ -19,4 +19,4 @@ class ClassifyExpensesScreen(QWidget):
         layout.addWidget(self.filter_widget)
         layout.addWidget(self.pending_expenses_table)
 
-        self.pending_expenses_table.refresh_rows()
+        self.pending_expenses_table.refresh_rows(self.filter_widget.filter)

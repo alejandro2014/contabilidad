@@ -35,3 +35,6 @@ class ExpensesService:
 
     def get_pending_expenses_count(self):
         return self.dao.get_pending_expenses_count()
+
+    def get_expenses_date_range(self):
+        return self.dao.get_expenses_date_range()

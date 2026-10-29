@@ -1,14 +1,15 @@
 import shiboken6
 
+from src.logger import get_logger
+
+logger = get_logger(__name__)
+
 class ListenersPool:
     def __init__(self):
         self.nodes = []
 
     def add_node(self, node):
         self.nodes.append(node)
-        print('[INFO] Added node with node_id = ' + node.node_id + ' to the listeners pool')
-        for node in self.nodes:
-            print(node)
 
     def delete_node(self, node_id):
         #TODO Can it be replaced?
@@ -19,12 +20,10 @@ class ListenersPool:
                 self.nodes.remove(current_node)
                 return
 
-        print('[INFO] The node with node_id = ' + node_id + ' cannot be deleted from the listeners pool, it does not exist')
+        logger.warning(f'The node {node_id} cannot be deleted from the listeners pool, it does not exist')
 
     def send_event(self, node_id, event_id, info = None):
         node = None
-
-        print("[INFO] Received event " + node_id + '.' + event_id)
 
         #TODO Replace with filter
         for n in self.nodes:
@@ -38,7 +37,7 @@ class ListenersPool:
             node = None
 
         if node == None:
-            print("[ERROR] The node " + node_id + " doesn't exist")
+            logger.warning(f"The event {node_id}.{event_id} is lost, the node {node_id} doesn't exist")
             return None
 
         if info is not None:

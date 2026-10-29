@@ -5,7 +5,7 @@ from src.events.ListenerNode import ListenerNode
 
 from src.widgets.Classifier import Classifier
 from src.widgets.DateFilterWidget import DateFilterWidget
-from src.widgets.TextFilter import TextFilter
+from src.widgets.SearchFilter import SearchFilter
 from src.widgets.Summatory import Summatory
 from src.widgets.SecondaryFilters import SecondaryFilters
 
@@ -22,11 +22,16 @@ class FilterWidget(QWidget, ListenerNode):
                 'from': None,
                 'to': None
             },
-            'search_value': None
+            'search_value': None,
+            'amount': {
+                'from': None,
+                'to': None
+            },
+            'category': None
         }
 
         self.date_filter = DateFilterWidget(listeners_pool)
-        self.text_filter = TextFilter(listeners_pool)
+        self.search_filter = SearchFilter(listeners_pool, screen_type == 'classified')
         self.summatory = Summatory(listeners_pool)
         self.secondary_filters = SecondaryFilters(listeners_pool)
 
@@ -37,7 +42,7 @@ class FilterWidget(QWidget, ListenerNode):
         column1.addWidget(self.date_filter)
 
         if screen_type != 'chart':
-            column1.addWidget(self.text_filter)
+            column1.addWidget(self.search_filter)
 
             if screen_type == 'pending':
                 column2 = QVBoxLayout()
@@ -82,7 +87,10 @@ class FilterWidget(QWidget, ListenerNode):
         self.send_event(self.table_name, 'unclassify_selected')
         self.send_event('status-bar', 'refresh')
 
-    def change_search_value(self, search_value = None):
-        self.filter['search_value'] = search_value
+    def change_search(self, search):
+        self.filter['search_value'] = search['search_value']
+        self.filter['amount']['from'] = search['amount']['from']
+        self.filter['amount']['to'] = search['amount']['to']
+        self.filter['category'] = search['category']
 
         self.send_event(self.table_name, 'refresh_rows', self.filter)

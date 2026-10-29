@@ -2,12 +2,16 @@ import json
 import sqlite3
 from sqlite3 import Error
 
+from src.logger import get_logger
+
+logger = get_logger(__name__)
+
 class SqliteConnector:
     def __init__(self):
         self.db = "src/config/db/accountancy.db"
 
     def select(self, sql):
-        print(f'[SQL] {sql}')
+        logger.debug(sql)
         conn = self.create_connection()
         rows = []
 
@@ -23,7 +27,7 @@ class SqliteConnector:
         return rows
 
     def execute_sql(self, sql):
-        print(sql)
+        logger.debug(sql)
         conn = self.create_connection()
 
         try:
@@ -40,7 +44,7 @@ class SqliteConnector:
             conn = sqlite3.connect(self.db)
             self.create_tables_if_needed(conn)
         except Error as e:
-            print(e)
+            logger.error(f'Cannot connect to the database {self.db}: {e}')
 
         return conn
 
@@ -54,7 +58,7 @@ class SqliteConnector:
             self.add_rules_table_if_needed(conn)
             return
 
-        print(f'[INFO] Creating the tables in {self.db}')
+        logger.info(f'Creating the tables in {self.db}')
 
         with open("src/config/db/create_database.sql") as sql_file:
             conn.executescript(sql_file.read())
@@ -71,7 +75,7 @@ class SqliteConnector:
         if 'income' in columns:
             return
 
-        print(f'[INFO] Adding the income column to expense_types in {self.db}')
+        logger.info(f'Adding the income column to expense_types in {self.db}')
 
         with conn:
             if 'positive' in columns:
@@ -86,7 +90,7 @@ class SqliteConnector:
         if 'not_computed' in self.get_expense_types_columns(conn):
             return
 
-        print(f'[INFO] Adding the not_computed column to expense_types in {self.db}')
+        logger.info(f'Adding the not_computed column to expense_types in {self.db}')
 
         with conn:
             conn.execute("ALTER TABLE expense_types ADD COLUMN not_computed BOOLEAN DEFAULT FALSE")
@@ -97,7 +101,7 @@ class SqliteConnector:
         if len(tables) > 0:
             return
 
-        print(f'[INFO] Adding the rules table to {self.db}')
+        logger.info(f'Adding the rules table to {self.db}')
 
         with conn:
             conn.execute("CREATE TABLE rules (priority INTEGER NOT NULL PRIMARY KEY, rule VARCHAR NOT NULL, category VARCHAR NOT NULL)")

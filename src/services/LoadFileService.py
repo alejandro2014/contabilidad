@@ -5,6 +5,9 @@ from src.services.expenses_service import ExpensesService
 from src.services.RulesService import RulesService
 
 from src.model.expense import Expense
+from src.logger import get_logger
+
+logger = get_logger(__name__)
 
 class LoadFileService:
     def __init__(self):
@@ -44,10 +47,11 @@ class LoadFileService:
         # Ignore the rows that are not expenses (empty lines, totals...)
         df = df.dropna(subset=['date', 'value'])
 
-        return [
-            self.debug_expense(r)
-             for _, r in df.iterrows()
-        ]
+        expenses = [ self.create_expense(r) for _, r in df.iterrows() ]
+
+        logger.info(f'Read {len(expenses)} expenses from {xls_name}')
+
+        return expenses
 
     def find_xls_header_row(self, df):
         for index, value in enumerate(df.iloc[:, 0]):
@@ -63,7 +67,7 @@ class LoadFileService:
 
         return pd.to_numeric(value, errors='coerce')
     
-    def debug_expense(self, r):
+    def create_expense(self, r):
         expense = Expense(
             id = str(uuid.uuid4()),
             date = str(r['date'].date()).replace('-', ''),
@@ -72,8 +76,6 @@ class LoadFileService:
             title = r['concept'],
             amount = float(r['value'])
         )
-
-        print(expense)
 
         return expense
 

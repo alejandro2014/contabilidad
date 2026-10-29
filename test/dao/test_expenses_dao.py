@@ -65,6 +65,30 @@ class ExpensesDaoTestCase(TestCase):
         for index, pending_expense in enumerate(pending_expenses):
             self.assertEqual(expected_expenses[index], pending_expense)
 
+    def test__get_expenses_date_range(self):
+        mock_db = Mock()
+        mock_db.select.return_value = [
+            (0, '20240105', '20240310', 3),
+            (1, '20230101', '20240228', 10)
+        ]
+
+        dao = ExpensesDao(db=mock_db)
+
+        date_range = dao.get_expenses_date_range()
+
+        self.assertEqual({ 'min_date': '20230101', 'max_date': '20240228', 'count': 10 }, date_range['classified'])
+        self.assertEqual({ 'min_date': '20240105', 'max_date': '20240310', 'count': 3 }, date_range['pending'])
+
+    def test__get_expenses_date_range__no_pending(self):
+        mock_db = Mock()
+        mock_db.select.return_value = [ (1, '20230101', '20240228', 10) ]
+
+        dao = ExpensesDao(db=mock_db)
+
+        date_range = dao.get_expenses_date_range()
+
+        self.assertIsNone(date_range['pending'])
+
     def test__update_classified_expense(self):
         uuid = '3f6d08d1-ca0c-48da-bc35-148fc037d901'
         category = 'Alquiler'

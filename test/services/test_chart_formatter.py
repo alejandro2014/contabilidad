@@ -36,6 +36,28 @@ class ChartFormatterTestCase(unittest.TestCase):
 
         self.assertEqual({ 'Comida': 100.0 }, dict_categories)
 
+    def test__merchant_name__chain_without_branch_nor_town(self):
+        self.assertEqual('Mercadona', self.chart_formatter.merchant_name('Pago en MERCADONA C ALFREDO MARQUMADRID ES'))
+        self.assertEqual('Alcampo', self.chart_formatter.merchant_name('Pago en ALCAMPO28029-VAGUADA MADRID ES'))
+
+    def test__merchant_name__several_prefixes_and_articles(self):
+        self.assertEqual('Cortefiel', self.chart_formatter.merchant_name('Devolución Tarjeta PAYPAL *CORTEFIEL 1846 901363040 ES'))
+        self.assertEqual('Corte', self.chart_formatter.merchant_name('Pago en EL CORTE INGLES SANCHINARMADRID ES'))
+        self.assertEqual('Amazon', self.chart_formatter.merchant_name('Devolución Tarjeta WWW.AMAZON* 8K1U12745 LUXEMBOURG LU'))
+
+    def test__merchant_name__without_words_keeps_the_title(self):
+        self.assertEqual('1234', self.chart_formatter.merchant_name('1234'))
+
+    def test__format_merchants__branches_added_up_and_refunds_subtracted(self):
+        titles = [ ('Pago en MERCADONA MADRID ES', -50.0), ('Pago en MERCADONA LEON ES', -30.0),
+                   ('Pago en ZARA MADRID ES', -40.0), ('Devolución Tarjeta ZARA MADRID ES', 40.0),
+                   ('Pago en LIDL MADRID ES', -90.0) ]
+
+        merchants = self.chart_formatter.format_merchants(titles)
+
+        # Biggest first, and Zara is left out as everything was refunded
+        self.assertEqual([ ('Lidl', 90.0), ('Mercadona', 80.0) ], list(merchants.items()))
+
     def test__year_months__same_month(self):
         self.assertEqual([ '202602' ], self.chart_formatter.year_months('20260201', '20260228'))
 

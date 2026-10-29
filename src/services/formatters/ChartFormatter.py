@@ -1,6 +1,15 @@
+import re
+
 from DateConverter import DateConverter
 
 class ChartFormatter:
+    # Text the bank puts before the shop or the person in the concept of the movements
+    TITLE_PREFIXES = [ 'pago en ', 'devolución tarjeta ', 'comisión cajero ', 'reintegro efectivo tarjeta ', 'recibo ',
+                       'bizum enviado a ', 'bizum recibido de ', 'transferencia emitida a ', 'transferencia recibida de ',
+                       'abono por campaña ', 'www.', 'paypal *' ]
+    # Words that don't tell a shop from another, like "EL CORTE INGLES" or "CC LA VAGUADA"
+    MERCHANT_STOPWORDS = [ 'el', 'la', 'los', 'las', 'cc' ]
+
     def format_categories(self, categories):
         dict_categories = {}
 
@@ -15,6 +24,38 @@ class ChartFormatter:
 
         return dict_categories
     
+    def format_merchants(self, titles):
+        merchants = {}
+
+        # The same shop has a different concept in each branch, and its refunds must be subtracted from it
+        for title, amount in titles:
+            name = self.merchant_name(title)
+            merchants[name] = merchants.get(name, 0.0) - amount
+
+        merchants = { name: round(amount, 2) for name, amount in merchants.items() if round(amount, 2) > 0 }
+
+        return dict(sorted(merchants.items(), key=lambda item: item[1], reverse=True))
+
+    def merchant_name(self, title):
+        text = title.strip()
+
+        # Several prefixes can come together, like "Devolución Tarjeta PAYPAL *CORTEFIEL"
+        stripped = True
+        while stripped:
+            stripped = False
+            for prefix in self.TITLE_PREFIXES:
+                if text.lower().startswith(prefix):
+                    text = text[len(prefix):].lstrip()
+                    stripped = True
+
+        # The first word is the name of the chain, the rest is the branch and the town: "MERCADONA C ALFREDO MARQUMADRID ES"
+        words = [ word for word in re.findall(r'[^\W\d_]+', text) if word.lower() not in self.MERCHANT_STOPWORDS ]
+
+        if len(words) == 0:
+            return title.strip()
+
+        return words[0].capitalize()
+
     def format_income_expense_values(self, expenses, incomes, year_months):
         # Every month of the range has a bar, even without movements, so both series are aligned
         expenses_by_month = dict(expenses)

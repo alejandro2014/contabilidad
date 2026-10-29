@@ -54,3 +54,15 @@ class ChartServiceTestCase(unittest.TestCase):
 
         self.assertEqual(0, kpis['pending'])
         self.chart_service.db.select.assert_not_called()
+
+    def test__get_merchants_info__merchants_of_the_category(self):
+        self.chart_service.db.select.return_value = [ ('Pago en MERCADONA MADRID ES', -30.0), ('Pago en LIDL MADRID ES', -10.0) ]
+
+        merchants = self.chart_service.get_merchants_info(self.filter, 'Comida')
+
+        self.assertEqual({ 'Mercadona': 30.0, 'Lidl': 10.0 }, merchants)
+        self.assertIn("category = 'Comida'", self.chart_service.db.select.call_args[0][0])
+
+    def test__get_merchants_info__no_dates__no_queries(self):
+        self.assertEqual({}, self.chart_service.get_merchants_info(self.no_dates_filter, 'Comida'))
+        self.chart_service.db.select.assert_not_called()

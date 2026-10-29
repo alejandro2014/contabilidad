@@ -6,8 +6,15 @@ from test.qt_app import get_app
 
 from src.widgets.DateFilterWidget import DateFilterWidget
 from src.widgets.KpiCards import KpiCards
+from src.widgets.SearchFilter import SearchFilter
 from src.widgets.Summatory import Summatory
 from src.widgets.charts.ChartPalette import ChartPalette
+from src.widgets.charts.PieChart import PieChart
+from src.widgets.charts.Treemap import Treemap
+
+from src.services.formatters.ChartFormatter import ChartFormatter
+
+from PySide6.QtCore import QRectF
 
 class SummatoryTestCase(unittest.TestCase):
     def setUp(self):
@@ -63,11 +70,77 @@ class DateFilterWidgetTestCase(unittest.TestCase):
         dates = self.pool.send_event.call_args[0][2]
         self.assertEqual({ 'from': f'{self.this_year()}0201', 'to': f'{self.this_year()}02{self.last_day_of_february()}' }, dates)
 
+    def test__select_period__all_from_the_first_year_of_the_combo(self):
+        first_year = self.date_filter.cbx['from']['year'].itemText(0)
+
+        self.date_filter.select_period('all')
+
+        dates = self.pool.send_event.call_args[0][2]
+        self.assertEqual({ 'from': f'{first_year}0101', 'to': datetime.date.today().strftime('%Y%m%d') }, dates)
+
     def this_year(self):
         return datetime.date.today().year
 
     def last_day_of_february(self):
         return (datetime.date(self.this_year(), 3, 1) - datetime.timedelta(days=1)).day
+
+class SearchFilterTestCase(unittest.TestCase):
+    def setUp(self):
+        get_app()
+        self.pool = Mock()
+
+        with patch('src.widgets.SearchFilter.ComboBoxService') as mock_service:
+            mock_service.return_value.get_categories.return_value = [ 'Alquiler', 'Comida' ]
+            self.search_filter = SearchFilter(self.pool, True)
+
+    def test__get_search__nothing_typed(self):
+        self.assertEqual({
+            'search_value': None,
+            'amount': { 'from': None, 'to': None },
+            'category': None
+        }, self.search_filter.get_search())
+
+    def test__get_search__all_the_fields(self):
+        self.search_filter.line_edit.setText('mercadona')
+        self.search_filter.amount_from.setText('10,5')
+        self.search_filter.amount_to.setText('-20')
+        self.search_filter.categories.setCurrentText('Comida')
+
+        self.assertEqual({
+            'search_value': 'mercadona',
+            'amount': { 'from': 10.5, 'to': 20.0 },
+            'category': 'Comida'
+        }, self.search_filter.get_search())
+
+    def test__get_search__a_single_letter_and_wrong_amounts_are_ignored(self):
+        self.search_filter.line_edit.setText('m')
+        self.search_filter.amount_from.setText('12,')
+        self.search_filter.amount_to.setText('abc')
+
+        search = self.search_filter.get_search()
+
+        self.assertIsNone(search['search_value'])
+        self.assertEqual(12.0, search['amount']['from'])
+        self.assertIsNone(search['amount']['to'])
+
+    def test__get_search__no_category_without_the_combo(self):
+        with patch('src.widgets.SearchFilter.ComboBoxService'):
+            search_filter = SearchFilter(self.pool, False)
+
+        self.assertIsNone(search_filter.get_search()['category'])
+
+    def test__clear__sends_an_empty_search(self):
+        self.search_filter.line_edit.setText('mercadona')
+        self.search_filter.categories.setCurrentText('Comida')
+        self.pool.send_event.reset_mock()
+
+        self.search_filter.clear()
+
+        self.pool.send_event.assert_called_once_with('filter-widget', 'change_search', {
+            'search_value': None,
+            'amount': { 'from': None, 'to': None },
+            'category': None
+        })
 
 class KpiCardsTestCase(unittest.TestCase):
     def setUp(self):
@@ -115,3 +188,84 @@ class KpiCardsTestCase(unittest.TestCase):
         kpis.update(values)
 
         return kpis
+
+class TreemapTestCase(unittest.TestCase):
+    def setUp(self):
+        get_app()
+        self.treemap = Treemap()
+
+    def test__set_data__biggest_first_without_negative_amounts(self):
+        self.treemap.set_data([ ('Ocio', 25.0), ('Bizum', -10.0), ('Comida', 75.0), ('Vacío', None) ])
+
+        self.assertEqual([ ('Comida', 75.0, 75.0), ('Ocio', 25.0, 25.0) ], self.treemap.items)
+
+    def test__split_rectangles__each_piece_cuts_the_space_left(self):
+        self.treemap.set_data([ ('Comida', 60.0), ('Ocio', 20.0), ('Compras', 20.0) ])
+
+        rectangles = self.treemap.split_rectangles(QRectF(0, 0, 100, 50))
+
+        # 60 % of the width, then half of the remaining 40x50 cut along its height
+        self.assertEqual([ QRectF(0, 0, 60, 50), QRectF(60, 0, 40, 25), QRectF(60, 25, 40, 25) ], rectangles)
+
+    def test__split_rectangles__groups_pieces_in_rows(self):
+        self.treemap.set_data([ ('Comida', 25.0), ('Ocio', 25.0), ('Compras', 25.0), ('Casa', 25.0) ])
+
+        rectangles = self.treemap.split_rectangles(QRectF(0, 0, 100, 100))
+
+        # Two pieces share the first column instead of cutting the space one by one
+        self.assertEqual([ QRectF(0, 0, 50, 50), QRectF(0, 50, 50, 50), QRectF(50, 0, 50, 50), QRectF(50, 50, 50, 50) ], rectangles)
+
+    def test__split_rectangles__no_data(self):
+        self.treemap.set_data([])
+
+        self.assertEqual([], self.treemap.split_rectangles(QRectF(0, 0, 100, 50)))
+
+class PieChartTestCase(unittest.TestCase):
+    def setUp(self):
+        get_app()
+        self.pie_chart = PieChart()
+        self.pie_chart.chart_service = Mock()
+        self.pie_chart.chart_service.formatter = ChartFormatter()
+
+        # Ten categories, so the two smallest are grouped in "Otros"
+        self.categories = { f'Categoría {i}': 100.0 - i for i in range(10) }
+        self.pie_chart.chart_service.get_chart_info.return_value = self.categories
+        self.pie_chart.reload({ 'date': { 'from': '20260101', 'to': '20260131' } })
+
+    def test__reload__categories_with_others(self):
+        self.assertEqual(8, len(self.pie_chart.series.slices()))
+        self.assertTrue(self.pie_chart.back_button.isHidden())
+
+    def test__zoom_in__category_shows_its_merchants(self):
+        self.pie_chart.chart_service.get_merchants_info.return_value = { 'Mercadona': 60.0, 'Lidl': 40.0 }
+
+        self.pie_chart.zoom_in('Categoría 0')
+
+        self.pie_chart.chart_service.get_merchants_info.assert_called_once_with(self.pie_chart.filter, 'Categoría 0')
+        self.assertEqual(2, len(self.pie_chart.series.slices()))
+        self.assertEqual('Gastos por categoría › Categoría 0', self.pie_chart.chart().title())
+        self.assertFalse(self.pie_chart.back_button.isHidden())
+
+    def test__zoom_in__others_shows_the_small_categories(self):
+        self.pie_chart.zoom_in('Otros')
+
+        self.assertEqual({ 'Categoría 7': 93.0, 'Categoría 8': 92.0, 'Categoría 9': 91.0 }, self.pie_chart.levels[-1]['items'])
+        # They are still categories, so they can show their merchants
+        self.assertEqual('category', self.pie_chart.levels[-1]['kind'])
+
+    def test__zoom_in__merchant_does_nothing(self):
+        self.pie_chart.chart_service.get_merchants_info.return_value = { 'Mercadona': 60.0 }
+        self.pie_chart.zoom_in('Categoría 0')
+
+        self.pie_chart.zoom_in('Mercadona')
+
+        self.assertEqual(2, len(self.pie_chart.levels))
+
+    def test__zoom_out__back_to_the_previous_level(self):
+        self.pie_chart.zoom_in('Otros')
+        self.pie_chart.zoom_out()
+        self.pie_chart.zoom_out()
+
+        self.assertEqual(1, len(self.pie_chart.levels))
+        self.assertEqual(8, len(self.pie_chart.series.slices()))
+        self.assertTrue(self.pie_chart.back_button.isHidden())

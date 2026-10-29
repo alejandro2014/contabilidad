@@ -1,4 +1,7 @@
 from src.services.BaseService import BaseService
+from src.logger import get_logger
+
+logger = get_logger(__name__)
 
 class RulesService(BaseService):
     def __init__(self):
@@ -6,7 +9,7 @@ class RulesService(BaseService):
 
     def add_rule(self, category, rule):
         if self.rule_exists(category, rule):
-            print(f'Error: The rule "{rule}" in the category "{category}" already exists')
+            logger.warning(f'The rule "{rule}" in the category "{category}" already exists')
             return 1
 
         sql = self.sql_generator.insert_rule(category, rule)

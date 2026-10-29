@@ -66,7 +66,7 @@ class DateFilterWidget(QWidget, ListenerNode):
         layout = QHBoxLayout()
 
         for title, period in [ ('Este mes', 'this_month'), ('Mes pasado', 'last_month'), ('Últimos 3 meses', 'last_3_months'),
-                               ('Últimos 12 meses', 'last_12_months'), ('Este año', 'this_year'), ('Año pasado', 'last_year') ]:
+                               ('Últimos 12 meses', 'last_12_months'), ('Este año', 'this_year'), ('Año pasado', 'last_year'), ('Todo', 'all') ]:
             button = QPushButton(title)
             button.clicked.connect(lambda checked=False, period=period: self.select_period(period))
             layout.addWidget(button)
@@ -74,7 +74,15 @@ class DateFilterWidget(QWidget, ListenerNode):
         return layout
 
     def select_period(self, period):
-        date_from, date_to = DateConverter().period_dates(period, datetime.date.today())
+        today = datetime.date.today()
+
+        # Everything that the combos can show, from the first year of the combo until today
+        if period == 'all':
+            first_year = self.cbx['from']['year'].itemText(0)
+            self.change_filter_dates(f'{first_year}0101', today.strftime('%Y%m%d'))
+            return
+
+        date_from, date_to = DateConverter().period_dates(period, today)
 
         self.change_filter_dates(date_from.strftime('%Y%m%d'), date_to.strftime('%Y%m%d'))
 

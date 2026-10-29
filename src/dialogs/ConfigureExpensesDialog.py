@@ -128,3 +128,4 @@ class ConfigureExpensesDialog(QDialog):
     def refresh_categories(self):
         # Update the categories combobox of the classification screen
         self.listeners_pool.send_event('classificator', 'refresh_categories')
+        self.listeners_pool.send_event('search-filter', 'refresh_categories')

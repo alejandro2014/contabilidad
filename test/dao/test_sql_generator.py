@@ -101,6 +101,43 @@ class SqlGeneratorTestCase(unittest.TestCase):
         
         self.assertEqual(expected_sql, sql)
 
+    def test_select_classified_expenses_filteramountandcategory(self):
+        expected_sql = "SELECT id, date, title, amount, category FROM expenses WHERE (category IS NOT NULL) AND (ROUND(ABS(amount), 2) >= 10.5) AND (ROUND(ABS(amount), 2) <= 20.0) AND (category = 'Alquiler')"
+
+        filter = {
+            'amount': {
+                'from': 10.5,
+                'to': 20
+            },
+            'category': 'Alquiler'
+        }
+
+        sql = self.sql_generator.select_classified_expenses(filter=filter, sort_by=None)
+
+        self.assertEqual(expected_sql, sql)
+
+    def test_select_pending_expenses_filteronlyamountfrom(self):
+        expected_sql = "SELECT id, date, title, amount FROM expenses WHERE (category IS NULL) AND (ROUND(ABS(amount), 2) >= 45.2)"
+
+        filter = {
+            'amount': {
+                'from': 45.2,
+                'to': None
+            },
+            'category': None
+        }
+
+        sql = self.sql_generator.select_pending_expenses(filter=filter, sort_by=None)
+
+        self.assertEqual(expected_sql, sql)
+
+    def test_select_pending_expenses_filtersearch_escapes_quotes(self):
+        expected_sql = "SELECT id, date, title, amount FROM expenses WHERE (category IS NULL) AND (title LIKE '%L''Oreal%')"
+
+        sql = self.sql_generator.select_pending_expenses(filter={ 'search_value': "L'Oreal" }, sort_by=None)
+
+        self.assertEqual(expected_sql, sql)
+
     def test__get_filter_values__when_no_date__nofrom_noto_nosearchvalue(self):
         filter = {}
 
@@ -195,6 +232,13 @@ class SqlGeneratorTestCase(unittest.TestCase):
         expected_sql = "SELECT count(*) FROM expenses WHERE (category IS NULL)"
 
         sql = self.sql_generator.select_pending_expenses_count()
+
+        self.assertEqual(expected_sql, sql)
+
+    def test__select_expenses_date_range(self):
+        expected_sql = "SELECT (category IS NOT NULL) AS classified, MIN(date), MAX(date), count(*) FROM expenses GROUP BY classified"
+
+        sql = self.sql_generator.select_expenses_date_range()
 
         self.assertEqual(expected_sql, sql)
 
@@ -390,5 +434,12 @@ class SqlGeneratorTestCase(unittest.TestCase):
         expected_sql = "UPDATE rules SET priority = 4 WHERE priority = 3"
 
         sql = self.sql_generator.update_rule_priority(3, 4)
+
+        self.assertEqual(expected_sql, sql)
+
+    def test__select_category_titles__escapes_quotes(self):
+        expected_sql = "SELECT title, sum(amount) FROM expenses WHERE category = 'Hogar''s' AND date BETWEEN '20260101' AND '20260131' GROUP BY title"
+
+        sql = self.sql_generator.select_category_titles({ 'date_from': '20260101', 'date_to': '20260131' }, "Hogar's")
 
         self.assertEqual(expected_sql, sql)

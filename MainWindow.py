@@ -3,6 +3,7 @@ from PySide6.QtWidgets import QMainWindow, QStatusBar
 
 from src.dialogs.ConfigureExpensesDialog import ConfigureExpensesDialog
 from src.dialogs.ConfigureRulesDialog import ConfigureRulesDialog
+from src.dialogs.InfoDialog import InfoDialog
 from src.dialogs.LoadFileDialog import LoadFileDialog
 
 from src.events.ListenersPool import ListenersPool
@@ -11,6 +12,10 @@ from src.screens.CashflowWindow import CashflowWindow
 from src.screens.ClassifyExpensesScreen import ClassifyExpensesScreen
 from src.screens.ViewChartsScreen import ViewChartsScreen
 from src.screens.ViewExpensesScreen import ViewExpensesScreen
+
+from src.services.expenses_service import ExpensesService
+
+from DateConverter import DateConverter
 
 from src.widgets.StatusBar import StatusBar
 
@@ -55,6 +60,11 @@ class MainWindow(QMainWindow):
         view_cashflow_action = menu_gastos.addAction('Flujo de caja')
         view_cashflow_action.triggered.connect(self.view_cashflow)
 
+        menu_gastos.addSeparator()
+
+        view_date_range_action = menu_gastos.addAction('Rango de fechas')
+        view_date_range_action.triggered.connect(self.view_date_range)
+
         menu_configuracion = self.menubar.addMenu('Configuracion')
 
         configure_expense_types_action = menu_configuracion.addAction('Tipos de gastos')
@@ -92,6 +102,26 @@ class MainWindow(QMainWindow):
         self.cashflow_window.show()
         self.cashflow_window.raise_()
         self.cashflow_window.activateWindow()
+
+    def view_date_range(self):
+        date_range = ExpensesService().get_expenses_date_range()
+
+        lines = [
+            self.date_range_text('Clasificados', date_range['classified']),
+            self.date_range_text('Pendientes', date_range['pending'])
+        ]
+
+        InfoDialog(self, title = 'Rango de fechas', message = '\n\n'.join(lines))
+
+    def date_range_text(self, label, info):
+        if info is None:
+            return f'{label}: sin gastos'
+
+        date_converter = DateConverter()
+        min_date = date_converter.format_pretty(info['min_date'])
+        max_date = date_converter.format_pretty(info['max_date'])
+
+        return f'{label} ({info["count"]} gastos)\n  Mínimo: {min_date}\n  Máximo: {max_date}'
 
     def configure_expense_types(self):
         configure_expenses_dialog = ConfigureExpensesDialog(self, self.listeners_pool)

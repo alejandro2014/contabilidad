@@ -24,17 +24,31 @@ class CashflowFormatter:
     def format_section(self, sums, total_title):
         categories = sorted(set([ category for category, month in sums.keys() ]))
 
-        # One row per category: category | January ... December | total
+        # One row per category: category | January ... December | total | percentage of the section total
         rows = []
 
         for category in categories:
             amounts = [ self.round_or_none(sums.get((category, month))) for month in self.MONTHS ]
             rows.append([ category ] + amounts + [ self.sum_amounts(amounts) ])
 
+        total = self.total_row(rows, total_title)
+
+        for row in rows:
+            row.append(self.percentage(row[13], total[13]))
+
         return {
             'rows': rows,
-            'total': self.total_row(rows, total_title)
+            'total': total + [ self.percentage(total[13], total[13]) ]
         }
+
+    def sort_rows(self, rows, column, descending = False):
+        # Column 0 is the category, the rest are amounts (empty ones count as 0)
+        if column == 0:
+            key = lambda row: row[0].casefold()
+        else:
+            key = lambda row: row[column] or 0.0
+
+        return sorted(rows, key = key, reverse = descending)
 
     def total_row(self, rows, title):
         # Columns 1 to 13 are the months and the total of each category
@@ -45,13 +59,20 @@ class CashflowFormatter:
     def balance_row(self, incomes_total, expenses_total):
         balance = []
 
-        for income, expense in zip(incomes_total[1:], expenses_total[1:]):
+        # The percentage column is left out, the balance one is the savings rate
+        for income, expense in zip(incomes_total[1:14], expenses_total[1:14]):
             if income is None and expense is None:
                 balance.append(None)
             else:
                 balance.append(round((income or 0.0) - (expense or 0.0), 2))
 
-        return [ 'Balance' ] + balance
+        return [ 'Balance' ] + balance + [ self.percentage(balance[12], incomes_total[13]) ]
+
+    def percentage(self, amount, total):
+        if amount is None or not total:
+            return None
+
+        return round(amount / total * 100, 2)
 
     def sum_amounts(self, amounts):
         present = [ amount for amount in amounts if amount is not None ]

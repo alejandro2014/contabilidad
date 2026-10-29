@@ -41,6 +41,16 @@ class ChartService(BaseService):
 
         return self.formatter.format_categories(categories)
 
+    def get_merchants_info(self, filter, category):
+        dates = self.get_dates(filter)
+
+        if dates is None:
+            return {}
+
+        titles = self.db.select(self.sql_generator.select_category_titles(dates, category))
+
+        return self.formatter.format_merchants(titles)
+
     def get_bar_chart_info(self, filter):
         dates = self.get_dates(filter)
 

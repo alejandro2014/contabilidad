@@ -1,5 +1,8 @@
 from src.dao.SqliteConnector import SqliteConnector
 from src.dao.SqlGenerator import SqlGenerator
+from src.logger import get_logger
+
+logger = get_logger(__name__)
 
 class BaseService:
     def __init__(self):
@@ -13,28 +16,22 @@ class BaseService:
 
     def insert(self, sql):
         inserted = True
-        value = "OK"
 
         try:
             self.db.insert(sql)
-        except:
-            value = "ERROR"
+        except Exception as e:
+            logger.error(f'The insert failed: {e}. SQL: {sql}')
             inserted = False
-
-        print("[" + value + "] " + sql)
 
         return inserted
 
     def delete(self, sql):
         deleted = True
-        value = "OK"
 
         try:
             self.db.delete(sql)
-        except:
-            value = "ERROR"
+        except Exception as e:
+            logger.error(f'The delete failed: {e}. SQL: {sql}')
             deleted = False
-
-        print("[" + value + "] " + sql)
 
         return deleted

@@ -25,12 +25,23 @@ class SqlGenerator:
     def select_expenses(self, sql, filter=None, sort_by=None):
         if filter != None:
             date_from, date_to, search_value = self.get_filter_values(filter)
+            amount_from, amount_to, category = self.get_search_values(filter)
 
             if date_from != None and date_to != None:
                 sql += f" AND (date BETWEEN '{date_from}' AND '{date_to}')"
 
             if search_value != None:
-                sql += f" AND (title LIKE '%{search_value}%')"
+                sql += f" AND (title LIKE '%{self.escape(search_value)}%')"
+
+            # Expenses are stored as negative amounts, but they are searched by how much they are
+            if amount_from != None:
+                sql += f" AND (ROUND(ABS(amount), 2) >= {float(amount_from)})"
+
+            if amount_to != None:
+                sql += f" AND (ROUND(ABS(amount), 2) <= {float(amount_to)})"
+
+            if category != None:
+                sql += f" AND (category = '{self.escape(category)}')"
 
         if sort_by != None:
             sql += f' ORDER BY {sort_by} ASC'
@@ -43,6 +54,13 @@ class SqlGenerator:
         search_value = filter['search_value'] if 'search_value' in filter else None
 
         return date_from, date_to, search_value
+
+    def get_search_values(self, filter):
+        amount_from = filter['amount']['from'] if 'amount' in filter and 'from' in filter['amount'] else None
+        amount_to = filter['amount']['to'] if 'amount' in filter and 'to' in filter['amount'] else None
+        category = filter['category'] if 'category' in filter else None
+
+        return amount_from, amount_to, category
     
     def select_classified_expenses_count(self):
         return 'SELECT count(*) FROM expenses WHERE (category IS NOT NULL)'
@@ -58,6 +76,9 @@ class SqlGenerator:
     
     def select_pending_expenses_count(self):
         return "SELECT count(*) FROM expenses WHERE (category IS NULL)"
+
+    def select_expenses_date_range(self):
+        return "SELECT (category IS NOT NULL) AS classified, MIN(date), MAX(date), count(*) FROM expenses GROUP BY classified"
 
     def select_expense_types_full(self):
         return "SELECT category, comment, income, not_computed FROM expense_types ORDER BY category"
@@ -143,6 +164,12 @@ class SqlGenerator:
 
         return f"SELECT category, sum(amount) AS amnt FROM expenses WHERE category IS NOT NULL AND {self.computed_expense_condition()} AND date BETWEEN '{date_from}' AND '{date_to}' GROUP BY category ORDER BY abs(amnt) DESC"
     
+    def select_category_titles(self, params, category):
+        date_from = params['date_from']
+        date_to = params['date_to']
+
+        return f"SELECT title, sum(amount) FROM expenses WHERE category = '{self.escape(category)}' AND date BETWEEN '{date_from}' AND '{date_to}' GROUP BY title"
+
     def select_bar_chart_values(self, params):
         date_from = params['date_from']
         date_to = params['date_to']

@@ -1,12 +1,15 @@
 from PySide6 import QtCharts
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QPainter, QPen
+from PySide6.QtGui import QFont, QPainter, QPen
+from PySide6.QtWidgets import QGraphicsSimpleTextItem, QPushButton
 
 from src.services.ChartService import ChartService
 
 from src.widgets.charts.ChartPalette import ChartPalette
 
 class PieChart(QtCharts.QChartView):
+    TITLE = 'Gastos por categoría'
+
     def __init__(self):
         super().__init__()
 
@@ -14,31 +17,77 @@ class PieChart(QtCharts.QChartView):
         self.chart_palette = ChartPalette()
 
         self.series = None
+        self.filter = None
         # Color of each category, shared with the other charts so a category looks the same in all of them
         self.colors = {}
+        # Each click on a slice adds a level: the merchants of a category, or what is inside "Otros".
+        # A level is { 'title', 'kind' ('category' or 'merchant'), 'items' (every name with its amount) }
+        self.levels = []
 
         self.setRenderHint(QPainter.Antialiasing)
 
+        self.back_button = QPushButton('← Volver', self)
+        self.back_button.setCursor(Qt.PointingHandCursor)
+        self.back_button.setToolTip('Volver al gráfico anterior (también con clic derecho o Esc)')
+        self.back_button.move(8, 8)
+        self.back_button.clicked.connect(self.zoom_out)
+        self.back_button.hide()
+
+        # The amount of the current chart, written in the hole of the middle
+        self.total_label = QGraphicsSimpleTextItem(self.chart())
+        font = QFont()
+        font.setPointSize(14)
+        font.setBold(True)
+        self.total_label.setFont(font)
+        self.chart().plotAreaChanged.connect(self.center_total_label)
+
     def reload(self, filter):
+        self.filter = filter
         chart_info = self.chart_service.get_chart_info('pie', filter)
+
+        # Other dates change what is inside every slice, so it starts again from the categories
+        self.levels = [ { 'title': self.TITLE, 'kind': 'category', 'items': chart_info } ]
+
+        categories = self.group(chart_info)
+        self.colors = self.chart_palette.category_colors(categories)
+
+        self.show_level()
+
+        self.chart().legend().setAlignment(Qt.AlignRight)
+
+        return chart_info
+
+    def group(self, items):
+        return self.chart_service.formatter.group_categories(items, len(ChartPalette.SERIES))
+
+    def show_level(self):
         chart = self.chart()
+        level = self.levels[-1]
 
         if self.series:
             chart.removeSeries(self.series)
 
-        categories = self.chart_service.formatter.group_categories(chart_info, len(ChartPalette.SERIES))
-        self.colors = self.chart_palette.category_colors(categories)
-        self.series = self.compose_series(categories)
+        slices = self.group(level['items'])
+        # The categories keep the colors of the other charts, the zoomed levels have their own
+        colors = self.colors if len(self.levels) == 1 else self.chart_palette.category_colors(slices)
+        self.series = self.compose_series(slices, colors)
 
         chart.addSeries(self.series)
+        chart.setTitle(' › '.join([ level['title'] for level in self.levels ]))
 
-        chart.setTitle('Gastos por categoría')
+        self.back_button.setVisible(len(self.levels) > 1)
 
-        chart.legend().setAlignment(Qt.AlignRight)
+        self.total_label.setBrush(chart.titleBrush())
+        self.total_label.setText(self.chart_palette.format_amount(sum(slices.values())))
+        self.center_total_label()
 
-        return chart_info
+    def center_total_label(self):
+        # The pie is centered in the plot area
+        center = self.chart().plotArea().center()
+        rect = self.total_label.boundingRect()
+        self.total_label.setPos(center.x() - rect.width() / 2, center.y() - rect.height() / 2)
 
-    def compose_series(self, categories):
+    def compose_series(self, categories, colors):
         series = QtCharts.QPieSeries()
         # A hole in the middle makes the slices easier to compare
         series.setHoleSize(0.35)
@@ -50,17 +99,67 @@ class PieChart(QtCharts.QChartView):
             series.append(title, amount)
 
             slice = series.slices()[i]
-            slice.setBrush(self.colors[category_name])
+            slice.setBrush(colors[category_name])
             # A thin gap between the slices
             slice.setPen(QPen(Qt.GlobalColor.white, 2))
-
-        series.hovered.connect(self.slice_hovered)
+            slice.clicked.connect(lambda name=category_name: self.zoom_in(name))
+            slice.hovered.connect(lambda state, slice=slice, name=category_name: self.slice_hovered(slice, name, state))
 
         return series
 
-    def slice_hovered(self, slice, state):
+    def is_others(self, name):
+        # "Otros" is not one of the items when it groups the smallest ones
+        return name not in self.levels[-1]['items']
+
+    def can_zoom_in(self, name):
+        return self.is_others(name) or self.levels[-1]['kind'] == 'category'
+
+    def zoom_in(self, name):
+        level = self.levels[-1]
+
+        if self.is_others(name):
+            # The small items grouped in "Otros", of the same kind as the ones of this level
+            shown = list(self.group(level['items']).keys())
+            items = { item: amount for item, amount in level['items'].items() if item not in shown }
+            self.levels.append({ 'title': name, 'kind': level['kind'], 'items': items })
+        elif level['kind'] == 'category':
+            items = self.chart_service.get_merchants_info(self.filter, name)
+            self.levels.append({ 'title': name, 'kind': 'merchant', 'items': items })
+        else:
+            return
+
+        self.unsetCursor()
+        self.show_level()
+
+    def zoom_out(self):
+        if len(self.levels) <= 1:
+            return
+
+        self.levels.pop()
+        self.show_level()
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.RightButton:
+            self.zoom_out()
+            return
+
+        super().mousePressEvent(event)
+
+    def keyPressEvent(self, event):
+        if event.key() in [ Qt.Key_Escape, Qt.Key_Backspace ]:
+            self.zoom_out()
+            return
+
+        super().keyPressEvent(event)
+
+    def slice_hovered(self, slice, name, state):
         slice.setExploded(state)
         slice.setLabelVisible(state)
+
+        if state and self.can_zoom_in(name):
+            self.setCursor(Qt.PointingHandCursor)
+        else:
+            self.unsetCursor()
 
     def get_chart_slice_title(self, category_name, amount, total):
         percentage = round(amount / total * 100.0, 1)
