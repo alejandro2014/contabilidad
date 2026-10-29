@@ -78,3 +78,85 @@ python -m unittest test.services.test_chart_formatter.ChartFormatterTestCase.tes
 ```
 
 The tests never touch `accountancy.db`: the database is mocked, or a temporary one is created. The widget tests run Qt without opening any window.
+
+## TODO
+
+### Bugs and data safety
+
+- [ ] **Renaming an expense type** only updates `expense_types`: the expenses and the rules that use the old name keep it, so they drop out of every chart. Rename them in a single transaction.
+- [ ] **Deleting an expense type** leaves its expenses and rules pointing to a type that no longer exists. Ask first, then either move them to another type or leave the expenses pending again.
+- [ ] **Quotes in the SQL**: `insert_expense`, `insert_category`, `update_expense_type`, `delete_expense_type`, `update_classified_expense`... don't escape the values. A concept like `O'Hara` can't be imported, and `load_expenses` only catches `IntegrityError`, so the whole import stops halfway. Replace every f-string with parameters (`?`) in `SqliteConnector.select/execute_sql`, and drop `escape()`.
+- [ ] **Imports are not atomic**: every movement is a separate connection and commit. Insert the whole file in one transaction (`executemany` + `INSERT OR IGNORE`), so a failure leaves nothing half-loaded and big files load faster.
+- [ ] `LoadFileDialog`: check that the file exists and is an `.xls` before loading it, and show an `ErrorDialog` instead of a traceback when the file can't be read or has no `F. VALOR` header.
+- [ ] `ExpensesDao.get_pending_expenses` ignores `sort_by` (always `'amount'`).
+- [ ] `sort_by` goes straight into `ORDER BY`: only accept the column names from the table config.
+- [ ] Backups: copy `accountancy.db` (e.g. to `accountancy-YYYYMMDD.db`) before every import and every schema migration, keeping the last N.
+
+### Database
+
+- [ ] Versioned migrations (`PRAGMA user_version` + numbered scripts) instead of the `add_*_if_needed` checks, which run on every single query.
+- [ ] Open one connection for the life of the app instead of one per query.
+- [ ] Store amounts as integer cents instead of `FLOAT`: sums like `0.1 + 0.2` then add up exactly.
+- [ ] Foreign keys from `expenses.category` and `rules.category` to `expense_types` (`ON UPDATE CASCADE`), which also fixes the rename bug above.
+- [ ] Index on `expenses(date)` and `expenses(category)`: every dashboard query filters by them.
+- [ ] Remove or use the columns that are never filled: `subcategory`, `category_suggested`, `subcategory_suggested`.
+- [ ] `substr(date, 0, 7)` works only because SQLite treats position 0 as 1: use `substr(date, 1, 6)` like the other queries.
+- [ ] Database path configurable (env var or settings file) and independent of the working directory, so the app can be started from anywhere. Same for `src/config/...` paths in `ConfigLoader`.
+
+### Import
+
+- [ ] Support `.xlsx` and `.csv` statements, and other banks: describe each format (header cell, column order, date and amount format) in a JSON file under `src/config/banks/`.
+- [ ] Drag and drop a file onto the window to import it, and import several files at once.
+- [ ] Preview before importing: how many rows are new, duplicated and auto-classified, with a cancel button.
+- [ ] Better duplicate detection: two real, identical movements on the same day (two coffees of 1,50 €) are counted as one. Use the balance column (`SALDO`) to tell them apart.
+- [ ] Remember the last folder used in the file dialog.
+
+### Classification
+
+- [ ] Apply the rules to the movements that are already pending ("Reclasificar pendientes"), e.g. after adding a rule.
+- [ ] Create a rule straight from the pending table: right click on a movement → "Crear regla con este concepto".
+- [ ] Suggest a type for each pending movement from how similar concepts were classified before (fill `category_suggested`), and accept all suggestions with one click.
+- [ ] Rules with more conditions: regex, amount range, sign (income/expense), bank category.
+- [ ] Test a rule in the rules dialog: show which movements it would match and which rule currently wins for them.
+- [ ] Split a movement into several types (e.g. a supermarket ticket that is part food, part home).
+- [ ] Undo the last classification.
+
+### Budgets and savings
+
+- [ ] Monthly budget per expense type (new `budgets` table), with progress bars on the dashboard: spent vs. budget this month, coloured when it goes over.
+- [ ] Targets screen: the categories and targets of the savings plan, compared month by month with the actual spending, so the monthly review doesn't have to be done by hand from the cash flow.
+- [ ] Savings goals (amount and date, e.g. emergency fund of 6.000 € by Jul 2027): progress from the *No computar* transfers to the savings account, and the projected date at the current rate.
+- [ ] Pots: money set aside every month for yearly expenses (vacations, insurance), with what is accumulated and what has been spent from each one.
+- [ ] Detect recurring payments (subscriptions, phone, gym): list them with their monthly cost and flag new ones or price rises.
+- [ ] Alerts: unusual expenses (much bigger than the average of their type), or a category going over its budget.
+
+### Dashboard and reports
+
+- [ ] Compare a period with the previous one, or with the same period last year, in the KPI cards (`+12 %`).
+- [ ] Click on a chart slice / bar to open the table filtered by that type and month.
+- [ ] Average per category vs. current month, to see where the month is going off-track.
+- [ ] Net worth: evolution of the balance (`SALDO`) of the account.
+- [ ] Export the table view and the dashboard (CSV / Excel / PDF), not just the cash flow.
+- [ ] Remember the last date range, screen and window size between sessions (`QSettings`).
+- [ ] Notes and tags on movements (e.g. a trip), with totals per tag.
+
+### UI
+
+- [ ] Consistent language: the menus are in Spanish, without accents in some places (`Ver graficos`, `Configuracion`). Use Qt translations or at least fix the texts.
+- [ ] Keyboard shortcuts for the main screens and for classifying (`Ctrl+O` import, type ahead in the type combo, `Enter` to classify and move to the next one).
+- [ ] Dark mode that follows the system, also in the charts.
+- [ ] Show the number of pending movements in the menu (`Clasificar pendientes (12)`) and a button on the "pending" KPI card that opens that screen.
+- [ ] Confirmation before deleting types or rules, and before unclassifying.
+- [ ] Remove commented-out code (`#self.view_expenses_table()`, the commented `sql` in `ExpensesDao`) and solve or drop the old `#TODO`s in `ListenersPool` and `Summatory`.
+
+### Code quality and tooling
+
+- [ ] Replace `ListenersPool` with Qt signals/slots, so widgets don't depend on string node ids.
+- [ ] Services and DAOs: `ExpensesDao` builds its `SqlGenerator()` and `SqliteConnector()` as default arguments, shared by every instance. Inject them like the other services.
+- [ ] Consistent file naming (`expenses_service.py` vs `RulesService.py`): pick snake_case modules (PEP 8).
+- [ ] Move `MainWindow.py` and `DateConverter.py` into `src/`.
+- [ ] Pin the versions in `requirements.txt`, or move to `pyproject.toml` with `uv`.
+- [ ] Linting and formatting (`ruff`), type hints and `mypy`, run with `make lint`.
+- [ ] Test coverage report (`coverage`), and tests for the dialogs and screens.
+- [ ] GitHub Actions running the tests (with `QT_QPA_PLATFORM=offscreen`) on every push.
+- [ ] Package the app (`pyinstaller` / `briefcase`) as a macOS `.app`, with its icon.
