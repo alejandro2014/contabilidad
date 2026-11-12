@@ -22,6 +22,7 @@ from src.widgets.charts.BalanceChart import BalanceChart
 from src.widgets.charts.BarChart import BarChart
 from src.widgets.charts.EvolutionChart import EvolutionChart
 from src.widgets.charts.PieChart import PieChart
+from src.widgets.charts.SavingsChart import SavingsChart
 
 from src.widgets.tables.CategoryAverageTable import CategoryAverageTable
 from src.widgets.tables.TopExpensesTable import TopExpensesTable
@@ -72,9 +73,10 @@ class ViewChartsScreen(QWidget, ListenerNode):
         self.top_expenses_table = TopExpensesTable()
         self.balance_chart = BalanceChart()
         self.category_average_table = CategoryAverageTable()
+        self.savings_chart = SavingsChart()
 
         # Clicking a part of a chart opens the table with its movements
-        for widget in [ self.pie_chart, self.bar_chart, self.evolution_chart, self.top_expenses_table, self.category_average_table ]:
+        for widget in [ self.pie_chart, self.bar_chart, self.evolution_chart, self.top_expenses_table, self.category_average_table, self.savings_chart ]:
             widget.open_expenses.connect(self.open_expenses)
 
         self.filter_widget = FilterWidget('chart', listeners_pool)
@@ -93,10 +95,12 @@ class ViewChartsScreen(QWidget, ListenerNode):
         charts_layout.addWidget(self.top_expenses_table, 1, 1)
         charts_layout.addWidget(self.category_average_table, 2, 0)
         charts_layout.addWidget(self.balance_chart, 2, 1)
+        # Alone in its row, with the width of both columns
+        charts_layout.addWidget(self.savings_chart, 3, 0, 1, 2)
         charts_layout.setColumnStretch(0, 1)
         charts_layout.setColumnStretch(1, 1)
 
-        for widget in [ self.pie_chart, self.bar_chart, self.evolution_chart, self.top_expenses_table, self.category_average_table, self.balance_chart ]:
+        for widget in [ self.pie_chart, self.bar_chart, self.evolution_chart, self.top_expenses_table, self.category_average_table, self.balance_chart, self.savings_chart ]:
             widget.setMinimumHeight(self.CHART_MIN_HEIGHT)
 
         self.layout.addLayout(charts_layout)
@@ -149,6 +153,7 @@ class ViewChartsScreen(QWidget, ListenerNode):
         top_expenses = self.top_expenses_table.reload(filter)
         average_info = self.category_average_table.reload(filter)
         balance_info = self.balance_chart.reload(filter)
+        savings_info = self.savings_chart.reload(filter)
 
         self.dashboard = {
             'categories': pie_chart_info,
@@ -156,7 +161,8 @@ class ViewChartsScreen(QWidget, ListenerNode):
             'evolution': evolution_info,
             'top': top_expenses,
             'average': average_info,
-            'balance': balance_info
+            'balance': balance_info,
+            'savings': savings_info
         }
 
         self.reload_kpis(filter)

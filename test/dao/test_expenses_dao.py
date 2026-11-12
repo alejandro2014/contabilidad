@@ -1,4 +1,5 @@
 import os
+import sqlite3
 import tempfile
 import unittest
 from unittest import TestCase
@@ -184,6 +185,27 @@ class ExpensesDaoDatabaseTestCase(TestCase):
         self.dao.load_expenses([ Expense(id = '2', date = '20260105', title = 'Café', amount = -1.5, balance = 1.0) ])
 
         self.assertEqual([ (99850,) ], self.db.select('SELECT balance FROM expenses'))
+
+    def test__add_expenses__cash_doesnt_count_twice(self):
+        # 50 € taken from an ATM, and 20 € of them spent in food
+        self.db.execute_transaction([ "INSERT OR IGNORE INTO expense_types (category) VALUES ('Efectivo'), ('Comida')" ])
+        self.dao.load_expenses([ Expense(id = '1', date = '20260105', title = 'Reintegro efectivo', amount = -50.0, category = 'Efectivo') ])
+
+        self.dao.add_expenses([
+            Expense(id = '2', date = '20260106', title = 'Mercado', amount = -20.0, category = 'Comida'),
+            Expense(id = '3', date = '20260106', title = 'Mercado', amount = 20.0, category = 'Efectivo')
+        ])
+
+        self.assertEqual([ { 'month': '202601', 'quantity': '-50.0' } ], self.dao.get_classified_expenses_by_month())
+        self.assertEqual([ { 'type': 'Comida', 'quantity': '-20.0' }, { 'type': 'Efectivo', 'quantity': '-30.0' } ],
+                         sorted(self.dao.get_classified_expenses_by_type(), key=lambda t: t['type']))
+
+        # The same one again fails, and nothing of it is added
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.dao.add_expenses([ Expense(id = '4', date = '20260107', title = 'Pan', amount = -1.0, category = 'Comida'),
+                                    Expense(id = '5', date = '20260106', title = 'Mercado', amount = -20.0, category = 'Comida') ])
+
+        self.assertEqual(3, self.dao.get_expenses_count())
 
     def test__notes_and_tags(self):
         self.insert_classified_expenses()

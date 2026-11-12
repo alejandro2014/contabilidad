@@ -16,5 +16,10 @@
         "field": "not_computed",
         "field_text": "No computar",
         "checkbox": true
+    },
+    {
+        "field": "savings",
+        "field_text": "Ahorro",
+        "checkbox": true
     }
 ]

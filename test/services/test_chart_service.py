@@ -118,3 +118,20 @@ class ChartServiceTestCase(unittest.TestCase):
         self.assertEqual([], self.chart_service.get_balance_chart_info(self.no_dates_filter)['balances'])
 
         self.chart_service.db.select.assert_not_called()
+
+    def test__get_savings_chart_info__months_of_the_range(self):
+        self.chart_service.db.select.side_effect = [ [ ('Cuenta ahorro',) ], [ ('202602', -500.0, 0.0) ] ]
+
+        savings = self.chart_service.get_savings_chart_info(self.filter)
+
+        self.assertEqual(('20260101', '20260331'), self.chart_service.db.select.call_args[0][0][1])
+        self.assertEqual([ 0.0, 500.0, 0.0 ], savings['deposits'])
+        self.assertEqual([ 'Cuenta ahorro' ], savings['categories'])
+
+    def test__get_savings_chart_info__no_dates(self):
+        self.chart_service.db.select.return_value = []
+
+        savings = self.chart_service.get_savings_chart_info(self.no_dates_filter)
+
+        self.assertEqual([], savings['amounts'])
+        self.assertEqual(1, self.chart_service.db.select.call_count)

@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import Mock, patch
 
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QInputDialog, QMessageBox
 
 from test.qt_app import get_app
@@ -17,8 +18,8 @@ class ConfigureExpensesDialogTestCase(unittest.TestCase):
         self.addCleanup(patcher.stop)
 
         self.service.select_expense_types_full.return_value = [
-            { 'category': 'Casa', 'comment': '', 'income': False, 'not_computed': False },
-            { 'category': 'Comida', 'comment': 'Super', 'income': False, 'not_computed': False }
+            { 'category': 'Casa', 'comment': '', 'income': False, 'not_computed': False, 'savings': False },
+            { 'category': 'Comida', 'comment': 'Super', 'income': False, 'not_computed': False, 'savings': False }
         ]
         self.service.get_categories_simple.return_value = [ 'Casa', 'Comida' ]
 
@@ -50,6 +51,11 @@ class ConfigureExpensesDialogTestCase(unittest.TestCase):
         self.service.rename_category.assert_not_called()
         error_dialog.assert_called_once()
         self.assertEqual('Comida', self.dialog.table.item(1, 0).text())
+
+    def test__savings_flag__saved_for_its_type(self):
+        self.dialog.table.item(1, 4).setCheckState(Qt.CheckState.Checked)
+
+        self.service.update_expense_type_flag.assert_called_once_with('Comida', 'savings', True)
 
     def test__comment__saved_for_its_type(self):
         self.dialog.table.item(1, 1).setText("Super's")

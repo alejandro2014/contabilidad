@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QMainWindow
 
 from src.config.settings import app_settings
 
+from src.dialogs.CashExpenseDialog import CashExpenseDialog
 from src.dialogs.ConfigureExpensesDialog import ConfigureExpensesDialog
 from src.dialogs.ConfigureRulesDialog import ConfigureRulesDialog
 from src.dialogs.InfoDialog import InfoDialog
@@ -78,6 +79,7 @@ class MainWindow(QMainWindow, ListenerNode):
         menu_gastos = self.menubar.addMenu('Gastos')
 
         self.add_action(menu_gastos, 'Cargar fichero', self.load_expenses_file, QKeySequence.StandardKey.Open)
+        self.add_action(menu_gastos, 'Gasto en efectivo', self.add_cash_expense, 'Ctrl+E')
         self.classify_expenses_action = self.add_action(menu_gastos, self.CLASSIFY_EXPENSES_TEXT, self.classify_expenses, 'Ctrl+3')
 
         menu_gastos.addSeparator()
@@ -118,6 +120,11 @@ class MainWindow(QMainWindow, ListenerNode):
 
     def load_expenses_file(self):
         load_file_dialog = LoadFileDialog(self, self.listeners_pool)
+
+    def add_cash_expense(self):
+        # The screen shown is opened again, so it has the new expense
+        if CashExpenseDialog(self).exec():
+            self.restore_screen()
 
     def classify_expenses(self):
         classify_expenses_screen = ClassifyExpensesScreen(self.listeners_pool)

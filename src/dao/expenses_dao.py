@@ -23,6 +23,13 @@ class ExpensesDao:
         # The ones not inserted were already in the database
         return successes_number, len(expenses) - successes_number
     
+    def add_expenses(self, expenses):
+        # All of them or none, failing when one is already in the database
+        queries = [ self.sql_generator.insert_expense_type_if_missing(e.category) for e in expenses ]
+        queries += [ (self.sql_generator.insert_new_expenses(), self.sql_generator.expense_values(e)) for e in expenses ]
+
+        self.db.execute_transaction(queries)
+
     def get_pending_expenses(self, filter=None, sort_by=None):
         sql = self.sql_generator.select_pending_expenses(filter, sort_by)
         expenses_db = self.db.select(sql)

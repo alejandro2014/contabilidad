@@ -35,6 +35,9 @@ class SqliteConnectorTestCase(unittest.TestCase):
         # Their types are created too, as the foreign keys need them
         self.assertEqual([ ('Nómina', 1) ], self.connector.select("SELECT category, income FROM expense_types WHERE category = 'Nómina'"))
 
+        # The transfers to the savings account are savings
+        self.assertEqual([ ('Cuenta ahorro',) ], self.connector.select("SELECT category FROM expense_types WHERE savings"))
+
     def test__new_database__last_version(self):
         self.connector.select('SELECT 1')
 

@@ -229,7 +229,7 @@ class SqlGeneratorTestCase(unittest.TestCase):
         self.assertEqual(expected_sql, sql)
 
     def test__select_classified_expenses_by_month(self):
-        expected_sql = "SELECT substr(date, 1, 6) AS month, sum(amount) / 100.0 AS sum FROM expenses WHERE (category IS NOT NULL) AND category NOT IN (SELECT category FROM expense_types WHERE income OR not_computed) GROUP BY month"
+        expected_sql = "SELECT substr(date, 1, 6) AS month, sum(amount) / 100.0 AS sum FROM expenses WHERE (category IS NOT NULL) AND category NOT IN (SELECT category FROM expense_types WHERE income OR not_computed OR savings) GROUP BY month"
 
         sql = self.sql_generator.select_classified_expenses_by_month()
 
@@ -257,14 +257,14 @@ class SqlGeneratorTestCase(unittest.TestCase):
         self.assertEqual(expected_sql, sql)
 
     def test__select_not_computed_categories(self):
-        expected_sql = "SELECT category FROM expense_types WHERE income OR not_computed"
+        expected_sql = "SELECT category FROM expense_types WHERE income OR not_computed OR savings"
 
         sql = self.sql_generator.select_not_computed_categories()
 
         self.assertEqual(expected_sql, sql)
 
     def test__select_expense_types_full(self):
-        expected_sql = "SELECT category, comment, income, not_computed FROM expense_types ORDER BY category"
+        expected_sql = "SELECT category, comment, income, not_computed, savings FROM expense_types ORDER BY category"
 
         sql = self.sql_generator.select_expense_types_full()
 
@@ -285,21 +285,21 @@ class SqlGeneratorTestCase(unittest.TestCase):
         self.assertEqual(expected_sql, sql)
 
     def test__insert_category(self):
-        expected_sql = ("INSERT INTO expense_types(category, comment, income, not_computed) VALUES (?, ?, ?, ?)", ('Alquiler', 'Alquiler del mes', False, False))
+        expected_sql = ("INSERT INTO expense_types(category, comment, income, not_computed, savings) VALUES (?, ?, ?, ?, ?)", ('Alquiler', 'Alquiler del mes', False, False, False))
 
         sql = self.sql_generator.insert_category('Alquiler', 'Alquiler del mes')
 
         self.assertEqual(expected_sql, sql)
 
     def test__insert_category__income(self):
-        expected_sql = ("INSERT INTO expense_types(category, comment, income, not_computed) VALUES (?, ?, ?, ?)", ('Nómina', 'Sueldo', True, False))
+        expected_sql = ("INSERT INTO expense_types(category, comment, income, not_computed, savings) VALUES (?, ?, ?, ?, ?)", ('Nómina', 'Sueldo', True, False, False))
 
         sql = self.sql_generator.insert_category('Nómina', 'Sueldo', True)
 
         self.assertEqual(expected_sql, sql)
 
     def test__insert_category__not_computed(self):
-        expected_sql = ("INSERT INTO expense_types(category, comment, income, not_computed) VALUES (?, ?, ?, ?)", ('Cuenta ahorro', 'Traspasos', False, True))
+        expected_sql = ("INSERT INTO expense_types(category, comment, income, not_computed, savings) VALUES (?, ?, ?, ?, ?)", ('Cuenta ahorro', 'Traspasos', False, True, False))
 
         sql = self.sql_generator.insert_category('Cuenta ahorro', 'Traspasos', not_computed=True)
 
@@ -316,6 +316,27 @@ class SqlGeneratorTestCase(unittest.TestCase):
         expected_sql = ("UPDATE expense_types SET not_computed = ? WHERE category = ?", (False, 'Cuenta ahorro'))
 
         sql = self.sql_generator.update_expense_type_flag('Cuenta ahorro', 'not_computed', False)
+
+        self.assertEqual(expected_sql, sql)
+
+    def test__insert_category__savings(self):
+        expected_sql = ("INSERT INTO expense_types(category, comment, income, not_computed, savings) VALUES (?, ?, ?, ?, ?)", ('Cuenta ahorro', 'Traspasos', False, False, True))
+
+        sql = self.sql_generator.insert_category('Cuenta ahorro', 'Traspasos', savings=True)
+
+        self.assertEqual(expected_sql, sql)
+
+    def test__update_expense_type_flag__savings(self):
+        expected_sql = ("UPDATE expense_types SET savings = ? WHERE category = ?", (True, 'Cuenta ahorro'))
+
+        sql = self.sql_generator.update_expense_type_flag('Cuenta ahorro', 'savings', True)
+
+        self.assertEqual(expected_sql, sql)
+
+    def test__select_savings_values(self):
+        expected_sql = "SELECT SUBSTR(date, 1, 6) AS d, SUM(MIN(amount, 0)) / 100.0, SUM(MAX(amount, 0)) / 100.0 FROM expenses WHERE category IN (SELECT category FROM expense_types WHERE savings) AND date BETWEEN ? AND ? GROUP BY d", ('20220101', '20220103')
+
+        sql = self.sql_generator.select_savings_values({ 'date_from': '20220101', 'date_to': '20220103' })
 
         self.assertEqual(expected_sql, sql)
 
@@ -363,7 +384,7 @@ class SqlGeneratorTestCase(unittest.TestCase):
             'date_to': '20220103',
         }
 
-        expected_sql = "SELECT category, sum(amount) / 100.0 AS amnt FROM expenses WHERE category IS NOT NULL AND category NOT IN (SELECT category FROM expense_types WHERE income OR not_computed) AND date BETWEEN ? AND ? GROUP BY category ORDER BY abs(amnt) DESC", ('20220101', '20220103')
+        expected_sql = "SELECT category, sum(amount) / 100.0 AS amnt FROM expenses WHERE category IS NOT NULL AND category NOT IN (SELECT category FROM expense_types WHERE income OR not_computed OR savings) AND date BETWEEN ? AND ? GROUP BY category ORDER BY abs(amnt) DESC", ('20220101', '20220103')
 
         sql = self.sql_generator.select_pie_chart_categories(params)
 
@@ -375,7 +396,7 @@ class SqlGeneratorTestCase(unittest.TestCase):
             'date_to': '20220103',
         }
 
-        expected_sql = "SELECT SUBSTR(date, 1, 6) AS d, SUM(amount) / 100.0 FROM expenses WHERE category IS NOT NULL AND category NOT IN (SELECT category FROM expense_types WHERE income OR not_computed) AND date BETWEEN ? AND ? GROUP BY d", ('20220101', '20220103')
+        expected_sql = "SELECT SUBSTR(date, 1, 6) AS d, SUM(amount) / 100.0 FROM expenses WHERE category IS NOT NULL AND category NOT IN (SELECT category FROM expense_types WHERE income OR not_computed OR savings) AND date BETWEEN ? AND ? GROUP BY d", ('20220101', '20220103')
 
         sql = self.sql_generator.select_bar_chart_values(params)
 
@@ -391,14 +412,14 @@ class SqlGeneratorTestCase(unittest.TestCase):
     def test__select_category_month_values(self):
         params = { 'date_from': '20220101', 'date_to': '20220103' }
 
-        expected_sql = "SELECT category, SUBSTR(date, 1, 6) AS d, SUM(amount) / 100.0 FROM expenses WHERE category IS NOT NULL AND category NOT IN (SELECT category FROM expense_types WHERE income OR not_computed) AND date BETWEEN ? AND ? GROUP BY category, d", ('20220101', '20220103')
+        expected_sql = "SELECT category, SUBSTR(date, 1, 6) AS d, SUM(amount) / 100.0 FROM expenses WHERE category IS NOT NULL AND category NOT IN (SELECT category FROM expense_types WHERE income OR not_computed OR savings) AND date BETWEEN ? AND ? GROUP BY category, d", ('20220101', '20220103')
 
         self.assertEqual(expected_sql, self.sql_generator.select_category_month_values(params))
 
     def test__select_top_expenses(self):
         params = { 'date_from': '20220101', 'date_to': '20220103' }
 
-        expected_sql = "SELECT MIN(date), MAX(date), title, category, amount / 100.0, count(*) FROM expenses WHERE category IS NOT NULL AND category NOT IN (SELECT category FROM expense_types WHERE income OR not_computed) AND amount < 0 AND date BETWEEN ? AND ? GROUP BY title, category, amount ORDER BY amount ASC LIMIT ?", ('20220101', '20220103', 10)
+        expected_sql = "SELECT MIN(date), MAX(date), title, category, amount / 100.0, count(*) FROM expenses WHERE category IS NOT NULL AND category NOT IN (SELECT category FROM expense_types WHERE income OR not_computed OR savings) AND amount < 0 AND date BETWEEN ? AND ? GROUP BY title, category, amount ORDER BY amount ASC LIMIT ?", ('20220101', '20220103', 10)
 
         self.assertEqual(expected_sql, self.sql_generator.select_top_expenses(params, 10))
 
@@ -410,14 +431,14 @@ class SqlGeneratorTestCase(unittest.TestCase):
         self.assertEqual(expected_sql, self.sql_generator.select_pending_expenses_count_between(params))
 
     def test__select_cashflow__by_bank_category(self):
-        expected_sql = "SELECT (category IS NOT NULL AND category IN (SELECT category FROM expense_types WHERE income)) AS is_income, category_src AS grp, CAST(substr(date, 5, 2) AS INTEGER) AS month, sum(amount) / 100.0 FROM expenses WHERE date LIKE ? AND (category IS NULL OR category NOT IN (SELECT category FROM expense_types WHERE not_computed)) GROUP BY is_income, grp, month", ('2026%',)
+        expected_sql = "SELECT (category IS NOT NULL AND category IN (SELECT category FROM expense_types WHERE income)) AS is_income, category_src AS grp, CAST(substr(date, 5, 2) AS INTEGER) AS month, sum(amount) / 100.0 FROM expenses WHERE date LIKE ? AND (category IS NULL OR category NOT IN (SELECT category FROM expense_types WHERE not_computed OR savings)) GROUP BY is_income, grp, month", ('2026%',)
 
         sql = self.sql_generator.select_cashflow('2026', 'bank')
 
         self.assertEqual(expected_sql, sql)
 
     def test__select_cashflow__by_expense_type(self):
-        expected_sql = "SELECT (category IS NOT NULL AND category IN (SELECT category FROM expense_types WHERE income)) AS is_income, COALESCE(category, 'Sin clasificar') AS grp, CAST(substr(date, 5, 2) AS INTEGER) AS month, sum(amount) / 100.0 FROM expenses WHERE date LIKE ? AND (category IS NULL OR category NOT IN (SELECT category FROM expense_types WHERE not_computed)) GROUP BY is_income, grp, month", ('2026%',)
+        expected_sql = "SELECT (category IS NOT NULL AND category IN (SELECT category FROM expense_types WHERE income)) AS is_income, COALESCE(category, 'Sin clasificar') AS grp, CAST(substr(date, 5, 2) AS INTEGER) AS month, sum(amount) / 100.0 FROM expenses WHERE date LIKE ? AND (category IS NULL OR category NOT IN (SELECT category FROM expense_types WHERE not_computed OR savings)) GROUP BY is_income, grp, month", ('2026%',)
 
         sql = self.sql_generator.select_cashflow('2026', 'type')
 

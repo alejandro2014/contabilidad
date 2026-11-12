@@ -16,7 +16,8 @@ class ConfigureExpensesDialog(QDialog):
     COMMENT_COLUMN = 1
     FLAG_COLUMNS = {
         2: 'income',
-        3: 'not_computed'
+        3: 'not_computed',
+        4: 'savings'
     }
 
     LEAVE_PENDING = "Dejar los movimientos pendientes y borrar sus reglas"
@@ -110,7 +111,7 @@ class ConfigureExpensesDialog(QDialog):
     def add_category(self):
         add_category_dialog = AddCategoryDialog(self)
 
-    def add_category_to_table(self, category_name, category_description, income, not_computed):
+    def add_category_to_table(self, category_name, category_description, income, not_computed, savings=False):
         # Same order as the categories come from the database (ORDER BY category)
         row = 0
 
@@ -125,6 +126,7 @@ class ConfigureExpensesDialog(QDialog):
         self.table.setItem(row, 1, QtWidgets.QTableWidgetItem(category_description))
         self.table.setItem(row, 2, self.widget_creator.create_checkbox_item(income))
         self.table.setItem(row, 3, self.widget_creator.create_checkbox_item(not_computed))
+        self.table.setItem(row, 4, self.widget_creator.create_checkbox_item(savings))
         self.save_category_name(row)
 
         self.table.blockSignals(False)

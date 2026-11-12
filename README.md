@@ -30,6 +30,7 @@ The size and place of the window, the last screen, the last date range and the p
 ### Gastos
 
 - **Cargar fichero** (`Ctrl+O`): imports a bank statement (`.xls`, see below). Every movement is checked against the classification rules: the ones that match get their expense type, the rest stay pending. Movements already in the database (same date, concept and amount) are ignored, except that they get their balance if they were loaded before it was stored. The whole file is loaded in a single transaction: if anything fails, nothing is loaded.
+- **Gasto en efectivo** (`Ctrl+E`): an expense paid in cash (date, concept, amount and type). The cash was already counted as an `Efectivo` expense when it was taken from the ATM, so it is stored twice: as an expense of its type, and as the same amount back to `Efectivo`. The totals don't change, and `Efectivo` keeps the cash taken that hasn't been registered yet.
 - **Clasificar pendientes** (`Ctrl+3`): table of the movements without an expense type, to classify them by hand. The menu shows how many there are: `Clasificar pendientes (12)`. It can be done with the keyboard: typing on the table looks for an expense type (any part of its name), and `Enter` classifies the selected movements and selects the next one.
 - **Salir** (`Ctrl+Q`)
 
@@ -45,6 +46,7 @@ The size and place of the window, the last screen, the last date range and the p
   - The 25 biggest expenses, with repeated ones (same concept, type and amount) in a single row: `937,58 € (10)`. Double clicking one opens its movements.
   - Spending of each type in the last month of the range vs. its monthly average in the 12 months before (only those with movements), the ones going over it first. Double clicking one opens its movements of the month.
   - Balance of the account (`SALDO`) at the end of each month. The movements loaded before it was stored don't have it: load their statements again to fill it.
+  - Savings per month: the money sent to the *Ahorro* types (e.g. `Traspaso emitido a` the savings account) goes up, what comes back from them goes down, and a line with the accumulated in the range. Clicking a bar opens the movements of that month.
   - **Exportar**: the dashboard as a PDF (as it is shown, in one page) or as an Excel file with a sheet per chart.
 - **Ver tabla** (`Ctrl+2`): classified movements, with date range, text, type and tag filters. They can be grouped by month and/or expense type, or by tag (totals of the expenses of each tag in the date range), and selected ones can be unclassified (after a confirmation).
   - **Notas y etiquetas** (or double click on a movement): a note and tags (e.g. `Viaje Roma`, separated by commas) for the selected movements.
@@ -56,6 +58,7 @@ The size and place of the window, the last screen, the last date range and the p
 - **Tipos de gastos**: add, edit and delete expense types. Renaming a type also renames it in its movements and rules. Deleting a type that is in use asks whether to move its movements and rules to another type, or to leave the movements pending again (and delete its rules). Two flags change how a type is counted:
   - *Ingreso*: it is an income (e.g. payroll), shown as income and left out of the expenses.
   - *No computar*: it is neither an income nor an expense (e.g. transfers to a savings account), left out of every sum.
+  - *Ahorro*: the money moved to a savings account (`Cuenta ahorro`, marked by default). Shown in the savings chart, and left out of the sums like *No computar*.
 - **Reglas de clasificación**: ordered list of rules (text in the concept → expense type). The first rule that matches wins. Deleting rules asks for a confirmation.
 
 The app and its charts follow the light or dark mode of the system, also when it changes while the app is open.

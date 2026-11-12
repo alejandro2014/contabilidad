@@ -12,10 +12,17 @@ class SqlGenerator:
     def insert_expenses(self):
         # The movements already loaded (same date, concept and amount) are ignored, but they get the balance when
         # they were loaded before it was stored
+        return f"{self.insert_new_expenses()} ON CONFLICT (date, title, amount) DO UPDATE SET balance = excluded.balance WHERE expenses.balance IS NULL"
+
+    def insert_new_expenses(self):
+        # Fails when the movement is already in the database
         fields = ', '.join(self.EXPENSE_COLUMNS)
         values = ', '.join([ '?' for _ in self.EXPENSE_COLUMNS ])
 
-        return f"INSERT INTO expenses ({fields}) VALUES ({values}) ON CONFLICT (date, title, amount) DO UPDATE SET balance = excluded.balance WHERE expenses.balance IS NULL"
+        return f"INSERT INTO expenses ({fields}) VALUES ({values})"
+
+    def insert_expense_type_if_missing(self, category):
+        return "INSERT OR IGNORE INTO expense_types (category) VALUES (?)", (category,)
 
     def expense_values(self, expense):
         return tuple(self.cents_or_none(getattr(expense, c)) if c in ('amount', 'balance') else getattr(expense, c) for c in self.EXPENSE_COLUMNS)
@@ -122,10 +129,13 @@ class SqlGenerator:
         return "SELECT (category IS NOT NULL) AS classified, MIN(date), MAX(date), count(*) FROM expenses GROUP BY classified"
 
     def select_expense_types_full(self):
-        return "SELECT category, comment, income, not_computed FROM expense_types ORDER BY category"
+        return "SELECT category, comment, income, not_computed, savings FROM expense_types ORDER BY category"
 
     def select_not_computed_categories(self):
-        return "SELECT category FROM expense_types WHERE income OR not_computed"
+        return "SELECT category FROM expense_types WHERE income OR not_computed OR savings"
+
+    def select_savings_categories(self):
+        return "SELECT category FROM expense_types WHERE savings ORDER BY category"
 
     def select_expense_types_simple(self):
         return "SELECT category FROM expense_types ORDER BY category"
@@ -150,7 +160,7 @@ class SqlGenerator:
 
     def update_expense_type_flag(self, category, flag, value):
         # A column name can't be a parameter, so only the flags are accepted
-        if flag not in ('income', 'not_computed'):
+        if flag not in ('income', 'not_computed', 'savings'):
             raise ValueError(f'"{flag}" is not a flag of the expense types')
 
         return f"UPDATE expense_types SET {flag} = ? WHERE category = ?", (bool(value), category)
@@ -158,8 +168,8 @@ class SqlGenerator:
     def select_category_name(self, category):
         return "SELECT count(*) FROM expense_types WHERE category = ?", (category,)
 
-    def insert_category(self, category_name, category_description, income=False, not_computed=False):
-        return "INSERT INTO expense_types(category, comment, income, not_computed) VALUES (?, ?, ?, ?)", (category_name, category_description, bool(income), bool(not_computed))
+    def insert_category(self, category_name, category_description, income=False, not_computed=False, savings=False):
+        return "INSERT INTO expense_types(category, comment, income, not_computed, savings) VALUES (?, ?, ?, ?, ?)", (category_name, category_description, bool(income), bool(not_computed), bool(savings))
 
     def update_classified_expense(self, expense_id, category):
         return "UPDATE expenses set category = ? WHERE id = ?", (category, expense_id)
@@ -193,7 +203,8 @@ class SqlGenerator:
         return sql + " GROUP BY t.tag ORDER BY t.tag", params
 
     def computed_expense_condition(self):
-        return "category NOT IN (SELECT category FROM expense_types WHERE income OR not_computed)"
+        # The money moved to savings is not spent, like the not computed types
+        return "category NOT IN (SELECT category FROM expense_types WHERE income OR not_computed OR savings)"
 
     def select_rules(self):
         return "SELECT priority, rule, category FROM rules ORDER BY priority"
@@ -218,7 +229,7 @@ class SqlGenerator:
         # The bank category comes with every expense, the expense type only once it is classified
         group_field = 'category_src' if group_by == 'bank' else "COALESCE(category, 'Sin clasificar')"
         income_field = "(category IS NOT NULL AND category IN (SELECT category FROM expense_types WHERE income))"
-        not_computed_condition = "(category IS NULL OR category NOT IN (SELECT category FROM expense_types WHERE not_computed))"
+        not_computed_condition = "(category IS NULL OR category NOT IN (SELECT category FROM expense_types WHERE not_computed OR savings))"
 
         return f"SELECT {income_field} AS is_income, {group_field} AS grp, CAST(substr(date, 5, 2) AS INTEGER) AS month, sum(amount) / 100.0 FROM expenses WHERE date LIKE ? AND {not_computed_condition} GROUP BY is_income, grp, month", (f'{year}%',)
 
@@ -239,6 +250,11 @@ class SqlGenerator:
 
     def select_category_month_values(self, params):
         return f"SELECT category, SUBSTR(date, 1, 6) AS d, SUM(amount) / 100.0 FROM expenses WHERE category IS NOT NULL AND {self.computed_expense_condition()} AND date BETWEEN ? AND ? GROUP BY category, d", self.date_params(params)
+
+    def select_savings_values(self, params):
+        # Money sent to the savings types is negative (it leaves the account), and what comes back from them positive:
+        # both of each month, apart
+        return "SELECT SUBSTR(date, 1, 6) AS d, SUM(MIN(amount, 0)) / 100.0, SUM(MAX(amount, 0)) / 100.0 FROM expenses WHERE category IN (SELECT category FROM expense_types WHERE savings) AND date BETWEEN ? AND ? GROUP BY d", self.date_params(params)
 
     def select_top_expenses(self, params, limit):
         # The biggest expenses are the most negative amounts. The repeated ones (same concept and amount, like the rent) are a single row

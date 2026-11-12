@@ -1,12 +1,29 @@
+import uuid
+
 from src.dao.expenses_dao import ExpensesDao
+from src.model.expense import Expense
 
 class ExpensesService:
+    # Expense type of the ATM withdrawals
+    CASH_CATEGORY = 'Efectivo'
+
     def __init__(self, dao=None):
         self.dao = ExpensesDao() if dao is None else dao
 
     def load_expenses(self, expenses):
         return self.dao.load_expenses(expenses)
     
+    def add_cash_expense(self, date, title, amount, category):
+        # The cash comes from an ATM withdrawal, already counted as an expense of CASH_CATEGORY. So the expense goes
+        # with its type, and the same amount goes back to CASH_CATEGORY: the totals don't change, and CASH_CATEGORY
+        # keeps the cash withdrawn that hasn't been registered yet
+        amount = abs(float(amount))
+
+        self.dao.add_expenses([
+            Expense(id = str(uuid.uuid4()), date = date, category_src = self.CASH_CATEGORY, title = title, amount = -amount, category = category),
+            Expense(id = str(uuid.uuid4()), date = date, category_src = self.CASH_CATEGORY, title = title, amount = amount, category = self.CASH_CATEGORY)
+        ])
+
     def get_pending_expenses(self, filter=None, sort_by=None):
         return self.dao.get_pending_expenses(filter, sort_by)
     

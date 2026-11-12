@@ -60,11 +60,13 @@ class ExpenseTypesServiceTestCase(unittest.TestCase):
     def test__update_comment_and_flag__quotes(self):
         self.service.update_comment('Comida', "Super's y mercados")
         self.service.update_expense_type_flag('Comida', 'not_computed', True)
+        self.service.update_expense_type_flag('Comida', 'savings', True)
 
         comida = [ t for t in self.service.select_expense_types_full() if t['category'] == 'Comida' ][0]
 
         self.assertEqual("Super's y mercados", comida['comment'])
         self.assertTrue(comida['not_computed'])
+        self.assertTrue(comida['savings'])
 
     def select(self, sql):
         return self.service.db.select(sql)

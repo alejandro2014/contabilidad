@@ -233,6 +233,35 @@ class ChartFormatter:
             'balances': balances
         }
 
+    def format_savings(self, values, year_months, categories):
+        # Money moved to the savings types each month (sent, came back): what is sent is negative in the account, so it
+        # is a positive saving, and what comes back a negative one. The accumulated is the sum since the start of the range
+        sums = { year_month: (sent, came_back) for year_month, sent, came_back in values }
+        # (+ 0.0 so a month without movements is 0,00 € and not -0,00 €)
+        deposits = [ round(-sums.get(year_month, (0.0, 0.0))[0], 2) + 0.0 for year_month in year_months ]
+        withdrawals = [ round(-sums.get(year_month, (0.0, 0.0))[1], 2) + 0.0 for year_month in year_months ]
+        amounts = [ round(deposit + withdrawal, 2) for deposit, withdrawal in zip(deposits, withdrawals) ]
+        accumulated = []
+        total = 0.0
+
+        for amount in amounts:
+            total = round(total + amount, 2)
+            accumulated.append(total)
+
+        show_year = self.several_years(year_months)
+
+        return {
+            'year_months': list(year_months),
+            'months': [ self.month_label(year_month, show_year) for year_month in year_months ],
+            'short_months': [ self.short_month_label(year_month, show_year) for year_month in year_months ],
+            'categories': list(categories),
+            'deposits': deposits,
+            'withdrawals': withdrawals,
+            'amounts': amounts,
+            'accumulated': accumulated,
+            'total': total
+        }
+
     def group_by_date(self, movements):
         groups = {}
 
@@ -257,6 +286,7 @@ class ChartFormatter:
         evolution = dashboard['evolution']
         average = dashboard['average']
         balance = dashboard['balance']
+        savings = dashboard.get('savings')
 
         summary = [
             [ 'Desde', dashboard['date_from'] ],
@@ -285,6 +315,12 @@ class ChartFormatter:
             ]),
             'Saldo': ([ 'Mes', 'Saldo' ], [ [ month, value ] for month, value in zip(balance['months'], balance['balances']) ])
         }
+
+        if savings is not None:
+            sheets['Ahorro'] = ([ 'Mes', 'Aportado', 'Retirado', 'Neto', 'Acumulado' ], [
+                [ month, deposit, -withdrawal, amount, total ]
+                for month, deposit, withdrawal, amount, total in zip(savings['months'], savings['deposits'], savings['withdrawals'], savings['amounts'], savings['accumulated'])
+            ])
 
         if average is not None:
             sheets['Mes vs. media'] = ([ 'Tipo de gasto', 'Media mensual', average['month'], 'Diferencia' ], [

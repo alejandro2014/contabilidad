@@ -136,6 +136,18 @@ class ChartService(BaseService):
 
         return self.formatter.format_category_average(values, year_month, previous_year_months)
 
+    def get_savings_chart_info(self, filter):
+        dates = self.get_dates(filter)
+        categories = [ c[0] for c in self.db.select(self.sql_generator.select_savings_categories()) ]
+
+        if dates is None:
+            return self.formatter.format_savings([], [], categories)
+
+        values = self.db.select(self.sql_generator.select_savings_values(dates))
+        year_months = self.formatter.year_months(dates['date_from'], dates['date_to'])
+
+        return self.formatter.format_savings(values, year_months, categories)
+
     def get_balance_chart_info(self, filter):
         dates = self.get_dates(filter)
 

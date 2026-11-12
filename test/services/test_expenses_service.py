@@ -19,3 +19,13 @@ class ExpensesServiceTestCase(unittest.TestCase):
         self.expenses_service.update_notes_and_tags([ 'id1' ], '   ', '')
 
         self.dao.update_notes_and_tags.assert_called_once_with([ 'id1' ], None, [])
+
+    def test__add_cash_expense__given_back_to_cash(self):
+        self.expenses_service.add_cash_expense('20261104', 'Mercado', 20.5, 'Comida')
+
+        # The expense with its type, and the same amount back to the cash withdrawn, so it doesn't count twice
+        expense, cash = self.dao.add_expenses.call_args[0][0]
+
+        self.assertEqual((expense.date, expense.title, expense.amount, expense.category), ('20261104', 'Mercado', -20.5, 'Comida'))
+        self.assertEqual((cash.date, cash.title, cash.amount, cash.category), ('20261104', 'Mercado', 20.5, 'Efectivo'))
+        self.assertNotEqual(expense.id, cash.id)

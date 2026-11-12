@@ -211,6 +211,27 @@ class ChartFormatterTestCase(unittest.TestCase):
     def test__last_balance__not_chained_takes_the_last_one(self):
         self.assertEqual(500.0, self.chart_formatter.last_balance([ (-10.0, 100.0), (-10.0, 500.0) ]))
 
+    def test__format_savings__sent_and_came_back_by_month(self):
+        values = [ ('202601', -500.0, 0.0), ('202603', -300.0, 100.0) ]
+
+        savings = self.chart_formatter.format_savings(values, [ '202601', '202602', '202603' ], [ 'Cuenta ahorro' ])
+
+        self.assertEqual([ 'Enero', 'Febrero', 'Marzo' ], savings['months'])
+        self.assertEqual([ 500.0, 0.0, 300.0 ], savings['deposits'])
+        self.assertEqual([ 0.0, 0.0, -100.0 ], savings['withdrawals'])
+        self.assertEqual([ 500.0, 0.0, 200.0 ], savings['amounts'])
+        self.assertEqual([ 500.0, 500.0, 700.0 ], savings['accumulated'])
+        self.assertEqual(700.0, savings['total'])
+        self.assertEqual([ 'Cuenta ahorro' ], savings['categories'])
+
+    def test__format_savings__more_taken_out_than_put_in(self):
+        savings = self.chart_formatter.format_savings([ ('202607', 0.0, 3100.0) ], [ '202607' ], [ 'Cuenta ahorro' ])
+
+        self.assertEqual([ 0.0 ], savings['deposits'])
+        self.assertEqual(-3100.0, savings['total'])
+        # Not -0,00 €
+        self.assertEqual('0.0', str(savings['deposits'][0]))
+
     def test__format_dashboard_sheets(self):
         dashboard = {
             'date_from': '01/01/2026',
@@ -222,12 +243,15 @@ class ChartFormatterTestCase(unittest.TestCase):
             'evolution': { 'months': [ 'Enero', 'Febrero' ], 'series': { 'Comida': [ 100.0, 50.0 ] } },
             'top': [ { 'date': '05/01/2026', 'title': 'Mercadona', 'category': 'Comida', 'amount': 100.0, 'count': 1 } ],
             'average': None,
-            'balance': { 'months': [ 'Enero', 'Febrero' ], 'balances': [ None, 1850.0 ] }
+            'balance': { 'months': [ 'Enero', 'Febrero' ], 'balances': [ None, 1850.0 ] },
+            'savings': { 'months': [ 'Enero', 'Febrero' ], 'deposits': [ 500.0, 0.0 ], 'withdrawals': [ 0.0, -100.0 ],
+                         'amounts': [ 500.0, -100.0 ], 'accumulated': [ 500.0, 400.0 ] }
         }
 
         sheets = self.chart_formatter.format_dashboard_sheets(dashboard)
 
-        self.assertEqual([ 'Resumen', 'Categorías', 'Meses', 'Evolución', 'Mayores gastos', 'Saldo' ], list(sheets.keys()))
+        self.assertEqual([ 'Resumen', 'Categorías', 'Meses', 'Evolución', 'Mayores gastos', 'Saldo', 'Ahorro' ], list(sheets.keys()))
+        self.assertEqual(([ 'Mes', 'Aportado', 'Retirado', 'Neto', 'Acumulado' ], [ [ 'Enero', 500.0, 0.0, 500.0, 500.0 ], [ 'Febrero', 0.0, 100.0, -100.0, 400.0 ] ]), sheets['Ahorro'])
         self.assertEqual(([ 'Mes', 'Ingresos', 'Gastos', 'Balance' ], [ [ 'Enero', 2000.0, 100.0, 1900.0 ], [ 'Febrero', 0.0, 50.0, -50.0 ] ]), sheets['Meses'])
         self.assertEqual(([ 'Mes', 'Comida' ], [ [ 'Enero', 100.0 ], [ 'Febrero', 50.0 ] ]), sheets['Evolución'])
         self.assertIn([ 'Categoría con más gasto', 'Comida' ], sheets['Resumen'][1])

@@ -25,7 +25,8 @@ class ExpenseTypesService(BaseService):
             'category': etf[0],
             'comment': etf[1],
             'income': bool(etf[2]),
-            'not_computed': bool(etf[3])
+            'not_computed': bool(etf[3]),
+            'savings': bool(etf[4])
         } for etf in expense_types_full ]
 
     def get_category_usage(self, category):
@@ -51,8 +52,8 @@ class ExpenseTypesService(BaseService):
 
         return categories_existent > 0
 
-    def add_category(self, category_name, category_description, income=False, not_computed=False):
-        sql = self.sql_generator.insert_category(category_name, category_description, income, not_computed)
+    def add_category(self, category_name, category_description, income=False, not_computed=False, savings=False):
+        sql = self.sql_generator.insert_category(category_name, category_description, income, not_computed, savings)
 
         self.db.execute_sql(sql)
 

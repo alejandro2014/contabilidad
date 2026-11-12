@@ -32,6 +32,8 @@ class AddCategoryDialog(QDialog):
 
         self.income_checkbox = QCheckBox("Es un ingreso")
         self.not_computed_checkbox = QCheckBox("No computar")
+        # The money moved to a savings account (traspasos), shown in the savings chart
+        self.savings_checkbox = QCheckBox("Ahorro")
 
         name_layout.addWidget(name_label)
         name_layout.addWidget(self.name_textbox)
@@ -51,6 +53,7 @@ class AddCategoryDialog(QDialog):
         self.layout.addLayout(description_layout)
         self.layout.addWidget(self.income_checkbox)
         self.layout.addWidget(self.not_computed_checkbox)
+        self.layout.addWidget(self.savings_checkbox)
         self.layout.addLayout(button_box)
 
         self.setLayout(self.layout)
@@ -61,6 +64,7 @@ class AddCategoryDialog(QDialog):
         category_description = self.description_textbox.text()
         income = self.income_checkbox.isChecked()
         not_computed = self.not_computed_checkbox.isChecked()
+        savings = self.savings_checkbox.isChecked()
 
         if category_name == '':
             error_dialog = ErrorDialog(self, title = "Error: Nombre vacío", message = "El nombre de la categoría no puede estar vacío")
@@ -72,6 +76,6 @@ class AddCategoryDialog(QDialog):
             error_dialog = ErrorDialog(self, title = "Error: La categoría ya existe", message = f'Ya se ha introducido una categoría "{category_name}"')
             return
 
-        self.expense_types_service.add_category(category_name, category_description, income, not_computed)
-        self.parent.add_category_to_table(category_name, category_description, income, not_computed)
+        self.expense_types_service.add_category(category_name, category_description, income, not_computed, savings)
+        self.parent.add_category_to_table(category_name, category_description, income, not_computed, savings)
         self.accept()
