@@ -38,6 +38,7 @@ class CashflowWindow(QWidget):
         self.group_by_combo = QComboBox()
         self.group_by_combo.addItem('Categoría del banco', 'bank')
         self.group_by_combo.addItem('Tipo de gasto', 'type')
+        self.group_by_combo.setCurrentIndex(self.group_by_combo.findData('type'))
 
         export_button = self.widget_creator.create_button('Exportar CSV', 'upload', self.export_csv)
 
